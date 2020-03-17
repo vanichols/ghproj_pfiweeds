@@ -1,0 +1,57 @@
+site_name,site_desc,sys_trt,cc_trt,crop_2019,rep,plot
+Boyd44,"Boyd Farm, corn plots",silage,no,corn,1,23
+Boyd44,"Boyd Farm, corn plots",silage,no,corn,2,16
+Boyd44,"Boyd Farm, corn plots",silage,no,corn,3,6
+Boyd44,"Boyd Farm, corn plots",silage,no,corn,4,29
+Boyd44,"Boyd Farm, corn plots",silage,no,corn,5,33
+Boyd44,"Boyd Farm, corn plots",silage,rye,corn,1,20
+Boyd44,"Boyd Farm, corn plots",silage,rye,corn,2,14
+Boyd44,"Boyd Farm, corn plots",silage,rye,corn,3,7
+Boyd44,"Boyd Farm, corn plots",silage,rye,corn,4,28
+Boyd44,"Boyd Farm, corn plots",silage,rye,corn,5,32
+Boyd44,"Boyd Farm, corn plots",grain,no,corn,1,18
+Boyd44,"Boyd Farm, corn plots",grain,no,corn,2,12
+Boyd44,"Boyd Farm, corn plots",grain,no,corn,3,10
+Boyd44,"Boyd Farm, corn plots",grain,no,corn,4,27
+Boyd44,"Boyd Farm, corn plots",grain,no,corn,5,35
+Boyd44,"Boyd Farm, corn plots",grain,rye,corn,1,19
+Boyd44,"Boyd Farm, corn plots",grain,rye,corn,2,13
+Boyd44,"Boyd Farm, corn plots",grain,rye,corn,3,11
+Boyd44,"Boyd Farm, corn plots",grain,rye,corn,4,3
+Boyd44,"Boyd Farm, corn plots",grain,rye,corn,5,34
+Boyd42,"Boyd Farm, soybean plots",silage,no,soy,1,2
+Boyd42,"Boyd Farm, soybean plots",silage,no,soy,2,11
+Boyd42,"Boyd Farm, soybean plots",silage,no,soy,3,16
+Boyd42,"Boyd Farm, soybean plots",silage,no,soy,4,20
+Boyd42,"Boyd Farm, soybean plots",silage,no,soy,5,28
+Boyd42,"Boyd Farm, soybean plots",silage,rye,soy,1,7
+Boyd42,"Boyd Farm, soybean plots",silage,rye,soy,2,10
+Boyd42,"Boyd Farm, soybean plots",silage,rye,soy,3,18
+Boyd42,"Boyd Farm, soybean plots",silage,rye,soy,4,21
+Boyd42,"Boyd Farm, soybean plots",silage,rye,soy,5,31
+Boyd42,"Boyd Farm, soybean plots",grain,no,soy,1,6
+Boyd42,"Boyd Farm, soybean plots",grain,no,soy,2,13
+Boyd42,"Boyd Farm, soybean plots",grain,no,soy,3,15
+Boyd42,"Boyd Farm, soybean plots",grain,no,soy,4,22
+Boyd42,"Boyd Farm, soybean plots",grain,no,soy,5,26
+Boyd42,"Boyd Farm, soybean plots",grain,rye,soy,1,5
+Boyd42,"Boyd Farm, soybean plots",grain,rye,soy,2,12
+Boyd42,"Boyd Farm, soybean plots",grain,rye,soy,3,14
+Boyd42,"Boyd Farm, soybean plots",grain,rye,soy,4,34
+Boyd42,"Boyd Farm, soybean plots",grain,rye,soy,5,27
+Stout,"Rob Stout's farm in Washington Iowa, will be planted to soybean in 2019",grain,no,soy,1,1
+Stout,"Rob Stout's farm in Washington Iowa, will be planted to soybean in 2019",grain,no,soy,2,3
+Stout,"Rob Stout's farm in Washington Iowa, will be planted to soybean in 2019",grain,no,soy,3,5
+Stout,"Rob Stout's farm in Washington Iowa, will be planted to soybean in 2019",grain,no,soy,4,7
+Stout,"Rob Stout's farm in Washington Iowa, will be planted to soybean in 2019",grain,rye,soy,1,2
+Stout,"Rob Stout's farm in Washington Iowa, will be planted to soybean in 2019",grain,rye,soy,2,4
+Stout,"Rob Stout's farm in Washington Iowa, will be planted to soybean in 2019",grain,rye,soy,3,6
+Stout,"Rob Stout's farm in Washington Iowa, will be planted to soybean in 2019",grain,rye,soy,4,8
+Funke,"Jim Funke's farm in Jefferson, IA, will be planted to corn in 2019",grain,no,corn,1,1
+Funke,"Jim Funke's farm in Jefferson, IA, will be planted to corn in 2019",grain,no,corn,2,3
+Funke,"Jim Funke's farm in Jefferson, IA, will be planted to corn in 2019",grain,no,corn,3,5
+Funke,"Jim Funke's farm in Jefferson, IA, will be planted to corn in 2019",grain,no,corn,4,7
+Funke,"Jim Funke's farm in Jefferson, IA, will be planted to corn in 2019",grain,rye,corn,1,2
+Funke,"Jim Funke's farm in Jefferson, IA, will be planted to corn in 2019",grain,rye,corn,2,4
+Funke,"Jim Funke's farm in Jefferson, IA, will be planted to corn in 2019",grain,rye,corn,3,6
+Funke,"Jim Funke's farm in Jefferson, IA, will be planted to corn in 2019",grain,rye,corn,4,8

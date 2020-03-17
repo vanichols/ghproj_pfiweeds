@@ -1,0 +1,83 @@
+site,location,crop_year,cc_trt,rep,cash_crop,ccbio_Mgha
+jefferson,funcke,2009,rye,1,corn,0.1547085201793722
+jefferson,funcke,2009,rye,2,corn,0.14686098654708518
+jefferson,funcke,2009,rye,3,corn,0.08856502242152466
+jefferson,funcke,2009,rye,4,corn,0.1591928251121076
+jefferson,funcke,2010,rye,1,soybeans,2.4226457399103136
+jefferson,funcke,2010,rye,2,soybeans,2.076233183856502
+jefferson,funcke,2010,rye,3,soybeans,1.608744394618834
+jefferson,funcke,2010,rye,4,soybeans,2.327354260089686
+jefferson,funcke,2011,rye,1,corn,0.26905829596412556
+jefferson,funcke,2011,rye,2,corn,0.18834080717488788
+jefferson,funcke,2011,rye,3,corn,0.2062780269058296
+jefferson,funcke,2011,rye,4,corn,0.16143497757847533
+jefferson,funcke,2012,rye,1,soybeans,2.1513452914798203
+jefferson,funcke,2012,rye,2,soybeans,1.0403587443946187
+jefferson,funcke,2012,rye,3,soybeans,1.1121076233183855
+jefferson,funcke,2012,rye,4,soybeans,1.0044843049327354
+jefferson,funcke,2013,rye,1,corn,0
+jefferson,funcke,2013,rye,2,corn,0
+jefferson,funcke,2013,rye,3,corn,0
+jefferson,funcke,2013,rye,4,corn,0
+jefferson,funcke,2014,rye,1,soybeans,0
+jefferson,funcke,2014,rye,2,soybeans,0
+jefferson,funcke,2014,rye,3,soybeans,0
+jefferson,funcke,2014,rye,4,soybeans,0
+jefferson,funcke,2015,rye,1,corn,0.035392376681614345
+jefferson,funcke,2015,rye,2,corn,0.03734304932735426
+jefferson,funcke,2015,rye,3,corn,0.03788116591928251
+jefferson,funcke,2015,rye,4,corn,0.0454372197309417
+jefferson,funcke,2016,rye,1,soybeans,0.3132959641255605
+jefferson,funcke,2016,rye,2,soybeans,0.3085874439461883
+jefferson,funcke,2016,rye,3,soybeans,0.6202578475336322
+jefferson,funcke,2016,rye,4,soybeans,0.5466479820627802
+jefferson,funcke,2017,rye,1,corn,0.5383071748878923
+jefferson,funcke,2017,rye,2,corn,0.6029035874439461
+jefferson,funcke,2017,rye,3,corn,0.6553811659192825
+jefferson,funcke,2017,rye,4,corn,0.7145964125560537
+jefferson,funcke,2018,rye,1,soybeans,0.07522421524663676
+jefferson,funcke,2018,rye,2,soybeans,0.1016031390134529
+jefferson,funcke,2018,rye,3,soybeans,0.09985426008968608
+jefferson,funcke,2018,rye,4,soybeans,0.09232062780269057
+jefferson,funcke,2019,rye,1,corn,0
+jefferson,funcke,2019,rye,2,corn,0
+jefferson,funcke,2019,rye,3,corn,0
+jefferson,funcke,2019,rye,4,corn,0
+west chester,stout,2010,rye,1,corn,NA
+west chester,stout,2010,rye,2,corn,2.3307174887892375
+west chester,stout,2010,rye,3,corn,NA
+west chester,stout,2010,rye,4,corn,1.8968609865470851
+west chester,stout,2011,rye,1,soybeans,1.4159192825112108
+west chester,stout,2011,rye,2,soybeans,1.4697309417040358
+west chester,stout,2011,rye,3,soybeans,1.5056053811659191
+west chester,stout,2012,rye,1,corn,0
+west chester,stout,2012,rye,2,corn,0
+west chester,stout,2012,rye,3,corn,0
+west chester,stout,2012,rye,4,corn,0
+west chester,stout,2013,rye,1,soybeans,NA
+west chester,stout,2013,rye,2,soybeans,0.9248878923766816
+west chester,stout,2013,rye,3,soybeans,NA
+west chester,stout,2014,rye,1,corn,0
+west chester,stout,2014,rye,2,corn,0
+west chester,stout,2014,rye,3,corn,0
+west chester,stout,2015,rye,1,soybeans,0.39141255605381164
+west chester,stout,2015,rye,2,soybeans,0.27810538116591926
+west chester,stout,2015,rye,3,soybeans,0.3998878923766816
+west chester,stout,2016,rye,1,corn,0.5695291479820627
+west chester,stout,2016,rye,2,corn,0.4741143497757847
+west chester,stout,2016,rye,3,corn,0.48406950672645743
+west chester,stout,2017,rye,1,soybeans,7.612970852017938
+west chester,stout,2017,rye,2,soybeans,8.947959641255604
+west chester,stout,2017,rye,3,soybeans,7.636771300448429
+west chester,stout,2017,rye,4,soybeans,6.8539573991031375
+west chester,stout,2017,rye,5,soybeans,5.455706278026906
+west chester,stout,2018,rye,1,corn,0.19499999999999998
+west chester,stout,2018,rye,2,corn,0.17615470852017936
+west chester,stout,2018,rye,3,corn,0.2176121076233184
+west chester,stout,2018,rye,3,corn,0.18827354260089685
+west chester,stout,2018,rye,4,corn,0.1859865470852018
+west chester,stout,2019,rye,1,soybeans,0.23362107623318384
+west chester,stout,2019,rye,2,soybeans,0.2713004484304933
+west chester,stout,2019,rye,3,soybeans,0.3427690582959641
+west chester,stout,2019,rye,4,soybeans,0.3295739910313901
+west chester,stout,2019,rye,5,soybeans,0.3241928251121076

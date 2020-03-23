@@ -1,7 +1,7 @@
 ##################################
 # Author: Gina Nichols (vnichols@iastate.edu)
 # Created: Dec 30 2019
-# Last modified: 
+# Last modified: march 23 2020 (trying to recreate old analysis where things were sig)
 #
 # Purpose: do 'official' stats for manuscript
 #
@@ -25,7 +25,8 @@ library(emmeans)
 
 # what is spread in locs? -------------------------------------------------
 
-dat <- read_csv("_data/tidy/td-GHsum.csv") 
+dat <- read_csv("data/tidy/td-GHsum.csv")
+#dat <- read_csv("_data/tidy/td-GHsum.csv") 
 
 dat %>% 
   group_by(loc) %>% 
@@ -35,7 +36,7 @@ dat %>%
 
 # matt doesn't use a ratio ------------------------------------------------
 
-dstat <- 
+dstat_matt <- 
   dat %>% 
   unite(loc, cropsys, col = "loc_sys") %>% 
   mutate(rep2 = paste0(loc_sys, rep),
@@ -44,7 +45,7 @@ dstat <-
                           rye = "aryecc"))
 
 #--full data set
-m1 <- lmer(log(totseeds_m2) ~ loc_sys * cc_trt2 + (1|rep2), data = dstat)
+m1 <- lmer(log(totseeds_m2) ~ loc_sys * cc_trt2 + (1|rep2), data = dstat_matt)
 anova(m1)
 emmeans(m1, pairwise ~ cc_trt2|loc_sys, type = "response")
 

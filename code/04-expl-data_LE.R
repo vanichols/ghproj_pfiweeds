@@ -7,6 +7,7 @@ library(lme4) #--for mixed models
 library(lmerTest) #--to get significances
 library(vegan)
 library(PFIweeds2020)
+library(emmeans)
 
 mycols <- c("#1B9E77", "#D95F02", "#7570B3", "#E6AB02")
 scales::show_col(mycols)
@@ -29,22 +30,27 @@ pfi_ghobsraw %>% distinct(site_name, field, sys_trt, cc_trt, crop_2019, rep) %>%
 # Funcke has 4 reps
 # Stout soy has 4 reps - NA crop has 2 or 3 reps --- going to get rid of that for now...
 
+# Gina analyzed things by crop type - 4 total treatments (Boyd-g, Boyd-s, Stout, Funcke)
+# this is fine...but perhaps look into how similar the two boyd grain fields are...
+
 # ---- consolidating data, making unique column  ----
 # Keeping each rep (i.e. block) separate
 all_dat <- pfi_ghobsraw %>%
   group_by(site_name, field, sys_trt, cc_trt, crop_2019, rep) %>%
   summarize_at(vars(AMATU:UB), ~sum(., na.rm = TRUE)) %>%
-  # filtering out STT NA field treatment bc it has less than 4 reps      - is this the right thing to do?? 
-  filter(!(is.na(crop_2019))) %>%
+  filter(!(is.na(crop_2019))) %>%         
+              # filtering out STT NA field treatment bc it has less than 4 reps ...
   ungroup() %>%
-  unite("model_id", site_name, sys_trt, crop_2019, remove = FALSE)
+  unite("model_id1", site_name, sys_trt, crop_2019, remove = FALSE) %>%
+  unite("model_id2", site_name, sys_trt, remove = FALSE)
+              # combining columns to make model ID columns..
 
 # ---- calculating richness and diversity ----
 rich <- function(x){rowSums(ifelse(x > 0, 1, 0))}
 
 div_rich <- all_dat %>%
-  mutate(shan_hill = exp(diversity(.[, 8:26])),
-         richness  = rich(.[, 8:26])) %>%
+  mutate(shan_hill = exp(diversity(.[, 9:27])),
+         richness  = rich(.[, 9:27])) %>%
   select(-c(AMATU:UB))
 
 # ---- making long dataset ----
@@ -54,17 +60,147 @@ long_spp_list <- all_dat %>%
   left_join(pfi_weedsplist, by = "code") %>%
   filter(numSeedlings > 0)
      
-# ---- running models ----
+# ---- running univariate models ----
 
+# i. diversity
 # fixed effects model 
-l1 <- lm(shan_hill ~ model_id+cc_trt, data = div_rich)
+l1 <- lm(shan_hill ~ model_id2*cc_trt, data = div_rich)
 summary(l1)
 anova(l1)
 
 div_rich %>%
-  ggplot(aes(model_id, shan_hill))+
+  ggplot(aes(model_id1, shan_hill))+
+  geom_boxplot(aes(color = cc_trt))
+# vs
+div_rich %>%
+  ggplot(aes(model_id2, shan_hill))+
   geom_boxplot(aes(color = cc_trt))
 
+# ii. richness
+# graphing richness
+
+div_rich %>%
+  ggplot(aes(model_id1, richness))+
+  geom_boxplot(aes(color = cc_trt))
+# vs
+div_rich %>%
+  ggplot(aes(model_id2, richness))+
+  geom_boxplot(aes(color = cc_trt))
+
+r1 <- lm(richness ~ model_id2*cc_trt, data = div_rich)
+summary(r1)
+anova(r1)   # significant interaction term since richness increased for Funcke and Stout
+emmeans(r1, pairwise ~ cc_trt|model_id2, type = "response")
+# interestingly boyd richness is significanly lower in silage treatment...
+
+# --- does AMATU # decrease...no...
+
+amatus <- long_spp_list %>%
+  filter(code == "AMATU")
+
+amatus %>%
+  ggplot(aes(model_id2, log(numSeedlings)))+
+  geom_boxplot(aes(color = cc_trt))
+
+a1 <- lm(log(numSeedlings) ~ model_id2*cc_trt, amatus)
+summary(a1)
+anova(a1)
+
+# ---- NMDS ----
+
+# option 1 - have 5 treatments (i.e. separate boyd grain into corn and soybean treatments)
+
+env_dat1 <- pfi_ghobsraw %>%
+  distinct(site_name, sys_trt, cc_trt, crop_2019, rep) %>%
+  filter(!(is.na(crop_2019))) %>%
+  unite("loc_sys", site_name, sys_trt, cc_trt, crop_2019, rep, remove = FALSE) 
+
+mat1 <- pfi_ghobsraw %>%
+  group_by(site_name, sys_trt, cc_trt, crop_2019, rep) %>%
+  summarize_at(vars(AMATU:UB), ~sum(., na.rm = TRUE)) %>%
+  filter(!(is.na(crop_2019))) %>%
+  unite("loc_sys", site_name, sys_trt, cc_trt, crop_2019, rep) %>%
+  column_to_rownames(var = "loc_sys")
+
+nmds1 <- metaMDS(mat1, distance='bray',autotransform=F, expand=F)
+# stress = 0.10, ok!
+plot(nmds1)
+  
+# ggplot
+
+# option 2 - have 4 treatmetns (combine boyd grain corn and bean treatments)
+
+env_dat2 <- pfi_ghobsraw %>%
+  filter(!(is.na(crop_2019))) %>%
+  distinct(site_name, sys_trt, cc_trt,  rep) %>%
+  unite("loc_sys", site_name, sys_trt, cc_trt, rep, remove = FALSE) 
+
+mat2 <- pfi_ghobsraw %>%
+  filter(!(is.na(crop_2019))) %>%
+  group_by(site_name, sys_trt, cc_trt, rep) %>%
+  summarize_at(vars(AMATU:UB), ~sum(., na.rm = TRUE)) %>%
+  unite("loc_sys", site_name, sys_trt, cc_trt, rep) %>%
+  column_to_rownames(var = "loc_sys")
+
+nmds2 <- metaMDS(mat2, distance='bray',autotransform=F, expand=F)
+# stress = 0.066, better! 
+plot(nmds2)
+
+# ggplot2
+
+site_scores_2 <- as.data.frame(scores(nmds2)) %>%
+  # add in columns with useful info...
+  bind_cols(env_dat2) 
+
+spp_scores_2  <- as.data.frame(scores(nmds2, "species")) %>%
+  rownames_to_column(., var = "speciesID")
+
+# Makes polygons for site by treatment
+hull_2 <- site_scores_2 %>% # dataframe of site scores
+  unite("loc_sys2", site_name, sys_trt, cc_trt, remove = FALSE) %>%
+  group_by(loc_sys2) %>% # grouping variables: farm AND treatmnet
+  slice(chull(NMDS1, NMDS2)) # points that polygons will connect
+
+# nice plot
+ggplot()+
+  geom_point(data = site_scores_2, 
+             aes(x = NMDS1, y = NMDS2, color = site_name, shape = cc_trt), size = 3) +
+  #geom_point(data = gg_sp_scores,   aes(x = NMDS1, y = NMDS2),color = "black", shape = 21)+ # Species as points - don't like
+  geom_text(data = spp_scores_2, 
+            aes(x = NMDS1, y = NMDS2, label = speciesID), alpha = 0.5) + # Species as text - better!
+  geom_polygon(data = hull_2, aes(x = NMDS1, y = NMDS2, fill = loc_sys2), alpha = 0.5)+ # adding polygons from hull df
+  geom_hline(yintercept = 0, lty = 2)+
+  geom_vline(xintercept = 0, lty = 2)+
+  # -- the following stuff is for aesthetic purposes --
+  scale_color_manual(values = mycols)+
+  scale_fill_manual(values = c("#1B9E77", "#1B9E77",
+                               "#D95F02", "#D95F02",
+                               "#7570B3", "#7570B3",
+                               "#E6AB02", "#E6AB02"))+
+  labs(color = "Farm Site",
+       shape = "Cover Crop")+
+  guides(fill = FALSE)+
+  theme_bw()+
+  theme(legend.direction  = "vertical",
+        legend.background = element_rect(color = "black"),
+        legend.text       = element_text(size = 12),
+        legend.title      = element_text(size = 14),
+        axis.title        = element_text(size = 14),
+        axis.text         = element_text(size = 12))
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ---- ALL OF THE FOLLOWING SECTIONS ARE OLD  ----
 
 # analyzed as a fixed effects model - combined loc and cro_sys in first model; kept separate in second model
 l1 <- lm(shan_hill ~ loc_sys*cc_trt, data = dat_div)

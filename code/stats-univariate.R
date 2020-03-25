@@ -45,7 +45,7 @@ dstat <-
   unite(site_name, sys_trt, col = "site_sys", remove = F) %>% 
   mutate(cc_trt2 = recode(cc_trt,          ##--I want rye to appear first alphabetically?
                           no = "none",
-                          rye = "ryecc")) %>% 
+                          rye = "aryecc")) %>% 
   mutate(repmatt = paste(site_name, sys_trt, rep))
 
 #--full data set
@@ -53,16 +53,14 @@ m1 <- lmer(log(totseeds_m2) ~ site_sys * cc_trt2 + (1|blockID), data = dstat)
 anova(m1)
 emmeans(m1, pairwise ~ cc_trt2|site_sys, type = "response")
 
-#--full data set, weird rep
-m1 <- lmer(log(totseeds_m2) ~ site_field * cc_trt2 + (1|repmatt), data = dstat)
-anova(m1)
-
 
 #--outlier removed
 m2 <- lmer(log(totseeds_m2) ~ site_sys * cc_trt2 + (1|blockID), data = filter(dstat, totseeds_m2 < 15000))
 anova(m2)
 emmeans(m2, pairwise ~ cc_trt2|site_sys, type = "response")
-
+emmeans(m2, "cc_trt2")
+emmeans(m2, pairwise ~ cc_trt2, type = "response")  #--back transformed to ratio
+emmeans(m2, pairwise ~ cc_trt2, type = "lp") #--log scale
 
 #--examples to help
 #pigs.emm.s <- emmeans(pigs.lm, "source")

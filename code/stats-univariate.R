@@ -72,7 +72,9 @@ summary(m2)
 m2em <- (emmeans(m2, pairwise ~ cc_trt2|site_sys, type = "response"))
 marginal <- emmeans(oranges_rg1, "day")
 
-tidy(contrast(regrid(m2em), method = "pairwise"))
+tidy(m2em$contrasts) %>% 
+  
+
 
 
 #emmeans(m2, "cc_trt2")

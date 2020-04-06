@@ -50,7 +50,7 @@ dstat <-
   dat %>% 
   mutate(cc_trt2 = recode(cc_trt,          ##--I want rye to appear first alphabetically?
                           no = "none",
-                          rye = "aryecc")) %>% 
+                          rye = "ryecc")) %>% 
   
   group_by(site_sys, sys_trt, blockID) %>% 
   mutate(ctl_mean_totseeds = mean(totseeds_m2),
@@ -72,7 +72,7 @@ summary(m2)
 m2em <- (emmeans(m2, pairwise ~ cc_trt2|site_sys, type = "response"))
 marginal <- emmeans(oranges_rg1, "day")
 
-tidy(m2em$contrasts) %>% 
+tidy(m2em$contrasts) 
   
 
 
@@ -119,11 +119,15 @@ m5 <- lmer(log(totseeds_m2) ~ site_sys * cc_trt2 + ctl_mean_totseeds + (1|blockI
 summary(m5)
 
 
-#--include average of none trt seeds as covariate? No. I don't want to CONTROL for it.
-# I'm not sure how to do this. 
-m5 <- lmer(log(totseeds_m2) ~ site_sys * cc_trt2 + ctl_mean_totseeds + (1|blockID), 
-           data = filter(dstat, totseeds_m2 < 15000))
-summary(m5)
+# the winner --------------------------------------------------------------
+
+#--outlier removed
+m2 <- lmer(log(totseeds_m2) ~ site_sys * cc_trt2 + (1|blockID), data = filter(dstat, totseeds_m2 < 15000))
+anova(m2)
+summary(m2)
+
+m2em <- (emmeans(m2, pairwise ~ cc_trt2|site_sys, type = "response"))
+tidy(m2em$contrasts) 
 
 
 
@@ -167,7 +171,7 @@ res_bayes1 <- fit_bayes1 %>%
   tidybayes::gather_draws(`b_.*`, regex = TRUE) %>%
   ungroup()
 
-res_bayes1 %>% write_rds("data/tidy/td_bayes1.rd")
+res_bayes1 %>% write_rds("data/tidy/td_bayes1.rds")
 
 
 # try rstanarm ------------------------------------------------------------

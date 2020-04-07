@@ -50,7 +50,7 @@ dstat <-
   dat %>% 
   mutate(cc_trt2 = recode(cc_trt,          ##--I want rye to appear first alphabetically?
                           no = "none",
-                          rye = "ryecc")) %>% 
+                          rye = "aryecc")) %>% 
   
   group_by(site_sys, sys_trt, blockID) %>% 
   mutate(ctl_mean_totseeds = mean(totseeds_m2),
@@ -127,7 +127,8 @@ anova(m2)
 summary(m2)
 
 m2em <- (emmeans(m2, pairwise ~ cc_trt2|site_sys, type = "response"))
-tidy(m2em$contrasts) 
+tidy(m2em$contrasts)  %>% 
+  arrange(ratio)
 
 
 

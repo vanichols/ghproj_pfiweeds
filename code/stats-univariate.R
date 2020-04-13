@@ -39,6 +39,14 @@ dat %>%
             max = max(totseeds_m2),
             mean = mean(totseeds_m2))
 
+dat %>% 
+  ggplot(aes(totseeds_m2)) +
+  geom_histogram()
+
+#--skewness
+library(e1071)
+skewness(dat$totseeds_m2)
+
 # mixed model on data ------------------------------------------------
 
 library(lme4) #--for mixed models

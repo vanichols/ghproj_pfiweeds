@@ -1,0 +1,129 @@
+---
+title: "KG help"
+author: "Gina Nichols"
+date: "4/13/2020"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+Install the R package with the data
+```{r}
+#devtools::install_github("vanichols/PFIweeds2020")
+library(PFIweeds2020)
+```
+
+Other libraries
+```{r, message=FALSE}
+library(tidyverse)
+```
+
+## Tranformed Data Question
+
+We wanted to know if cover-cropping (*cc_trt*) affects the number of seeds in the weed seedbank (*totseeds_m2*). We measured this at 4 sites (*site_sys*). 
+
+```{r}
+dat <- pfifun_sum_byeu(pfi_ghobsraw) %>% 
+  unite(site_name, sys_trt, col = "site_sys", remove = T) 
+
+dat
+```
+
+
+
+## Fitting the models
+```{r, echo = F}
+library(lme4) #--for mixed models
+library(lmerTest) #--to get significances
+library(broom)
+library(emmeans)
+```
+
+I want the *rye* treatment to appear first, so I renamed some things.
+```{r}
+dstat <- 
+  dat %>% 
+  mutate(cc_trt2 = recode(cc_trt,          ##--I want rye to appear first alphabetically?
+                          no = "none",
+                          rye = "aryecc")) 
+
+```
+
+There is one value that is very large. I need to look into how to assess 'outlier-ness', so just know I filter that value out.
+
+
+The response variable of interest, totseeds_m2, is skewed:
+```{r}
+dat %>% 
+  ggplot(aes(totseeds_m2)) +
+  geom_histogram()
+
+```
+
+
+Because of this (I think it was because it was skewed), we fit our statistical models to a log-transformed response varible. Is there a better way to justify this? Looking at the residual plots, I am not sure there is a clear answer. 
+
+```{r}
+
+library(ggResidpanel)
+
+m1 <- lmer(log(totseeds_m2) ~ site_sys * cc_trt2 + (1|blockID), data = filter(dstat, totseeds_m2 < 15000))
+m2 <- lmer((totseeds_m2) ~ site_sys * cc_trt2 + (1|blockID), data = filter(dstat, totseeds_m2 < 15000))
+
+ggResidpanel::resid_compare(list(m1, m2))
+
+```
+
+
+Pretending the log-transformed response variable is the best...
+
+I fit my model:
+```{r}
+m1 <- lmer(log(totseeds_m2) ~ site_sys * cc_trt2 + (1|blockID), data = filter(dstat, totseeds_m2 < 15000))
+```
+
+Now I use the **emmeans** package to compare the rye/none treatments in each *site_sys*, and the **broom** package to make it tidy.
+
+```{r}
+m1em <- (emmeans(m1, pairwise ~ cc_trt2|site_sys, type = "response"))
+m1res <- broom::tidy(m1em$contrasts)
+m1res
+```
+
+## Question 
+
+How should I interpret/report this ratio? For example, in the **Boyd_silage** *site_sys*:
+```{r}
+m1res %>% 
+  filter(site_sys == "Boyd_silage") %>% 
+  select(contrast, site_sys, ratio, p.value)
+```
+
+This means the *aryecc* treatment had 39% of the weeds as the *none* treatment? So rye reduces weed seedbanks by:
+```{r}
+(1-0.39)*100
+```
+61%? 
+
+Alternatively, [emmeans offers something](https://cran.r-project.org/web/packages/emmeans/vignettes/transformations.html) that seems to deal with responses that were transformed. 
+
+This produces the same results as above:
+
+```{r}
+m1em_alt1 <- emmeans(m1, pairwise ~ cc_trt2|site_sys, type = "response")  #--ratio, must be default
+broom::tidy(m1em_alt1$contrasts)
+```
+
+But if I say *lp* as the response, it gives me the exponential of the estimates from above, which seems to be a 'raw' value? What do these values actually mean? Which is more intuitive/correct to report?
+
+```{r}
+m1em_alt2 <- emmeans(m1, pairwise ~ cc_trt2|site_sys, type = "lp") #--log scale? back-transformed? confused
+broom::tidy(m1em_alt2$contrasts)
+```
+
+
+

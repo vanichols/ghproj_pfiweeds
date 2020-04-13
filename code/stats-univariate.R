@@ -66,6 +66,18 @@ dstat <-
   ungroup()
 
 
+# should I log-transform? -------------------------------------------------
+
+library(ggResidpanel)
+
+m1 <- lmer(log(totseeds_m2) ~ site_sys * cc_trt2 + (1|blockID), data = filter(dstat, totseeds_m2 < 15000))
+m2 <- lmer((totseeds_m2) ~ site_sys * cc_trt2 + (1|blockID), data = filter(dstat, totseeds_m2 < 15000))
+
+
+ggResidpanel::resid_compare(list(m1, m2))
+
+
+
 #--full data set
 m1 <- lmer(log(totseeds_m2) ~ site_sys * cc_trt2 + (1|blockID), data = dstat)
 anova(m1)

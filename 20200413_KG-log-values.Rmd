@@ -3,6 +3,7 @@ title: "KG help"
 author: "Gina Nichols"
 date: "4/13/2020"
 output:
+  pdf_document: default
   html_document:
     df_print: paged
 ---
@@ -84,7 +85,10 @@ Pretending the log-transformed response variable is the best...
 I fit my model:
 ```{r}
 m1 <- lmer(log(totseeds_m2) ~ site_sys * cc_trt2 + (1|blockID), data = filter(dstat, totseeds_m2 < 15000))
+anova(m1)
 ```
+
+The interaction between site_sys and cc_trt2 is borderline significant, so I'm going to report things on a per-*site_sys* basis. 
 
 Now I use the **emmeans** package to compare the rye/none treatments in each *site_sys*, and the **broom** package to make it tidy.
 
@@ -94,12 +98,14 @@ m1em
 
 ```
 
-LE - looks like the response estimates are back-transformed and then the ratio is taken on the back-transformed data. E.g. For Boyd silage the ratio is 0.390 which is 549/1406.
+It looks like the response estimates are back-transformed (so it did that automatically?) and then the ratio is taken on the back-transformed data. E.g. for Boyd silage the ratio is 0.390 which is 549/1406.
 
-I found this on the help page: 
-"With type = "response", EMMs are computed by averaging together predictions on the _linear-predictor scale_ and then back-transforming to the response scale; " 
+Lydia found this on the help page: 
+"With type = "response", EMMs are computed by averaging together predictions on the _linear-predictor scale_ and then back-transforming to the response scale" 
 
-LE - It helped for me to look at the raw data too, idk. 
+What does that mean?
+
+Raw data, to help think about this. 
 ```{r}
 dstat %>% filter(totseeds_m2 < 15000) %>%
   ggplot(aes(site_sys, totseeds_m2)) +
@@ -129,21 +135,32 @@ This means the *aryecc* treatment had 39% of the weeds as the *none* treatment? 
 ```
 61%? 
 
+Is it correct to use the **emmeans** values and just calculate the raw difference to present as well?
+
+```{r}
+tidy(m1em$emmeans) %>% 
+  filter(site_sys == "Boyd_silage") %>% 
+  select(cc_trt2, site_sys, response) %>% 
+  pivot_wider(names_from = cc_trt2, values_from = response) %>% 
+  mutate(diff = none - aryecc)
+```
+
+
+Using *Boyd_silage* as an example, would it be correct to say:
+
+*At the Boyd-silage site, use of a rye cover crop reduced the number of weed seeds by 61% (SE = 16%, p = 0.03), corresponding to 857 less seeds per square meter.* 
+
+# Confusion about when response is log-transformed
+
 Alternatively, [emmeans offers something](https://cran.r-project.org/web/packages/emmeans/vignettes/transformations.html) that seems to deal with responses that were transformed. 
 
-This produces the same results as above:
+Instead of *type = response*, I say *type = lp*, but this doesn't seem appropriate. 
 
-```{r}
-m1em_alt1 <- emmeans(m1, pairwise ~ cc_trt2|site_sys, type = "response")  #--ratio, must be default
-broom::tidy(m1em_alt1$contrasts)
-```
-
-But if I say *lp* as the response, it gives me the exponential of the estimates from above, which seems to be a 'raw' value? What do these values actually mean? Which is more intuitive/correct to report?
-
+What are these estimates? Is this assuming I log-transformed my data BEFORE putting it into the model, instead of doing it 'on the fly'?
 ```{r}
 m1em_alt2 <- emmeans(m1, pairwise ~ cc_trt2|site_sys, type = "lp") #--log scale? back-transformed? confused
+broom::tidy(m1em_alt2$emmeans)
 broom::tidy(m1em_alt2$contrasts)
 ```
-
-
+Taking exponent of the estimate, for example on *Boyd_silage*, returns the 0.39 value again. So it seems like using this isn't appropriate in my situation. Even though I did use a log-transformation. This is where I'm confused.  
 

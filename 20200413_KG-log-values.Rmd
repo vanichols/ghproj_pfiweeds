@@ -90,8 +90,28 @@ Now I use the **emmeans** package to compare the rye/none treatments in each *si
 
 ```{r}
 m1em <- (emmeans(m1, pairwise ~ cc_trt2|site_sys, type = "response"))
+m1em
+
+```
+
+LE - looks like the response estimates are back-transformed and then the ratio is taken on the back-transformed data. E.g. For Boyd silage the ratio is 0.390 which is 549/1406.
+
+I found this on the help page: 
+"With type = "response", EMMs are computed by averaging together predictions on the _linear-predictor scale_ and then back-transforming to the response scale; " 
+
+LE - It helped for me to look at the raw data too, idk. 
+```{r}
+dstat %>% filter(totseeds_m2 < 15000) %>%
+  ggplot(aes(site_sys, totseeds_m2)) +
+  geom_boxplot(aes(color = cc_trt2))
+```
+
+
+
+```{r}
 m1res <- broom::tidy(m1em$contrasts)
 m1res
+
 ```
 
 ## Question 

@@ -1,0 +1,136 @@
+---
+title: "KG2"
+author: "Gina Nichols"
+date: "4/14/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = F, warning = F)
+```
+
+## Trying to use a Bayesian approach
+Based on [Julia Silge's blog](https://juliasilge.com/blog/salary-gender/). 
+
+Get libraries
+```{r}
+library(tidyverse)
+library(brms)
+```
+
+Use the mixed linear model I decided was 'best':
+Need to learn LaTex
+```{r, eval=FALSE}
+
+lmer(log(totseeds_m2) ~ site_sys * cc_trt2 + (1|blockID), data = filter(dstat, totseeds_m2 < 15000))
+
+```
+
+# I fit the model using the Bayesian approach. Seems OK. 
+
+This is what I did:
+```{r, eval=FALSE}
+options(mc.cores = parallel::detectCores())
+
+fit_bayes1 <- brm(
+  log(totseeds_m2) ~ 1 +(1 | blockID) + site_sys*cc_trt2,
+  data = filter(dstat, totseeds_m2 < 15000))
+```
+
+I then use the **tidybayes** package to extract the distributions
+
+```{r, eval = FALSE}
+
+library(tidybayes)
+res_bayes1 <- fit_bayes1 %>%
+  tidybayes::gather_draws(`b_.*`, regex = TRUE) %>%
+  ungroup()
+
+```
+
+```{r, include=FALSE}
+res_bayes1 <- read_rds("data/tidy/td_bayes1.rds")
+```
+
+```{r}
+res_bayes1
+```
+
+
+# I tidy up the results. Seems ok. 
+
+```{r}
+library(janitor)
+
+res_bayes2 <- res_bayes1  %>%  
+  mutate(.variable = str_remove_all(.variable, "b_|cc_trt2|site_sys")) %>% 
+  pivot_wider(names_from = .variable, 
+              values_from = .value) %>% 
+  janitor::clean_names() 
+
+res_bayes2
+```
+
+
+# Interpreting the different intercept/slopes. Now I struggle.
+
+The intercept is actually *boyd_grain_none*. How do I compare, for example, *boyd_grain_none* with *boyd_grain_rye*?
+
+```{r}
+res_bayes2 %>% 
+  select(
+    chain, iteration, draw, 
+         intercept, #--intercept is actually boyd_grain_none 
+         ryecc #--need to add to intercept to get boyd_grain_ryecc?
+  ) %>% 
+  mutate(
+    boyd_grain_cceff = ryecc #--this should be the effect of rye at boyd_grain?
+  ) %>%  
+  select(chain, iteration, draw, boyd_grain_cceff) %>% 
+  summarise(mean = mean(boyd_grain_cceff))
+
+```
+
+
+Ummm, so this is similar to the number I got from the 'back-transformed' values using **emmeans** on the **lmer** output for the same model. So maybe it's ok?
+
+My credible interval is calculated from the distribution, seems ok. 
+
+```{r}
+res_bayes2 %>% 
+  select(
+    chain, iteration, draw, 
+         intercept, #--intercept is actually boyd_grain_none 
+         ryecc #--need to add to intercept to get boyd_grain_ryecc?
+  ) %>% 
+  mutate(
+    boyd_grain_cceff = ryecc #--this should be the effect of rye at boyd_grain?
+  ) %>%  
+  select(chain, iteration, draw, boyd_grain_cceff) %>% 
+  ggplot(aes(boyd_grain_cceff)) + 
+  geom_histogram()
+    
+    ```
+
+
+## PROBLEM
+
+HOw would I get other contrasts? For example how would I calculate the effect of rye in *boyd_silage*?
+
+```{r}
+res_bayes2 %>% 
+  select(
+    chain, iteration, draw, 
+    intercept, #--intercept is actually boyd_grain_none 
+    boyd_silage, #--this will add the effect of boyd_silage to the boyd_grain_none, making it boyd_silage_none?
+    boyd_silage_ryecc #--this will be what I compare that to?
+    ) %>% 
+  mutate(
+    boyd_silage_cceff = boyd_silage_ryecc - (intercept + boyd_silage) #--this should be the effect of rye at boyd_silage?
+  ) %>%  
+  select(chain, iteration, draw, boyd_silage_cceff) %>% 
+  summarise(mean = mean(boyd_silage_cceff))
+
+```
+
+This is definitely wrong. Help?

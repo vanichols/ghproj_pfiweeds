@@ -25,6 +25,11 @@ raw <-
   unite(site_name, sys_trt, field, col = "site_sys", remove = TRUE) 
 
 
+raw %>% 
+  filter(ccbio_Mgha >0) %>% 
+  filter(year > 2015) %>% 
+  summarise(mean = mean(ccbio_Mgha))
+
 raw %>%
   ggplot(aes(year, ccbio_Mgha, color = site_sys)) + 
   geom_point(size = 4) + 

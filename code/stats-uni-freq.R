@@ -132,6 +132,42 @@ ccbio_mod %>%
   filter(yr_span == "5yr") %>% 
   ggplot(aes(ccbio_cv, diff_pctred)) + 
   geom_point()
-  
-  
-  
+
+
+# try using regression models? ---------------------------------------------
+
+
+ccbio_mod %>% 
+  select(-diff_pctred) %>% 
+  pivot_longer(nabove1:ccbio_stab) %>% 
+  group_by(yr_span, name) %>% 
+  nest()
+
+
+ccstat <- 
+  dstat %>% 
+  left_join(ccbio)
+
+ccstat %>% 
+  pivot_longer(nabove1:ccbio_stab) %>% 
+  group_by(yr_span, name) %>% 
+  nest() %>% 
+  mutate(mod = data %>% map(~lmer(log(totseeds_m2) ~ cc_trt2 + value + (1|blockID), data = .)),
+         res = mod %>% map(anova),
+         res2 = res %>% map(tidy)) %>% 
+  unnest(cols = c(res2)) %>% 
+  select(yr_span, name, term, p.value) %>%
+  filter(term == "value") %>% 
+  arrange(p.value)
+
+
+#--try 5 yr mean
+ccm1 <- lmer(log(totseeds_m2) ~ cc_trt2 + ccbio_mean + (1 | blockID),
+             data = ccstat %>% filter(yr_span == "5yr"))
+             
+anova(ccm1)
+
+ccbio_mod %>% 
+  filter(yr_span == "5yr") %>% 
+  ggplot(aes(ccbio_mean, diff_redseedsm2)) + 
+  geom_point()

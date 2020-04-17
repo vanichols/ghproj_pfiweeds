@@ -26,7 +26,7 @@ pfi_ghobsraw
 dat <- pfifun_sum_byeu(pfi_ghobsraw) %>% 
   ungroup() %>% 
   unite(site_name, sys_trt, col = "site_sys", remove = T) %>% 
-  select(-field, -rep, -totseeds)
+  select(-field, -rep)
 
 
 #--skewness
@@ -71,10 +71,20 @@ library(performance)
 p1 <- glmer(totseeds_m2 ~ site_sys*cc_trt2 + (1|blockID), data = dstat, 
             family = poisson(link = "log"))
 
+### lydia ## what if we tried the totseeds, which WAS actually a count value?
+# doesn't matter, still over-dispersed
+p1a <- glmer(totseeds ~ site_sys*cc_trt2 + (1|blockID), data = dstat, 
+            family = poisson(link = "log"))
+
+performance::check_overdispersion(p1a)   # there is overdispersion... don't use 
+performance::check_model(p1a) # look at it for fun
+performance::check_collinearity(p1a) #-->2.5 is a problem apparently
+
 # hmmm doesn't like this bc totseeds_m2 are not integers...
 dstat <- 
   dstat %>%
   mutate(seeds_m2_int = as.integer(totseeds_m2))
+
 
 p2 <- glmer(seeds_m2_int ~ site_sys*cc_trt2 + (1|blockID), data = dstat, 
             family = poisson(link = "log"))
@@ -86,30 +96,56 @@ performance::check_overdispersion(p2)   # there is overdispersion... don't use p
 # try negative binomial instead...
 
 g1 <- glmer.nb(seeds_m2_int ~ site_sys*cc_trt2 + (1|blockID), data = dstat)
+#--try it on the totseeds
+g1a <- glmer.nb(totseeds ~ site_sys*cc_trt2 + (1|blockID), data = dstat)
+
 
 #ooo it fit!
+#--this is awesome! performance rocks.
 summary(g1) 
-performance::check_model(g1)
+performance::check_model(g1) 
+performance::check_model(g1a) 
+
+############### lydia ####################
+# Aare you worried about the non-normality of resids? 
+# The homogeneity of variance also looks terrible - does that matter? 
+# What does it mean to have multi-colinearity between site_sys:cc_trt2?
+# Is there a limit on how many times we can meet with Katherine? 
+# Is it appropriate to ask for another meeting?
+# I wonder if it worth using a 'worse' model if it means I can report 'means'?
+
 performance::compare_performance(g1, m1) # idk if this is correct, but AIC is much lower with lmer model...
 performance::r2(g1) # looking at marginal and conditional r2
 
+
+
 # Get estimates from model ------------------------------------------------
 
+#--lmer, assumes normally dist errors
 m1em <- (emmeans(m1, pairwise ~ cc_trt2|site_sys, type = "response"))
-m1em
 
 m1_est <- tidy(m1em$emmeans) 
 
-m1_cont <- tidy(m1em$contrasts) 
+m1_cont <- tidy(m1em$contrasts) %>% 
+  mutate(mod = "lmer")
 
 
-# estimates from negative binomial
+#--estimates from negative binomial (gina needs to read about this)
 g1em <- emmeans(g1, pairwise ~ cc_trt2|site_sys)
 g1em # ok these results are on the log scale
 
 # is this ok?
 g1em_resp <- emmeans(g1, pairwise ~ cc_trt2|site_sys, type = "response")
-g1em_resp  # looks very similar to our lmer model emmeans, which is good! Perhaps these can be interpreted as means
+g1em_resp  # looks very similar to our lmer model emmeans, which is good! 
+
+#Perhaps these can be interpreted as means
+
+#--compare them:
+tidy(g1em_resp$contrasts) %>% 
+  mutate(mod = "neg_bin") %>% 
+  bind_rows(m1_cont)
+  
+
 
 # write results -----------------------------------------------------------
 

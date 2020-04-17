@@ -107,6 +107,32 @@ rel_eff <-
   mutate(diff_pctred = 100 - ratio*100) %>% 
   select(site_sys, diff_pctred)
 
+
+dat_av <- 
+  dstat %>% 
+  group_by(site_sys) %>% 
+  summarise(avgseeds_m2 = mean(totseeds_m2)) %>% 
+  left_join(abs_eff) %>% 
+  left_join(rel_eff)
+
+
+dat_av %>% 
+  pivot_longer(cols = c(diff_redseedsm2, diff_pctred)) %>% 
+  ggplot(aes(avgseeds_m2, value)) + 
+  geom_point() +
+  geom_line() +
+  facet_wrap(~name, scales = "free")
+
+# compare ccbio metrics and effects ---------------------------------------
+
+#--via spearman ranking correlations?
+
+ccbio <- read_csv("data/smy/sd_ccbio-metrics.csv")
+
+ccbio
+
+
+
 ccbio_mod <- 
   ccbio %>% 
   left_join(abs_eff) %>% 

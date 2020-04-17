@@ -64,6 +64,10 @@ m1_noint <- lmer(log(totseeds_m2) ~ site_sys + cc_trt2 + (1|blockID), data = dst
 #--interaction sig improves fit (p = 0.04)
 anova(m1, m1_noint)
 
+# also going to fit a model with totseeds
+
+m1a <- lmer(log(totseeds) ~ site_sys * cc_trt2 + (1|blockID), dstat)
+
 # Alternatively, try poisson model ----------------------------------------
 
 library(performance)
@@ -80,16 +84,24 @@ performance::check_overdispersion(p1a)   # there is overdispersion... don't use
 performance::check_model(p1a) # look at it for fun
 performance::check_collinearity(p1a) #-->2.5 is a problem apparently
 
+# # is multicollinarity inherent to interactions...? Gina you can ignore this..
+# ex_df <- tibble(resp = runif(40),
+#                 site = rep(c("site1", "site2", "site3", "site4"), each = 10),
+#                 trt  = rep(c("treat", "control"), each = 5, times = 4),
+#                 reps = rep(1:5, times = 8),
+#                 block = paste0(site,"_",reps, sep = ""))
+# ex_mod <- lmer(resp ~ site*trt + (1|block), ex_df) # oh well singular fit
+# ex_mod_1 <- lm(resp ~ site*trt, ex_df)
+# performance::check_model(ex_mod_1) # here the interaction has a high VIF... 
+
+
 # hmmm doesn't like this bc totseeds_m2 are not integers...
 dstat <- 
   dstat %>%
   mutate(seeds_m2_int = as.integer(totseeds_m2))
-
-
 p2 <- glmer(seeds_m2_int ~ site_sys*cc_trt2 + (1|blockID), data = dstat, 
             family = poisson(link = "log"))
 summary(p2) # is this right?
-
 # checking for overdispersion
 performance::check_overdispersion(p2)   # there is overdispersion... don't use poisson
 
@@ -104,7 +116,19 @@ g1a <- glmer.nb(totseeds ~ site_sys*cc_trt2 + (1|blockID), data = dstat)
 #--this is awesome! performance rocks.
 summary(g1) 
 performance::check_model(g1) 
+ggResidpanel::resid_panel(g1)
+
+summary(g1a)
 performance::check_model(g1a) 
+# Katherine's plots make the model look better?
+ggResidpanel::resid_panel(g1a) 
+
+# compare diagnostic plots of m1a and g1a which both use totseeds
+ggResidpanel::resid_compare(list(m1a, g1a))
+# compare fit of m1a and g1a
+performance::compare_performance(m1a, g1a)    # looks like model m1a fits better, although g1a explains more variation
+
+
 
 ############### lydia ####################
 # Aare you worried about the non-normality of resids? 
@@ -113,10 +137,6 @@ performance::check_model(g1a)
 # Is there a limit on how many times we can meet with Katherine? 
 # Is it appropriate to ask for another meeting?
 # I wonder if it worth using a 'worse' model if it means I can report 'means'?
-
-performance::compare_performance(g1, m1) # idk if this is correct, but AIC is much lower with lmer model...
-performance::r2(g1) # looking at marginal and conditional r2
-
 
 
 # Get estimates from model ------------------------------------------------
@@ -146,6 +166,21 @@ tidy(g1em_resp$contrasts) %>%
   bind_rows(m1_cont)
   
 
+# compare means when both models were fit to totseeds, not totseeds_m2. Should be the same but just doing anyways
+m1a_means <- emmeans(m1a, pairwise ~ cc_trt2|site_sys, type = "response")
+m1a_cont <- tidy(m1a_means$contrasts) %>% 
+  mutate(mod = "lmer")
+
+g1a_means <- emmeans(g1a, pairwise ~ cc_trt2|site_sys, type = "response")
+g1a_means
+
+# ok here I'm comparing our two models that were fit to exactly the same responses (tot seeds)
+tidy(g1a_means$contrasts) %>% 
+  mutate(mod = "neg_bin") %>% 
+  bind_rows(m1a_cont)
+
+# it's interesting because the ratios are very similar, but the standard erros are lower in the 
+# negative binomial model, so the p-values are more significant. Also what's a z-ratio? Does it matter? 
 
 # write results -----------------------------------------------------------
 

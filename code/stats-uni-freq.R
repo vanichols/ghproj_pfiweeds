@@ -64,18 +64,52 @@ m1_noint <- lmer(log(totseeds_m2) ~ site_sys + cc_trt2 + (1|blockID), data = dst
 #--interaction sig improves fit (p = 0.04)
 anova(m1, m1_noint)
 
+# Alternatively, try poisson model ----------------------------------------
 
+library(performance)
+
+p1 <- glmer(totseeds_m2 ~ site_sys*cc_trt2 + (1|blockID), data = dstat, 
+            family = poisson(link = "log"))
+
+# hmmm doesn't like this bc totseeds_m2 are not integers...
+dstat <- 
+  dstat %>%
+  mutate(seeds_m2_int = as.integer(totseeds_m2))
+
+p2 <- glmer(seeds_m2_int ~ site_sys*cc_trt2 + (1|blockID), data = dstat, 
+            family = poisson(link = "log"))
+summary(p2) # is this right?
+
+# checking for overdispersion
+performance::check_overdispersion(p2)   # there is overdispersion... don't use poisson
+
+# try negative binomial instead...
+
+g1 <- glmer.nb(seeds_m2_int ~ site_sys*cc_trt2 + (1|blockID), data = dstat)
+
+#ooo it fit!
+summary(g1) 
+performance::check_model(g1)
+performance::compare_performance(g1, m1) # idk if this is correct, but AIC is much lower with lmer model...
+performance::r2(g1) # looking at marginal and conditional r2
 
 # Get estimates from model ------------------------------------------------
 
 m1em <- (emmeans(m1, pairwise ~ cc_trt2|site_sys, type = "response"))
-
+m1em
 
 m1_est <- tidy(m1em$emmeans) 
 
 m1_cont <- tidy(m1em$contrasts) 
 
 
+# estimates from negative binomial
+g1em <- emmeans(g1, pairwise ~ cc_trt2|site_sys)
+g1em # ok these results are on the log scale
+
+# is this ok?
+g1em_resp <- emmeans(g1, pairwise ~ cc_trt2|site_sys, type = "response")
+g1em_resp  # looks very similar to our lmer model emmeans, which is good! Perhaps these can be interpreted as means
 
 # write results -----------------------------------------------------------
 

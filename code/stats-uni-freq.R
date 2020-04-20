@@ -125,6 +125,8 @@ ggResidpanel::resid_panel(g1a)
 
 # compare diagnostic plots of m1a and g1a which both use totseeds
 ggResidpanel::resid_compare(list(m1a, g1a))
+ggsave("figs/QC-figs/fig_resids-lmer-glmernb.png", height = 10, width = 6)
+
 # compare fit of m1a and g1a
 performance::compare_performance(m1a, g1a)    # looks like model m1a fits better, although g1a explains more variation
 

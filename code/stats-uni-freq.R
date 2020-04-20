@@ -39,7 +39,15 @@ dat %>%
   ggplot(aes(totseeds_m2)) +
   geom_histogram()
 
-#--yup, log transform it
+dat %>% 
+  ggplot(aes(sqrt(totseeds_m2))) +
+  geom_histogram()
+
+dat %>% 
+  ggplot(aes(log(totseeds_m2))) +
+  geom_histogram()
+
+#--yup, log transform it or something....?
 
 # mixed model on data ------------------------------------------------
 
@@ -65,18 +73,18 @@ m1_noint <- lmer(log(totseeds_m2) ~ site_sys + cc_trt2 + (1|blockID), data = dst
 anova(m1, m1_noint)
 
 # also going to fit a model with totseeds
-
 m1a <- lmer(log(totseeds) ~ site_sys * cc_trt2 + (1|blockID), dstat)
+
+# try sqrt intstead of log transformation
+m1b <- lmer(sqrt(totseeds) ~ site_sys * cc_trt2 + (1|blockID), dstat)
+
+ggResidpanel::resid_compare(list(m1a, m1b))
+# well, the QQ plot looks better. 
 
 # Alternatively, try poisson model ----------------------------------------
 
 library(performance)
 
-p1 <- glmer(totseeds_m2 ~ site_sys*cc_trt2 + (1|blockID), data = dstat, 
-            family = poisson(link = "log"))
-
-### lydia ## what if we tried the totseeds, which WAS actually a count value?
-# doesn't matter, still over-dispersed
 p1a <- glmer(totseeds ~ site_sys*cc_trt2 + (1|blockID), data = dstat, 
             family = poisson(link = "log"))
 
@@ -94,79 +102,55 @@ performance::check_collinearity(p1a) #-->2.5 is a problem apparently
 # ex_mod_1 <- lm(resp ~ site*trt, ex_df)
 # performance::check_model(ex_mod_1) # here the interaction has a high VIF... 
 
-
-# hmmm doesn't like this bc totseeds_m2 are not integers...
-dstat <- 
-  dstat %>%
-  mutate(seeds_m2_int = as.integer(totseeds_m2))
-p2 <- glmer(seeds_m2_int ~ site_sys*cc_trt2 + (1|blockID), data = dstat, 
-            family = poisson(link = "log"))
-summary(p2) # is this right?
-# checking for overdispersion
-performance::check_overdispersion(p2)   # there is overdispersion... don't use poisson
-
 # try negative binomial instead...
-
-g1 <- glmer.nb(seeds_m2_int ~ site_sys*cc_trt2 + (1|blockID), data = dstat)
-#--try it on the totseeds
 g1a <- glmer.nb(totseeds ~ site_sys*cc_trt2 + (1|blockID), data = dstat)
-
-
 #ooo it fit!
-#--this is awesome! performance rocks.
-summary(g1) 
-performance::check_model(g1) 
-ggResidpanel::resid_panel(g1)
-
-summary(g1a)
+summary(g1a) 
 performance::check_model(g1a) 
-# Katherine's plots make the model look better?
-ggResidpanel::resid_panel(g1a) 
+ggResidpanel::resid_panel(g1a) #--hmmm
 
 # compare diagnostic plots of m1a and g1a which both use totseeds
 ggResidpanel::resid_compare(list(m1a, g1a))
-ggsave("figs/QC-figs/fig_resids-lmer-glmernb.png", height = 10, width = 6)
 
 # compare fit of m1a and g1a
 performance::compare_performance(m1a, g1a)    # looks like model m1a fits better, although g1a explains more variation
+#--katherine says don't use amt of variation explained as a metric. Or AIC. Blech. 
 
-
-
-############### lydia ####################
-# Aare you worried about the non-normality of resids? 
-# The homogeneity of variance also looks terrible - does that matter? 
-# What does it mean to have multi-colinearity between site_sys:cc_trt2?
-# Is there a limit on how many times we can meet with Katherine? 
-# Is it appropriate to ask for another meeting?
-# I wonder if it worth using a 'worse' model if it means I can report 'means'?
-
-
-# Get estimates from model ------------------------------------------------
+# Get estimates from models ------------------------------------------------
 
 #--lmer, assumes normally dist errors
-m1em <- (emmeans(m1, pairwise ~ cc_trt2|site_sys, type = "response"))
 
-m1_est <- tidy(m1em$emmeans) 
+#--log transformed data
+m1a_em <- (emmeans(m1a, pairwise ~ cc_trt2|site_sys, type = "response"))
+m1a_cont <- tidy(m1a_em$contrasts) %>% 
+  mutate(mod = "lmerlog")
 
-m1_cont <- tidy(m1em$contrasts) %>% 
-  mutate(mod = "lmer")
+#--sqrt tranformed data
+m1b_em <- (emmeans(m1b, pairwise ~ cc_trt2|site_sys, type = "response"))
+m1b_cont <- tidy(m1b_em$contrasts) %>% 
+  mutate(mod = "lmersqrt")
 
+ggResidpanel::resid_compare(list(m1a, m1b))
 
 #--estimates from negative binomial (gina needs to read about this)
-g1em <- emmeans(g1, pairwise ~ cc_trt2|site_sys)
+g1em <- emmeans(g1a, pairwise ~ cc_trt2|site_sys)
 g1em # ok these results are on the log scale
 
 # is this ok?
-g1em_resp <- emmeans(g1, pairwise ~ cc_trt2|site_sys, type = "response")
+g1em_resp <- emmeans(g1a, pairwise ~ cc_trt2|site_sys, type = "response")
 g1em_resp  # looks very similar to our lmer model emmeans, which is good! 
 
 #Perhaps these can be interpreted as means
 
-#--compare them:
+#--Gina compare them:
 tidy(g1em_resp$contrasts) %>% 
   mutate(mod = "neg_bin") %>% 
-  bind_rows(m1_cont)
-  
+  bind_rows(m1a_cont) %>% 
+  bind_rows(m1b_cont) %>% 
+  select(site_sys, mod, p.value) %>% 
+  arrange(site_sys, mod)
+#--Funcke is way more sig w/sqrt. Hmm. 
+# I think we can go with the sqrt for p-values, but just do straightup means for reporting? I don't love it. But...we do love significant things...
 
 # compare means when both models were fit to totseeds, not totseeds_m2. Should be the same but just doing anyways
 m1a_means <- emmeans(m1a, pairwise ~ cc_trt2|site_sys, type = "response")

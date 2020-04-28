@@ -80,11 +80,12 @@ fig_map
 
 
 # change in seedbank size -------------------------------------------------
+# vision: bar graph on left, table on right with % and raw reductions?
 
-sr <- read_csv("_data/smy/sd_stats-lrr.csv")
+sb_est <- read_csv("data/smy/sd_estimates.csv")
 
-fig_sb <- 
-  ggplot(data = sr, aes(cropsys, response)) +
+#fig_sb <- 
+  ggplot(data = sb_est, aes(site_sys, totseeds_m2)) +
   # geom_linerange(aes(ymin = lower.CL, ymax = upper.CL, color = CL), 
   #                size = 2) +
   geom_linerange(data = filter(sr, CL == "95%"),

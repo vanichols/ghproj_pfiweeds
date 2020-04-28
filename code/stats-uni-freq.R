@@ -33,28 +33,21 @@ dat <- pfifun_sum_byeu(pfi_ghobsraw) %>%
 
 library(e1071)
 
-skewness(dat$totseeds_m2)
+skewness(dat$totseeds)
 
 dat %>% 
-  ggplot(aes(totseeds_m2)) +
+  ggplot(aes(totseeds)) +
   geom_histogram()
 
 dat %>% 
-  ggplot(aes(sqrt(totseeds_m2))) +
+  ggplot(aes(sqrt(totseeds))) +
   geom_histogram()
 
 dat %>% 
-  ggplot(aes(log(totseeds_m2))) +
+  ggplot(aes(log(totseeds))) +
   geom_histogram()
 
-#--yup, log transform it or something....?
-
-# mixed model on data ------------------------------------------------
-
-library(lme4) #--for mixed models
-library(lmerTest) #--to get significances
-library(broom)
-library(emmeans)
+#--yup, log or sqrttransform...
 
 dstat <- 
   dat %>% 
@@ -63,22 +56,28 @@ dstat <-
                           rye = "aryecc")) %>% 
   filter(totseeds_m2 < 15000) #--outlier
 
-#--fit model
-m1 <- lmer(log(totseeds_m2) ~ site_sys * cc_trt2 + (1|blockID), data = dstat)
-anova(m1) #--interaction, should I keep it?
 
-m1_noint <- lmer(log(totseeds_m2) ~ site_sys + cc_trt2 + (1|blockID), data = dstat)
+# mixed model on data ------------------------------------------------
+
+library(lme4) #--for mixed models
+library(lmerTest) #--to get significances
+library(broom)
+library(emmeans)
+
+#--fit model
+m1log <- lmer(log(totseeds) ~ site_sys * cc_trt2 + (1|blockID), data = dstat)
+anova(m1log) #--interaction, should I keep it?
+m1_noint <- lmer(log(totseeds) ~ site_sys + cc_trt2 + (1|blockID), data = dstat)
 
 #--interaction sig improves fit (p = 0.04)
-anova(m1, m1_noint)
+anova(m1log, m1_noint)
 
-# also going to fit a model with totseeds
-m1a <- lmer(log(totseeds) ~ site_sys * cc_trt2 + (1|blockID), dstat)
 
-# try sqrt intstead of log transformation
-m1b <- lmer(sqrt(totseeds) ~ site_sys * cc_trt2 + (1|blockID), dstat)
+#--try sqrt intstead of log transformation
+m1sqrt <- lmer(sqrt(totseeds) ~ site_sys * cc_trt2 + (1|blockID), dstat)
 
-ggResidpanel::resid_compare(list(m1a, m1b))
+#--compare log vs sqrt trans
+ggResidpanel::resid_compare(list(m1log, m1sqrt))
 # well, the QQ plot looks better. 
 
 # Alternatively, try poisson model ----------------------------------------
@@ -109,11 +108,11 @@ summary(g1a)
 performance::check_model(g1a) 
 ggResidpanel::resid_panel(g1a) #--hmmm
 
-# compare diagnostic plots of m1a and g1a which both use totseeds
-ggResidpanel::resid_compare(list(m1a, g1a))
+# compare diagnostic plots of m1log and g1a which both use totseeds
+ggResidpanel::resid_compare(list(m1log, g1a))
 
-# compare fit of m1a and g1a
-performance::compare_performance(m1a, g1a)    # looks like model m1a fits better, although g1a explains more variation
+# compare fit of m1log and g1a
+performance::compare_performance(m1log, g1a)    # looks like model m1log fits better, although g1a explains more variation
 #--katherine says don't use amt of variation explained as a metric. Or AIC. Blech. 
 
 # Get estimates from models ------------------------------------------------
@@ -121,16 +120,18 @@ performance::compare_performance(m1a, g1a)    # looks like model m1a fits better
 #--lmer, assumes normally dist errors
 
 #--log transformed data
-m1a_em <- (emmeans(m1a, pairwise ~ cc_trt2|site_sys, type = "response"))
-m1a_cont <- tidy(m1a_em$contrasts) %>% 
+m1log_em <- (emmeans(m1log, pairwise ~ cc_trt2|site_sys, type = "response"))
+m1log_cont <- tidy(m1log_em$contrasts) %>% 
   mutate(mod = "lmerlog")
 
 #--sqrt tranformed data
-m1b_em <- (emmeans(m1b, pairwise ~ cc_trt2|site_sys, type = "response"))
-m1b_cont <- tidy(m1b_em$contrasts) %>% 
+m1sqrt_em <- (emmeans(m1sqrt, pairwise ~ cc_trt2|site_sys, type = "response"))
+m1sqrt_cont <- tidy(m1sqrt_em$contrasts) %>% 
+  mutate(mod = "lmersqrt")
+m1sqrt_est <- tidy(m1sqrt_em$emmeans) %>% 
   mutate(mod = "lmersqrt")
 
-ggResidpanel::resid_compare(list(m1a, m1b))
+ggResidpanel::resid_compare(list(m1log, m1sqrt))
 
 #--estimates from negative binomial (gina needs to read about this)
 g1em <- emmeans(g1a, pairwise ~ cc_trt2|site_sys)
@@ -145,37 +146,40 @@ g1em_resp  # looks very similar to our lmer model emmeans, which is good!
 #--Gina compare them:
 tidy(g1em_resp$contrasts) %>% 
   mutate(mod = "neg_bin") %>% 
-  bind_rows(m1a_cont) %>% 
-  bind_rows(m1b_cont) %>% 
+  bind_rows(m1log_cont) %>% 
+  bind_rows(m1sqrt_cont) %>% 
   select(site_sys, mod, p.value) %>% 
-  arrange(site_sys, mod)
+  arrange(site_sys, mod) %>% 
+  pivot_wider(names_from = site_sys, values_from = p.value)
+
 #--Funcke is way more sig w/sqrt. Hmm. 
 # I think we can go with the sqrt for p-values, but just do straightup means for reporting? I don't love it. But...we do love significant things...
 
-# compare means when both models were fit to totseeds, not totseeds_m2. Should be the same but just doing anyways
-m1a_means <- emmeans(m1a, pairwise ~ cc_trt2|site_sys, type = "response")
-m1a_cont <- tidy(m1a_means$contrasts) %>% 
-  mutate(mod = "lmer")
-
-g1a_means <- emmeans(g1a, pairwise ~ cc_trt2|site_sys, type = "response")
-g1a_means
 
 # ok here I'm comparing our two models that were fit to exactly the same responses (tot seeds)
 tidy(g1a_means$contrasts) %>% 
   mutate(mod = "neg_bin") %>% 
-  bind_rows(m1a_cont)
+  bind_rows(m1log_cont)
 
 # it's interesting because the ratios are very similar, but the standard erros are lower in the 
 # negative binomial model, so the p-values are more significant. Also what's a z-ratio? Does it matter? 
 
+
+
+# Use sqrt transformed linear model ---------------------------------------
+
+
 # write results -----------------------------------------------------------
 
-m1_est %>% 
+m1sqrt_est %>%
+  rename(totseeds = response) %>% 
+  mutate(totseeds_m2 = totseeds / ( ( (pi * 2.8575^2) * 20 ) / 10000 )) %>% 
+  select(mod, site_sys, cc_trt2, totseeds, totseeds_m2, everything()) %>% 
   write_csv("data/smy/sd_estimates.csv")
 
-m1_cont %>% 
+m1sqrt_cont %>%
+  select(mod, site_sys, p.value) %>% 
   write_csv("data/smy/sd_contrasts.csv")
-
 
 
 # compare ccbio metrics and effects ---------------------------------------
@@ -202,7 +206,7 @@ rel_eff <-
 dat_av <- 
   dstat %>% 
   group_by(site_sys) %>% 
-  summarise(avgseeds_m2 = mean(totseeds_m2)) %>% 
+  summarise(avgseeds_m2 = mean(totseeds)) %>% 
   left_join(abs_eff) %>% 
   left_join(rel_eff)
 
@@ -269,7 +273,7 @@ ccstat %>%
   pivot_longer(nabove1:ccbio_stab) %>% 
   group_by(yr_span, name) %>% 
   nest() %>% 
-  mutate(mod = data %>% map(~lmer(log(totseeds_m2) ~ cc_trt2 + value + (1|blockID), data = .)),
+  mutate(mod = data %>% map(~lmer(log(totseeds) ~ cc_trt2 + value + (1|blockID), data = .)),
          res = mod %>% map(anova),
          res2 = res %>% map(tidy)) %>% 
   unnest(cols = c(res2)) %>% 
@@ -279,7 +283,7 @@ ccstat %>%
 
 
 #--try 5 yr mean
-ccm1 <- lmer(log(totseeds_m2) ~ cc_trt2 + ccbio_mean + (1 | blockID),
+ccm1 <- lmer(log(totseeds) ~ cc_trt2 + ccbio_mean + (1 | blockID),
              data = ccstat %>% filter(yr_span == "5yr"))
              
 anova(ccm1)

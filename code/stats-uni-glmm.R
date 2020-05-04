@@ -90,6 +90,8 @@ pois_blobs_em <- emmeans(pois_blobs, pairwise ~ cc_trt|site_sys)
 pois_blobs_em # ok these results are on the log scale
 pois_cont <- tidy(pois_blobs_em$contrasts) %>% 
   mutate(model = "pois")
+pois_est <- tidy(pois_blobs_em$emmeans) %>% 
+  mutate(model = "pois")
 
 #--fit pois_obs w/full dataset (includes outlier)
 pois_blobs_full <- glmer(totseeds ~ site_sys*cc_trt + (1|obs_id) + (1|blockID),
@@ -97,6 +99,8 @@ pois_blobs_full <- glmer(totseeds ~ site_sys*cc_trt + (1|obs_id) + (1|blockID),
                        family = poisson(link = "log"))
 pois_blobs_em_full <- emmeans(pois_blobs_full, pairwise ~ cc_trt|site_sys)
 pois_cont_full <- tidy(pois_blobs_em_full$contrasts) %>% 
+  mutate(model= "pois_full")
+pois_est_full <- tidy(pois_blobs_em_full$emmeans) %>% 
   mutate(model= "pois_full")
 
 
@@ -108,11 +112,15 @@ binom <- glmer.nb(totseeds ~ site_sys*cc_trt + (1|blockID), data = dstat_outrm)
 binom_em <- emmeans(binom, pairwise ~ cc_trt|site_sys)
 binom_cont <- tidy(binom_em$contrasts) %>% 
   mutate(model = "binom")
+binom_est <- tidy(binom_em$emmeans) %>% 
+  mutate(model = "binom")
 
 
 binom_full <- glmer.nb(totseeds ~ site_sys*cc_trt + (1|blockID), data = dstat)
 binom_em_full <- emmeans(binom_full, pairwise ~ cc_trt|site_sys)
 binom_cont_full <- tidy(binom_em_full$contrasts) %>% 
+  mutate(model= "binom_full")
+binom_est_full <- tidy(binom_em_full$emmeans) %>% 
   mutate(model= "binom_full")
 
 
@@ -129,14 +137,20 @@ performance::check_model(pois_blobs)
 
 # summarise model results -------------------------------------------------
 
-est_sum <- 
-  pois_cont %>% 
-  bind_rows(pois_cont_full) %>% 
-  bind_rows(binom_cont) %>% 
-  bind_rows(binom_cont_full) %>% 
-  select(level1, level2, site_sys, estimate, model) %>% 
-  pivot_wider(names_from = model, values_from = estimate)
+tom2conv <- 1 / (((pi * 2.8575^2) * 20 ) / 10000 )
 
+est_sum <- 
+  pois_est %>% 
+  bind_rows(pois_est_full) %>% 
+  bind_rows(binom_est) %>% 
+  bind_rows(binom_est_full) %>% 
+  mutate(totseeds = exp(estimate),
+         totseeds_lo = exp(asymp.LCL),
+         totseeds_hi = exp(asymp.UCL),
+         totseeds_m2 = totseeds * tom2conv,
+         totseeds_m2_lo = totseeds_lo * tom2conv,
+         totseeds_m2_hi = totseeds_hi * tom2conv)  %>% 
+  select(site_sys, cc_trt, totseeds_m2, totseeds_m2_lo, totseeds_m2_hi)
 
 pval_sum <- 
   pois_cont %>% 

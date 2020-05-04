@@ -150,7 +150,7 @@ est_sum <-
          totseeds_m2 = totseeds * tom2conv,
          totseeds_m2_lo = totseeds_lo * tom2conv,
          totseeds_m2_hi = totseeds_hi * tom2conv)  %>% 
-  select(site_sys, cc_trt, totseeds_m2, totseeds_m2_lo, totseeds_m2_hi)
+  select(model, site_sys, cc_trt, totseeds_m2, totseeds_m2_lo, totseeds_m2_hi)
 
 pval_sum <- 
   pois_cont %>% 

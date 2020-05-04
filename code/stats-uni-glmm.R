@@ -145,20 +145,19 @@ est_sum <-
   bind_rows(binom_est) %>% 
   bind_rows(binom_est_full) %>% 
   mutate(totseeds = exp(estimate),
-         totseeds_lo = exp(asymp.LCL),
-         totseeds_hi = exp(asymp.UCL),
+         totseeds_lo = exp(estimate - std.error),
+         totseeds_hi = exp(estimate + std.error),
          totseeds_m2 = totseeds * tom2conv,
-         totseeds_m2_lo = totseeds_lo * tom2conv,
-         totseeds_m2_hi = totseeds_hi * tom2conv)  %>% 
-  select(model, site_sys, cc_trt, totseeds_m2, totseeds_m2_lo, totseeds_m2_hi)
+         se_lo = totseeds_lo * tom2conv,
+         se_hi = totseeds_hi * tom2conv)  %>% 
+  select(model, site_sys, cc_trt, totseeds_m2, se_lo, se_hi)
 
 pval_sum <- 
   pois_cont %>% 
   bind_rows(pois_cont_full) %>% 
   bind_rows(binom_cont) %>% 
   bind_rows(binom_cont_full) %>% 
-  select(level1, level2, site_sys, p.value, model) %>% 
-  pivot_wider(names_from = model, values_from = p.value)
+  select(level1, level2, site_sys, p.value, model) 
 
 
 # write results -----------------------------------------------------------

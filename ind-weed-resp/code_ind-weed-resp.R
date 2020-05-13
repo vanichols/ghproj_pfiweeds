@@ -26,11 +26,13 @@ pfi_ghobsraw
 
 wdat <- pfifun_sum_weedbyeu(pfi_ghobsraw) %>% 
   ungroup() %>% 
-  unite(site_name, sys_trt, col = "site_sys", remove = T)
+  unite(site_name, sys_trt, col = "site_sys", remove = T) %>% 
+  filter(seeds < 750) #--funcke point
 
 adat <- pfifun_sum_byeu(pfi_ghobsraw) %>% 
   ungroup() %>% 
-  unite(site_name, sys_trt, col = "site_sys", remove = T)
+  unite(site_name, sys_trt, col = "site_sys", remove = T) %>% 
+  filter(totseeds < 750) #--funcke point
 
 
 # abs diffs -----------------------------------------------------------------
@@ -99,18 +101,19 @@ diff %>%
 
 #--weedss on top
 diff %>% 
-  filter(weed != "ALL") %>% 
-  mutate(weed = factor(weed, levels = c(myorder))) %>% 
+ # filter(weed != "ALL") %>% 
+  mutate(weed = factor(weed, levels = c("ALL", myorder))) %>% 
   ggplot(aes(weed, site_sys)) + 
   geom_tile(color = "black", fill = "white") +
   geom_point(aes(color = clr_id, size = abs(diff_ryetono))) + 
   geom_text(aes(label = round(diff_ryetono, 0)),
-            vjust = 2.5,
+            vjust = 1.5,
             color = "gray50",
             fontface = "italic",
             size = rel(3)) +
   scale_x_discrete(position = "top") +
   scale_color_manual(values = c("neg" = "red", "pos" = "green4", "zero" = "gray90")) + 
+  scale_size_continuous(range = c(1, 7)) +
   guides(color = F, size = F) +
   theme_minimal() + 
   theme(axis.text.x = element_text(angle = 0, vjust = -1)) + 

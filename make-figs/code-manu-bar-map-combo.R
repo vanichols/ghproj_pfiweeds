@@ -131,7 +131,11 @@ fig_sb
 
 # put together ------------------------------------------------------------
 
+blank <- ggplot() + 
+  theme_minimal()
+
 library(gridExtra)
 fig_sb + (fig_map /gridExtra::tableGrob(mtcars[1:10, c('mpg', 'disp')]))
+
 
 ggsave("figs/manu/fig1_bar-map.png")

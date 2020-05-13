@@ -43,7 +43,7 @@ adiff <-
   summarise(mtot_m2 = mean(totseeds_m2)) %>% 
   pivot_wider(names_from = cc_trt, values_from = mtot_m2) %>% 
   mutate(diff_ryetono = rye - no) %>% 
-  mutate(weed = "ALL")
+  mutate(weed = "Overall")
 
 
 wdiff <- 
@@ -58,7 +58,14 @@ diff <-
   adiff %>% 
   bind_rows(wdiff) %>% 
   mutate(clr_id = ifelse(diff_ryetono < 0, "neg", 
-                         ifelse(diff_ryetono >0, "pos", "zero")))
+                         ifelse(diff_ryetono > 0, "pos", "zero"))) %>% 
+  mutate(site_id = recode(site_sys,
+                          "Boyd_grain" = "Central1",
+                          "Boyd_silage" = "Central2",
+                          "Funcke_grain" = "West",
+                          "Stout_grain" = "East"),
+         site_id = factor(site_id, levels = rev(c("West", "Central2", "Central1", "East"))))
+
 
 #--get a factor order
 myorder <- 
@@ -67,6 +74,35 @@ myorder <-
   summarise(mdiff = abs(mean(diff_ryetono, na.rm = T))) %>%
   arrange(-mdiff) %>% 
   pull(weed)
+
+
+#--weedss on top
+
+diff %>% 
+  mutate(weed = factor(weed, levels = c("Overall", myorder)),
+         thick_id = ifelse(weed == "Overall", "thick", "thin")) %>% 
+  ggplot(aes(weed, site_id)) + 
+  geom_tile(color = "black", aes(fill = thick_id)) +
+  geom_point(aes(color = clr_id, size = abs(diff_ryetono))) + 
+  geom_text(aes(label = round(diff_ryetono, 0)),
+            vjust = 2.5,
+            color = "gray50",
+            fontface = "italic",
+            size = rel(3)) +
+  scale_x_discrete(position = "top") +
+  scale_fill_manual(values = c("thick" = "gray80", "thin" = "white")) +
+  scale_color_manual(values = c("neg" = "red", "pos" = "blue2", "zero" = "gray90")) + 
+  #scale_size_continuous(range = c(1, 7)) +
+  scale_size_area(max_size = 7) + #--this makes a value of 0 a 0 point, can't see anything
+  guides(color = F, size = F, fill = F) +
+  theme_minimal() + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 0, hjust = 0)) + 
+  labs(x = NULL, y = NULL) 
+
+ggsave("make-figs/fig2_change-by-weed.png", width = 10, height = 3)
+
+
+#--old drafts
 
 diff %>% 
   mutate(weed = factor(weed, levels = c("ALL", myorder))) %>% 
@@ -98,27 +134,6 @@ diff %>%
   scale_x_discrete(position = "top") +
   theme(axis.text.x = element_text(angle = 45)) + 
   theme_minimal()
-
-#--weedss on top
-diff %>% 
- # filter(weed != "ALL") %>% 
-  mutate(weed = factor(weed, levels = c("ALL", myorder))) %>% 
-  ggplot(aes(weed, site_sys)) + 
-  geom_tile(color = "black", fill = "white") +
-  geom_point(aes(color = clr_id, size = abs(diff_ryetono))) + 
-  geom_text(aes(label = round(diff_ryetono, 0)),
-            vjust = 1.5,
-            color = "gray50",
-            fontface = "italic",
-            size = rel(3)) +
-  scale_x_discrete(position = "top") +
-  scale_color_manual(values = c("neg" = "red", "pos" = "green4", "zero" = "gray90")) + 
-  scale_size_continuous(range = c(1, 7)) +
-  guides(color = F, size = F) +
-  theme_minimal() + 
-  theme(axis.text.x = element_text(angle = 0, vjust = -1)) + 
-  labs(x = NULL, y = NULL) 
-
 
 
 # relative diffs -----------------------------------------------------------------

@@ -73,10 +73,13 @@ fig_map <-
   theme(axis.title = element_blank(),
         axis.ticks = element_blank(),
         axis.text = element_blank()) + 
-  coord_quickmap()
+  coord_quickmap() + 
+  theme(panel.grid = element_blank())
 
 
 fig_map
+ggsave("make-figs/fig1_map.png")
+
 
 # bar graph ---------------------------------------------------------------
 
@@ -128,12 +131,11 @@ fig_sb <-
           )
   
 fig_sb
+ggsave("make-figs/fig1_bar-totseeds.png")
 
 # put together ------------------------------------------------------------
 
-blank <- ggplot() + 
-  theme_minimal()
-
+#--total hack
 library(gridExtra)
 fig_sb + (fig_map /gridExtra::tableGrob(mtcars[1:10, c('mpg', 'disp')]))
 

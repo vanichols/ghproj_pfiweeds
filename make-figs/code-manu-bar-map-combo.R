@@ -137,5 +137,4 @@ blank <- ggplot() +
 library(gridExtra)
 fig_sb + (fig_map /gridExtra::tableGrob(mtcars[1:10, c('mpg', 'disp')]))
 
-
-ggsave("figs/manu/fig1_bar-map.png")
+ggsave("make-figs/fig1_bar-map.png")

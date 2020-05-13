@@ -33,7 +33,7 @@ dat_tbl <-
                             "Funcke_grain" = "West",
                             "Stout_grain" = "East"),
            site_id = factor(site_id, levels = c("West", "Central2", "Central1", "East"))) %>% 
-    mutate(Seeds = round(no - rye, 0),
+    mutate(Seeds = -round(no - rye, 0),
            pct = paste0(round(Seeds/no * 100, 0), "%")) %>% 
     left_join(sb_pvals) %>% 
     mutate(p.value = round(p.value, 2)) %>% 
@@ -45,13 +45,13 @@ tbl_sb <-
   dat_tbl %>% 
   gt() %>% 
     tab_header(
-      title = "Summary") %>%
+      title = "Summary of Cover Crop Effects") %>%
     tab_spanner(
-      label = "Reductions in Seed Bank",
+      label = "Changes in Seed Banks",
       columns = vars(Seeds, pct)
     ) %>% 
     cols_label(
-      Seeds = md("*Seeds*"),
+      Seeds = md("*Seeds m<sup>-2*"),
       site_id = " ",
       pct = md("*Percent*"),
       p.value = md("*P-value*")
@@ -59,5 +59,7 @@ tbl_sb <-
   cols_align(
     align = "center"
   )
+
+tbl_sb
 
 gtsave(tbl_sb, "make-figs/fig1_table-changes.png")

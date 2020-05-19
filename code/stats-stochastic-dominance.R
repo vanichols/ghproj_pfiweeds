@@ -27,15 +27,14 @@ dat <- pfifun_sum_byeu(pfi_ghobsraw) %>%
   ungroup() %>% 
   unite(site_name, sys_trt, col = "site_sys", remove = T) %>% 
   select(-field, -rep) %>% 
-  filter(totseeds < 860)
+  filter(totseeds < 860) #remove outlier
 
 
-dat %>% write_csv("data/misc-data-for-matt.csv")
+#dat %>% write_csv("data/misc-data-for-matt.csv")
 
 
 # try stochastic dominance ------------------------------------------------
 library(generalCorr)
-
 
 #--wtf is waptb doing
 
@@ -51,22 +50,7 @@ k = Ta + Tb #--why do this? no idea
 pa0 = rep(1/Ta, Ta) #--probability of getting each value
 pb0 = rep(1/Tb, Tb)
 
-
-xpapb = matrix(0, k, 3)
-
-
-for (i in 1:Ta) {
-  xpapb[i, 1] = xa[i]
-  xpapb[i, 2] = pa0[i]
-}
-for (i in 1:Tb) {
-  xpapb[Ta + i, 1] = xb[i]
-  xpapb[Ta + i, 3] = pb0[i]
-}
-
-pra = prelec2(n = Ta + Tb)
-pra$pdif
-
+pra <- prelec2(n = Ta + Tb)
 
 
 gina <- #--my equivalent of xpapb
@@ -83,19 +67,125 @@ gina <- #--my equivalent of xpapb
          mx_ryecum = max(ryecum),
          sc_nocum = nocum/mx_nocum,
          sc_ryecum = ryecum/mx_ryecum) %>%
-  pivot_longer(sc_nocum:sc_ryecum)
+  mutate(probdiff = nocum-ryecum) 
 
 
+#--cum diff
 gina %>% 
+  pivot_longer(sc_nocum:sc_ryecum) %>% 
+  select(seeds, name, value) %>% 
   ggplot(aes(seeds, value, color = name)) + 
   geom_point(size = 3) +
   geom_line(size = 1
-            ) + 
+  ) + 
   theme_bw() + 
   labs(x = "seeds/m2",
        y = "cumulative prob",
        title = "Un-transformed, outlier removed")
 
+#--inv cum diff
+gina %>% 
+  pivot_longer(sc_nocum:sc_ryecum) %>% 
+  select(seeds, name, value) %>% 
+  mutate(inv_value = 1-value) %>% 
+  ggplot(aes(seeds, inv_value, color = name)) + 
+  geom_point(size = 3) +
+  geom_line(size = 1
+  ) + 
+  geom_vline(xintercept = 350) +
+  theme_bw() + 
+  labs(x = "seeds/m2",
+       y = "cumulative prob",
+       title = "Un-transformed, outlier removed") 
+
+gina %>% 
+  select(seeds, probdiff) %>% 
+  ggplot(aes(seeds, probdiff)) + 
+  geom_point(size = 3) +
+  theme_bw() 
+
+gina %>% 
+  mutate(inv_value = 1-value,
+         ) %>% 
+  ggplot(aes(seeds, inv_value, color = name)) + 
+  geom_point(size = 3) +
+  #geom_line(size = 1) + 
+  geom_smooth(size = 1, se = F) + 
+#  geom_xspline(spline_shape=0.4, size=0.5) +
+  geom_vline(xintercept = 350) + 
+  theme_bw() + 
+  labs(x = "seeds/m2",
+       y = "cumulative prob",
+       title = "Un-transformed, outlier removed") 
+
+
+set.seed(1492)
+dat <- data.frame(x=c(1:10, 1:10, 1:10),
+                  y=c(sample(15:30, 10), 2*sample(15:30, 10),
+                      3*sample(15:30, 10)),
+                  group=factor(c(rep(1, 10), rep(2, 10), rep(3, 10)))
+)
+
+ggplot(dat, aes(x, y, group=group, color=group)) +
+  geom_point() +
+  geom_line()
+
+ggplot(dat, aes(x, y, group=group, color=factor(group))) +
+  geom_point() +
+  geom_line() +
+  geom_smooth(se=FALSE, linetype="dashed", size=0.5)
+
+ggplot(dat, aes(x, y, group=group, color=factor(group))) +
+  geom_point(color="black") +
+#  geom_smooth(se=FALSE, linetype="dashed", size=0.5) +
+  geom_xspline(size=0.5)
+
+ggplot(dat, aes(x, y, group=group, color=factor(group))) +
+  geom_point(color="black") +
+#  geom_smooth(se=FALSE, linetype="dashed", size=0.5) +
+  geom_xspline(spline_shape=-0.4, size=0.5)
+
+ggplot(dat, aes(x, y, group=group, color=factor(group))) +
+  geom_point(color="black") +
+#  geom_smooth(se=FALSE, linetype="dashed", size=0.5) +
+  geom_xspline(spline_shape=0.4, size=0.5)
+
+ggplot(dat, aes(x, y, group=group, color=factor(group))) +
+  geom_point(color="black") +
+  geom_smooth(se=FALSE, linetype="dashed", size=0.5) +
+  geom_xspline(spline_shape=1, size=0.5)
+
+ggplot(dat, aes(x, y, group=group, color=factor(group))) +
+  geom_point(color="black") +
+  geom_smooth(se=FALSE, linetype="dashed", size=0.5) +
+  geom_xspline(spline_shape=0, size=0.5)
+
+ggplot(dat, aes(x, y, group=group, color=factor(group))) +
+  geom_point(color="black") +
+  geom_smooth(se=FALSE, linetype="dashed", size=0.5) +
+  geom_xspline(spline_shape=-1, size=0.5)
+
+
+
+
+
+
+
+
+
+
+
+xpapb = matrix(0, k, 3)
+
+
+for (i in 1:Ta) {
+  xpapb[i, 1] = xa[i]
+  xpapb[i, 2] = pa0[i]
+}
+for (i in 1:Tb) {
+  xpapb[Ta + i, 1] = xb[i]
+  xpapb[Ta + i, 3] = pb0[i]
+}
 
 
 gina %>% 

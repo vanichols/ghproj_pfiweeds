@@ -161,8 +161,8 @@ pval_sum <-
 # write results -----------------------------------------------------------
 
 est_sum %>%
-  write_csv("01_stats-uni/su_estimates.csv")
+  write_csv("01_stats-uni/st_estimates.csv")
 
 pval_sum %>% 
-  write_csv("01_stats-uni/su_contrasts.csv")
+  write_csv("01_stats-uni/st_contrasts.csv")
 

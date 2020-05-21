@@ -1,0 +1,17 @@
+level1,level2,site_sys,p.value,model
+no,rye,Boyd_grain,0.22291888498072931,pois
+no,rye,Boyd_silage,0.007710967133130672,pois
+no,rye,Funcke_grain,0.09374141963743463,pois
+no,rye,Stout_grain,0.305058635006434,pois
+no,rye,Boyd_grain,0.235498372852291,pois_full
+no,rye,Boyd_silage,0.009784396671401728,pois_full
+no,rye,Funcke_grain,0.3653813439663831,pois_full
+no,rye,Stout_grain,0.31795650311820367,pois_full
+no,rye,Boyd_grain,0.20305977442921772,binom
+no,rye,Boyd_silage,0.002791811218901167,binom
+no,rye,Funcke_grain,0.08501732705064667,binom
+no,rye,Stout_grain,0.260789605467518,binom
+no,rye,Boyd_grain,0.21900663636269535,binom_full
+no,rye,Boyd_silage,0.0035464626529344125,binom_full
+no,rye,Funcke_grain,0.4751414949790069,binom_full
+no,rye,Stout_grain,0.27357327259054287,binom_full

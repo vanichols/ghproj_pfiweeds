@@ -90,7 +90,7 @@ labseedsm2 = expression('Weed Seeds\n (1000s m'^"-2)")
 labseedsm2 <- bquote("Weed Seeds (1000s"~m^-2~")")
 
 
-sb_est <- read_csv("data/smy/sd_estimates.csv") %>% 
+sb_est <- read_csv("01_stats-uni/st_estimates.csv") %>% 
   filter(model == "pois")
 
 fig_sb <- 
@@ -131,7 +131,7 @@ fig_sb <-
           )
   
 fig_sb
-ggsave("make-figs/fig1_bar-totseeds.png")
+ggsave("make-figs/figs/fig1_bar-totseeds.png")
 
 # put together ------------------------------------------------------------
 
@@ -139,4 +139,4 @@ ggsave("make-figs/fig1_bar-totseeds.png")
 library(gridExtra)
 fig_sb + (fig_map /gridExtra::tableGrob(mtcars[1:10, c('mpg', 'disp')]))
 
-ggsave("make-figs/fig1_bar-map.png")
+ggsave("make-figs/figs/fig1_bar-map.png")

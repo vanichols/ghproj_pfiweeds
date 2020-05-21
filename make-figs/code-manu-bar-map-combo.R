@@ -24,7 +24,8 @@ library(maps)
 library(PFIweeds2020)
 
 
-# map ---------------------------------------------------------------------
+
+# constant themes ---------------------------------------------------------
 
 mylegendtheme <- theme(legend.position = c(0.1, 0.9),
                        legend.justification = c(0,1),
@@ -33,6 +34,11 @@ mylegendtheme <- theme(legend.position = c(0.1, 0.9),
 myaxistexttheme <- theme(axis.text = element_text(size = rel(1.2)),
                          legend.text = element_text(size = rel(1.3)),
                          axis.title = element_text(size = rel(1.3)))
+
+
+
+# map ---------------------------------------------------------------------
+
 
 
 map_iowa <- as_tibble(map_data('state')) %>%

@@ -46,6 +46,40 @@ labseedsm2 = expression('Weed Seeds\n (1000s m'^"-2)")
 labseedsm2 <- bquote("Weed Seeds (1000s"~m^-2~")")
 
 
+# fig ---------------------------------------------------------------------
+
+library(ggridges)
+library(scales)
+
+#--inv cum diff
+stodom %>% 
+  pivot_longer(sc_nocum:sc_ryecum) %>% 
+  mutate(name = recode(name, 
+                       "sc_nocum" = "None",
+                       "sc_ryecum" = "Rye Cover Crop")) %>%  
+  select(seeds, name, value) %>% 
+  mutate(inv_value = 1 - value) %>% 
+  ggplot(aes(seeds/1000, inv_value, color = name, fill = name, group = name)) + 
+  ggridges::geom_density_line(stat = "identity", size = 0.5, alpha = 0.2) +
+  geom_line(size = 1) +
+  geom_point(size = 3) +
+  scale_fill_manual(values = c("None" = cctrtpal[2],
+                               "Rye Cover Crop" = cctrtpal[1])) +
+  scale_color_manual(values = c("None" = cctrtpal[2],
+                                "Rye Cover Crop" = cctrtpal[1])) +
+  geom_vline(xintercept = 350/1000, linetype = "dashed") +
+  theme_bw() + 
+  scale_y_continuous(labels = label_percent()) +
+  myaxistexttheme + 
+  mylegendtheme +
+  labs(x = labseedsm2,
+       y = "Cumulative Probability",
+       color = NULL,
+       fill = NULL)
+
+
+ggsave("make-figs/figs/figX_stoch-dom.png")
+
 #--these are 'rough drafts'
 
 #--cum diff
@@ -60,32 +94,7 @@ stodom %>%
   labs(x = "seeds/m2",
        y = "cumulative prob",
        title = "Un-transformed, outlier removed")
-
-library(ggridges)
-
-#--inv cum diff
-stodom %>% 
-  pivot_longer(sc_nocum:sc_ryecum) %>% 
-mutate(name = recode(name, 
-                  "sc_nocum" = "None",
-                  "sc_ryecum" = "Rye Cover Crop")) %>%  
-  select(seeds, name, value) %>% 
-  mutate(inv_value = 1 - value) %>% 
-  ggplot(aes(seeds, inv_value, color = name, fill = name, group = name)) + 
-  geom_density_line(stat = "identity", size = 0.5, alpha = 0.3) +
-  geom_line(size = 1) +
-  geom_point(size = 3) +
-  scale_fill_manual(values = c("None" = cctrtpal[2],
-                               "Rye Cover Crop" = cctrtpal[1])) +
-  scale_color_manual(values = c("None" = cctrtpal[2],
-                                "Rye Cover Crop" = cctrtpal[1])) +
-  geom_vline(xintercept = 350) +
-  theme_bw() + 
-  myaxistexttheme + 
-  mylegendtheme +
-  labs(x = "seeds/m2",
-       y = "cumulative prob",
-       title = "Un-transformed, outlier removed") 
+ 
 
 
 

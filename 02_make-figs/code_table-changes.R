@@ -29,10 +29,10 @@ dat_tbl <-
     #--rename sites
     mutate(site_id = recode(site_sys,
                             "Boyd_grain" = "Central1",
-                            "Boyd_silage" = "Central2",
+                            "Boyd_silage" = "Central2 (Silage)",
                             "Funcke_grain" = "West",
                             "Stout_grain" = "East"),
-           site_id = factor(site_id, levels = c("West", "Central2", "Central1", "East"))) %>% 
+           site_id = factor(site_id, levels = c("West", "Central2 (Silage)", "Central1", "East"))) %>% 
     mutate(Seeds = -round(no - rye, 0),
            pct = paste0(round(Seeds/no * 100, 0), "%")) %>% 
     left_join(sb_pvals) %>% 

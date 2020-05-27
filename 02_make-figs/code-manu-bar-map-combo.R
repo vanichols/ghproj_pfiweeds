@@ -48,7 +48,7 @@ locs <- pfi_siteinfo %>%
   unite(site_name, sys_trt, col = "site_sys", remove = F) %>% 
   mutate(site_id = recode(site_sys,
                           "Boyd_grain" = "Central1",
-                          "Boyd_silage" = "Central2",
+                          "Boyd_silage" = "Central2\n(Silage)",
                           "Funcke_grain" = "West",
                           "Stout_grain" = "East"))
 
@@ -103,7 +103,7 @@ fig_sb <-
   sb_est %>% 
   mutate(site_id = recode(site_sys,
                           "Boyd_grain" = "Central1",
-                          "Boyd_silage" = "Central2",
+                          "Boyd_silage" = "Central2\n(Silage)",
                           "Funcke_grain" = "West",
                           "Stout_grain" = "East"),
          cc_trt = recode(cc_trt, 
@@ -130,14 +130,13 @@ fig_sb <-
           legend.background = element_blank(),
           legend.key.width = unit(1.4, "cm"),
           legend.key.height = unit(0.5, "cm"),
-          legend.key.size = unit(1, "cm"),
-          #axis.title.y = element_text(angle = 0, 
-          #                            vjust = 0.5, 
-          #                            hjust = -1)
+          # legend.key.size = unit(1, "cm"),
+          # axis.text.x = element_text(angle = 45,
+          #                            vjust = 1)
           )
   
 fig_sb
-ggsave("make-figs/figs/fig1_bar-totseeds.png")
+ggsave("02_make-figs/figs/fig1_bar-totseeds.png")
 
 # put together ------------------------------------------------------------
 
@@ -145,4 +144,4 @@ ggsave("make-figs/figs/fig1_bar-totseeds.png")
 library(gridExtra)
 fig_sb + (fig_map /gridExtra::tableGrob(mtcars[1:10, c('mpg', 'disp')]))
 
-ggsave("make-figs/figs/fig1_bar-map.png")
+ggsave("02_make-figs/figs/fig1_bar-map.png")

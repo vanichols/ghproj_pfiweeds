@@ -78,7 +78,7 @@ stodom %>%
        fill = NULL)
 
 
-ggsave("make-figs/figs/figX_stoch-dom.png")
+ggsave("02_make-figs/figs/figX_stoch-dom.png")
 
 #--these are 'rough drafts'
 

@@ -1,4 +1,5 @@
-### 2/25/2020 analyzing again
+# Gina
+# 5/29/2020, based on Lydia's code
 
 # ---- Getting data and loading packages ---- 
 library(tidyverse)

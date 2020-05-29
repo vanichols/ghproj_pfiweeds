@@ -86,3 +86,4 @@ ggplot() +
         axis.text         = element_text(size = rel(1.2))) + 
   facet_wrap(~site_id)
 
+ggsave("02_make-figs/figs/fig2_nmds.png")

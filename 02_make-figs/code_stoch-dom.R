@@ -59,10 +59,10 @@ stodom %>%
                        "sc_ryecum" = "Rye Cover Crop")) %>%  
   select(seeds, name, value) %>% 
   mutate(inv_value = 1 - value) %>% 
-  ggplot(aes(seeds/1000, inv_value, color = name, fill = name, group = name)) + 
-  ggridges::geom_density_line(stat = "identity", size = 0.5, alpha = 0.2) +
+  ggplot(aes(seeds/1000, inv_value, color = name, fill = name, group = name, shape = name)) + 
+  ggridges::geom_density_line(stat = "identity", size = 0.5, alpha = 0.7) +
   geom_line(size = 1) +
-  geom_point(size = 3) +
+  geom_point(size = 2, color = "black") +
   scale_fill_manual(values = c("None" = cctrtpal[2],
                                "Rye Cover Crop" = cctrtpal[1])) +
   scale_color_manual(values = c("None" = cctrtpal[2],
@@ -75,7 +75,8 @@ stodom %>%
   labs(x = labseedsm2,
        y = "Cumulative Probability",
        color = NULL,
-       fill = NULL)
+       fill = NULL,
+       shape = NULL)
 
 
 ggsave("02_make-figs/figs/figX_stoch-dom.png")

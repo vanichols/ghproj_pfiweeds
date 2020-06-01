@@ -6,15 +6,14 @@
 #
 # Outputs: 
 #
-# Notes:
+# Notes: something isn't adding up in West...
 #
-# Last modified:
+# Last modified: 6/1/2020 (try log of seeds? some points are so tiny)
 #
 ####################################
 
 rm(list = ls())
 library(tidyverse)
-#devtools::install_github("vanichols/PFIweeds2020", force = TRUE) ## <-- run if pkg changes
 library(PFIweeds2020)
 
 
@@ -80,10 +79,13 @@ myorder <-
 
 diff %>% 
   mutate(weed = factor(weed, levels = c("Overall", myorder)),
-         thick_id = ifelse(weed == "Overall", "thick", "thin")) %>% 
+         thick_id = ifelse(weed == "Overall", "thick", "thin"),
+         difflog = log(abs(diff_ryetono))) %>% 
   ggplot(aes(weed, site_id)) + 
   geom_tile(color = "black", aes(fill = thick_id)) +
-  geom_point(aes(color = clr_id, size = abs(diff_ryetono))) + 
+  geom_point(aes(color = clr_id, 
+                 #size = (diff_ryetono),
+                 size = difflog)) + 
   geom_text(aes(label = round(diff_ryetono, 0)),
             vjust = 2.5,
             color = "gray50",

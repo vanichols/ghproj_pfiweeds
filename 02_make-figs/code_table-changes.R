@@ -20,6 +20,8 @@ sb_pvals <- read_csv("data/smy/sd_contrasts.csv") %>%
     filter(model == "pois") %>% 
     select(site_sys, p.value)
   
+sb_est <- read_csv("01_stats-uni/st_estimates.csv") %>% 
+  filter(model == "pois")
 
 dat_tbl <- 
   sb_est %>% 

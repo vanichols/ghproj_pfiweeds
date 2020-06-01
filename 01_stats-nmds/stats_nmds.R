@@ -27,6 +27,18 @@ mat_dat <-
 nmds_res <- metaMDS(mat_dat, distance = 'bray', autotransform = F, expand = F)
 #stress = 0.102
 plot(nmds_res)
+cc_pdist <- dist(scores(nmds_res, display = 'sites'))
+
+
+matdat_bc <- vegdist(matrix_dat, method = "bray")
+cc_nmds2 <- metaMDS(matrix_dat ,distance='bray',autotransform=F, expand=F)
+# stress = 0.071, ok!
+plot(cc_nmds2)
+cc_pdist <- dist(scores(cc_nmds2, display='sites'))
+# Euclidean distance between scores in 2D ordination
+plot(cc_pdist, matdat_bc, pch=19, col=4,
+     xlab='2D plot distance', ylab='Bray-Curtis dissimilarity')
+
 
 #--need help knowing what to report about this fit
 
@@ -55,8 +67,16 @@ site_hull <-
   group_by(site_sys_trt) %>% # grouping variables: farm AND treatmnet
   slice(chull(NMDS1, NMDS2)) # points that polygons will connect
 
+
+
+
+
+# write results -----------------------------------------------------------
+
+
 site_hull %>% 
   write_csv("01_stats-nmds/st_nmds-site-hulls.csv")
+
 
 
 # exploratory figure ------------------------------------------------------

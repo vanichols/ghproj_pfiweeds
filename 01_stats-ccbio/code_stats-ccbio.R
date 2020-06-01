@@ -8,7 +8,8 @@
 #
 # Outputs: 
 #
-# Notes:
+# Notes: The results are absolute nonsense
+#
 ####################################
 
 rm(list = ls())
@@ -16,88 +17,59 @@ library(tidyverse)
 library(PFIweeds2020)
 
 
-# cover crop biomass stuff ------------------------------------------------
+ccbio <- read_csv("01_stats-ccbio/sc_ccbio-metrics.csv")
 
-#--package data
-raw <- 
-  pfi_ccbio %>% 
-  unite(site_name, sys_trt, field, col = "site_sys", remove = TRUE) 
+wseed <- read_csv("01_stats-uni/st_weedseed-contrasts.csv") %>%
+  filter(model == "pois") %>%
+  mutate(estimate = -estimate) %>% #--I want rye vs none
+  select(site_sys, estimate)
 
-
-raw %>% 
-  filter(ccbio_Mgha >0) %>% 
-  filter(year > 2015) %>% 
-  summarise(mean = mean(ccbio_Mgha))
-
-raw %>%
-  ggplot(aes(year, ccbio_Mgha, color = site_sys)) + 
-  geom_point(size = 4) + 
-  geom_line()
-
-#--average by site_sys (Boyd had 2 measurements per site_sys each year, one in corn phase, one in soybean
-ccbio <- 
-  pfi_ccbio %>% 
-  unite(site_name, sys_trt, col = "site_sys", remove = TRUE) %>% 
-  group_by(site_sys, year) %>% 
-  summarise(ccbio_Mgha = mean(ccbio_Mgha))
-
-ccbio %>%
-  ggplot(aes(year, ccbio_Mgha, color = site_sys)) + 
-  geom_point(size = 4) + 
-  geom_line()
+rye_eff <- 
+  read_csv("01_stats-uni/st_weedseed-estimates.csv") %>% 
+  filter(model == "pois") %>% 
+  select(site_sys, cc_trt, totseeds_m2) %>% 
+  pivot_wider(names_from = cc_trt,
+              values_from = totseeds_m2) %>% 
+  mutate(absdiff_rye_to_no_seedsm2 = rye - no,
+         reldiff_rye_to_no_seedsm2 = (absdiff_rye_to_no_seedsm2 / no) * 100) %>% 
+  select(site_sys, absdiff_rye_to_no_seedsm2, reldiff_rye_to_no_seedsm2)
 
 
 
-# calculate different things ----------------------------------------------
+ccbio_mod <- 
+  ccbio %>% 
+  left_join(rye_eff)
 
 
-cc_10yrs <-
-  ccbio %>%
-  #--number of years w/>1 Mg produced
-  group_by(site_sys) %>%
-  mutate(above1 = case_when(ccbio_Mgha > 1 ~ 1,
-                            TRUE ~ 0)) %>%
-  summarise(
-    nabove1 = sum(above1),
-    #--mean, med, var, cv, max
-    ccbio_mean = mean(ccbio_Mgha,   na.rm = TRUE),
-    ccbio_med  = median(ccbio_Mgha, na.rm = TRUE),
-    ccbio_var  = var(ccbio_Mgha,     na.rm = TRUE),
-    ccbio_cv   = ccbio_var / ccbio_mean,
-    ccbio_max  = max(ccbio_Mgha, na.rm = TRUE),
-    ccbio_stab = sd(ccbio_Mgha, na.rm = TRUE) / ccbio_mean
-  ) %>% 
-  mutate(yr_span = "10yr")
+ccbio_mod %>%
+  pivot_longer(cols = c(nabove1:ccbio_stab),
+               names_to = 'metric') %>%
+  arrange(metric, yr_span) %>%
+  group_by(metric, yr_span) %>%
+  nest() %>%
+  mutate(spcor_abs = data %>%
+           map(
+             ~ cor(
+               .$absdiff_rye_to_no_seedsm2,
+               .$value,
+               use = "complete.obs",
+               method = "spearman"
+             )
+           ),
+         spcor_rel = data %>%
+           map(
+             ~ cor(
+               .$reldiff_rye_to_no_seedsm2,
+               .$value,
+               use = "complete.obs",
+               method = "spearman"
+             )
+           )) %>%
+  select(yr_span, metric, spcor_abs, spcor_rel) %>%
+  unnest(cols = c(spcor_abs, spcor_rel)) %>%
+  arrange(yr_span, spcor_abs)
 
-
-cc_5yrs <-
-  ccbio %>%
-  filter(year > 2014) %>% 
-  #--number of years w/>1 Mg produced
-  group_by(site_sys) %>%
-  mutate(above1 = case_when(ccbio_Mgha > 1 ~ 1,
-                            TRUE ~ 0)) %>%
-  summarise(
-    nabove1 = sum(above1),
-    #--mean, med, var, cv, max
-    ccbio_mean = mean(ccbio_Mgha,   na.rm = TRUE),
-    ccbio_med  = median(ccbio_Mgha, na.rm = TRUE),
-    ccbio_var  = var(ccbio_Mgha,     na.rm = TRUE),
-    ccbio_cv   = ccbio_var / ccbio_mean,
-    ccbio_max  = max(ccbio_Mgha, na.rm = TRUE),
-    ccbio_stab = sd(ccbio_Mgha, na.rm = TRUE) / ccbio_mean
-  ) %>% 
-  mutate(yr_span = "5yr")
-
-
-newdata <- 
-  cc_5yrs %>% 
-  bind_rows(cc_10yrs) %>% 
-  select(site_sys, yr_span, everything())
-
-
-
-# write it ----------------------------------------------------------------
-
-newdata %>% 
-  write_csv("01_stats-ccbio/sc_ccbio-metrics.csv")
+ccbio_mod %>%
+  filter(yr_span == "10yr") %>% 
+  ggplot(aes(ccbio_cv, absdiff_rye_to_no_seedsm2)) + 
+  geom_point()

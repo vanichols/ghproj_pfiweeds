@@ -33,7 +33,7 @@ div_rich <-
          evenness = shan_div/log(richness)) %>%
   select(-c(AMATU:UB))
 
-write_csv(div_rich, "01_stats-uni/st_diversity.csv")
+write_csv(div_rich, "01_stats-uni/st_diversity-values.csv")
 
 # ---- making long dataset ----
 

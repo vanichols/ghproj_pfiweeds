@@ -6,10 +6,8 @@ library(ggrepel)
 library(gt)
 library(PFIweeds2020)
 
-div <- read_csv("01_stats-uni/st_diversity.csv")
-
-fig_dat <- 
-  div %>% 
+div <- 
+  read_csv("01_stats-uni/st_diversity.csv") %>% 
   unite(site_name, sys_trt, col = "site_sys") %>% 
   select(-shan_div) %>% 
   pivot_longer(shan_hill:evenness) %>%
@@ -24,12 +22,68 @@ fig_dat <-
 
 
 
+div_stats <- 
+  read_csv("01_stats-uni/st_diversity-contrasts.csv") %>%
+  mutate(site_id = recode(site_sys,
+                          "Boyd_grain" = "Central1",
+                          "Boyd_silage" = "Central2 (Silage)",
+                          "Funcke_grain" = "West",
+                          "Stout_grain" = "East"),
+         site_id = factor(site_id, 
+                          levels = c("West", "Central2 (Silage)", "Central1", "East"))) %>% 
+  arrange(site_id)
+
+
+
+
+# table of stats ----------------------------------------------------------
+
+div_table <- 
+  div_stats %>% 
+  select(site_id, metric, estimate, std.error, p.value) %>%
+  mutate(est_se = paste0(round(-estimate, 2), " (", round(std.error, 2), ")"),
+         p.value = round(p.value, 2)) %>% 
+  select(-estimate, -std.error) %>% 
+  pivot_wider(names_from = metric, values_from = c(est_se, p.value))
+  
+
+gt_div <- 
+  div_table %>% 
+  gt() %>% 
+  tab_spanner(
+    label = md("**Shannon Hill Diversity**"),
+    columns = vars(est_se_shan_hill, p.value_shan_hill)
+  ) %>% 
+  tab_spanner(
+    label = md("**Richness**"),
+    columns = vars(est_se_richness, p.value_richness)
+  ) %>% 
+  tab_spanner(
+    label = md("**Evenness**"),
+    columns = vars(est_se_evenness, p.value_evenness)
+  ) %>% 
+  cols_label(
+    est_se_shan_hill = md("Estimate *(SE)*"),
+    p.value_shan_hill = md("*P-value*"),
+    est_se_richness = md("Estimate *(SE)*"),
+    p.value_richness = md("*P-value*"),
+    est_se_evenness = md("Estimate *(SE)*"),
+    p.value_evenness = md("*P-value*"),
+    site_id = " "
+) %>% 
+  cols_align(
+    align = "center"
+  )
+
+gt_div
+gtsave(gt_div, "02_make-figs/figs/table2_div-stats.png")
+
 
 # fig ---------------------------------------------------------------------
 
 cctrtpal <- c("darkolivegreen3", "lightsalmon4")
 
-fig_dat %>% 
+div %>% 
   ggplot(aes(site_id, value)) + 
   #geom_boxplot(aes(color = cc_trt)) + 
   stat_summary(fun = "mean", geom = "point", 

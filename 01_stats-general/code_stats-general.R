@@ -1,270 +1,54 @@
-### 2/25/2020 analyzing again
-
-# ---- Getting data and loading packages ---- 
-library(tidyverse)
-library(here)
-library(lme4) #--for mixed models
-library(lmerTest) #--to get significances
-library(vegan)
-library(PFIweeds2020)
-library(emmeans)
-
-mycols <- c("#1B9E77", "#D95F02", "#7570B3", "#E6AB02")
-scales::show_col(mycols)
-theme_set(theme_bw())
-
-data("pfi_ghobsraw")
-data("pfi_weedsplist")
-
-# ---- understanding experiment structure: ----
-pfi_ghobsraw %>% distinct(site_name, field, sys_trt, cc_trt, crop_2019) %>%
-  arrange(cc_trt, site_name)
-# Boyd is the most complicated: 3 fields in each cc treatment (2 grain (corn, soybean), 1 silage)
-# Stout has two fields: both grain - one in beans, the other in ??
-# Funcke is the easiest: one field in each 
-
-pfi_ghobsraw %>% distinct(site_name, field, sys_trt, cc_trt, crop_2019, rep) %>%
-  group_by(site_name, field, sys_trt, cc_trt, crop_2019) %>%
-  tally()
-# All the Boyd treatments have 5 reps
-# Funcke has 4 reps
-# Stout soy has 4 reps - NA crop has 2 or 3 reps --- going to get rid of that for now...
-
-# Gina analyzed things by crop type - 4 total treatments (Boyd-g, Boyd-s, Stout, Funcke)
-# this is fine...but perhaps look into how similar the two boyd grain fields are...
-
-# ---- consolidating data, making unique column  ----
-# Keeping each rep (i.e. block) separate
-all_dat <- pfi_ghobsraw %>%
-  group_by(site_name, field, sys_trt, cc_trt, crop_2019, rep) %>%
-  summarize_at(vars(AMATU:UB), ~sum(., na.rm = TRUE)) %>%
-  filter(!(is.na(crop_2019))) %>%         
-              # filtering out STT NA field treatment bc it has less than 4 reps ...
-  ungroup() %>%
-  unite("model_id1", site_name, sys_trt, crop_2019, remove = FALSE) %>%
-  unite("model_id2", site_name, sys_trt, remove = FALSE)
-              # combining columns to make model ID columns..
-
-# ---- calculating richness and diversity ----
-rich <- function(x){rowSums(ifelse(x > 0, 1, 0))}
-
-div_rich <- all_dat %>%
-  mutate(shan_hill = exp(diversity(.[, 9:27])),
-         richness  = rich(.[, 9:27])) %>%
-  select(-c(AMATU:UB))
-
-# ---- making long dataset ----
-
-long_spp_list <- all_dat %>%
-  pivot_longer(cols = c(AMATU:UB), names_to = "code", values_to = "numSeedlings") %>%
-  left_join(pfi_weedsplist, by = "code") %>%
-  filter(numSeedlings > 0)
-     
-# ---- running univariate models ----
-
-# i. diversity
-# fixed effects model 
-l1 <- lm(shan_hill ~ model_id2*cc_trt, data = div_rich)
-summary(l1)
-anova(l1)
-
-div_rich %>%
-  ggplot(aes(model_id1, shan_hill))+
-  geom_boxplot(aes(color = cc_trt))
-# vs
-div_rich %>%
-  ggplot(aes(model_id2, shan_hill))+
-  geom_boxplot(aes(color = cc_trt))
-
-# ii. richness
-# graphing richness
-
-div_rich %>%
-  ggplot(aes(model_id1, richness))+
-  geom_boxplot(aes(color = cc_trt))
-# vs
-div_rich %>%
-  ggplot(aes(model_id2, richness))+
-  geom_boxplot(aes(color = cc_trt))
-
-r1 <- lm(richness ~ model_id2*cc_trt, data = div_rich)
-summary(r1)
-anova(r1)   # significant interaction term since richness increased for Funcke and Stout
-emmeans(r1, pairwise ~ cc_trt|model_id2, type = "response")
-# interestingly boyd richness is significanly lower in silage treatment...
-
-# --- does AMATU # decrease...no...
-
-amatus <- long_spp_list %>%
-  filter(code == "AMATU")
-
-amatus %>%
-  ggplot(aes(model_id2, log(numSeedlings)))+
-  geom_boxplot(aes(color = cc_trt))
-
-a1 <- lm(log(numSeedlings) ~ model_id2*cc_trt, amatus)
-summary(a1)
-anova(a1)
-
-# ---- NMDS ----
-
-# option 1 - have 5 treatments (i.e. separate boyd grain into corn and soybean treatments)
-
-env_dat1 <- pfi_ghobsraw %>%
-  distinct(site_name, sys_trt, cc_trt, crop_2019, rep) %>%
-  filter(!(is.na(crop_2019))) %>%
-  unite("loc_sys", site_name, sys_trt, cc_trt, crop_2019, rep, remove = FALSE) 
-
-mat1 <- pfi_ghobsraw %>%
-  group_by(site_name, sys_trt, cc_trt, crop_2019, rep) %>%
-  summarize_at(vars(AMATU:UB), ~sum(., na.rm = TRUE)) %>%
-  filter(!(is.na(crop_2019))) %>%
-  unite("loc_sys", site_name, sys_trt, cc_trt, crop_2019, rep) %>%
-  column_to_rownames(var = "loc_sys")
-
-nmds1 <- metaMDS(mat1, distance='bray',autotransform=F, expand=F)
-# stress = 0.10, ok!
-plot(nmds1)
-  
-# ggplot
-
-# option 2 - have 4 treatmetns (combine boyd grain corn and bean treatments)
-
-env_dat2 <- pfi_ghobsraw %>%
-  filter(!(is.na(crop_2019))) %>%
-  distinct(site_name, sys_trt, cc_trt,  rep) %>%
-  unite("loc_sys", site_name, sys_trt, cc_trt, rep, remove = FALSE) 
-
-mat2 <- pfi_ghobsraw %>%
-  filter(!(is.na(crop_2019))) %>%
-  group_by(site_name, sys_trt, cc_trt, rep) %>%
-  summarize_at(vars(AMATU:UB), ~sum(., na.rm = TRUE)) %>%
-  unite("loc_sys", site_name, sys_trt, cc_trt, rep) %>%
-  column_to_rownames(var = "loc_sys")
-
-nmds2 <- metaMDS(mat2, distance='bray',autotransform=F, expand=F)
-# stress = 0.066, better! 
-plot(nmds2)
-
-# ggplot2
-
-site_scores_2 <- as.data.frame(scores(nmds2)) %>%
-  # add in columns with useful info...
-  bind_cols(env_dat2) 
-
-spp_scores_2  <- as.data.frame(scores(nmds2, "species")) %>%
-  rownames_to_column(., var = "speciesID")
-
-# Makes polygons for site by treatment
-hull_2 <- site_scores_2 %>% # dataframe of site scores
-  unite("loc_sys2", site_name, sys_trt, cc_trt, remove = FALSE) %>%
-  group_by(loc_sys2) %>% # grouping variables: farm AND treatmnet
-  slice(chull(NMDS1, NMDS2)) # points that polygons will connect
-
-# nice plot
-ggplot()+
-  geom_point(data = site_scores_2, 
-             aes(x = NMDS1, y = NMDS2, color = site_name, shape = cc_trt), size = 3) +
-  #geom_point(data = gg_sp_scores,   aes(x = NMDS1, y = NMDS2),color = "black", shape = 21)+ # Species as points - don't like
-  geom_text(data = spp_scores_2, 
-            aes(x = NMDS1, y = NMDS2, label = speciesID), alpha = 0.5) + # Species as text - better!
-  geom_polygon(data = hull_2, aes(x = NMDS1, y = NMDS2, fill = loc_sys2), alpha = 0.5)+ # adding polygons from hull df
-  geom_hline(yintercept = 0, lty = 2)+
-  geom_vline(xintercept = 0, lty = 2)+
-  # -- the following stuff is for aesthetic purposes --
-  scale_color_manual(values = mycols)+
-  scale_fill_manual(values = c("#1B9E77", "#1B9E77",
-                               "#D95F02", "#D95F02",
-                               "#7570B3", "#7570B3",
-                               "#E6AB02", "#E6AB02"))+
-  labs(color = "Farm Site",
-       shape = "Cover Crop")+
-  guides(fill = FALSE)+
-  theme_bw()+
-  theme(legend.direction  = "vertical",
-        legend.background = element_rect(color = "black"),
-        legend.text       = element_text(size = 12),
-        legend.title      = element_text(size = 14),
-        axis.title        = element_text(size = 14),
-        axis.text         = element_text(size = 12))
+## Gina, derived from Lydia's code
 
 
+# total number of seedlings, etc ------------------------------------------
 
-
-
-
-
-
-
-
-
-
-
-# ---- ALL OF THE FOLLOWING SECTIONS ARE OLD  ----
-
-# analyzed as a fixed effects model - combined loc and cro_sys in first model; kept separate in second model
-l1 <- lm(shan_hill ~ loc_sys*cc_trt, data = dat_div)
-summary(l1)
-car::Anova(l1, type = "II")
-l2 <- lm(shan_hill ~ loc + crop_sys + cc_trt, data = dat_div)
-summary(l2)
-car::Anova(l2, type = "II")
-
-# analyzed as a mixed model
-m1 <- lmerTest::lmer(shan_hill ~ cc_trt + (1|loc_sys), data = dat_div)
-summary(m1)
-anova(m1)
-
-dat_div %>%
-  ggplot(aes(loc_sys, shan_hill))+
-  geom_boxplot(aes(color = cc_trt)) # but does look like it's trending in that direction
-
-# # getting total numbers of seedlings and percent that are unknown....
-datr <- 
-  read_csv("
-  #read_csv("_data/tidy/td-GHobs-raw.csv") %>%
+dat <- 
+  pfi_ghobsraw %>% 
   replace(is.na(.), 0) %>%
-  group_by(loc, cc_trt, crop_sys) %>%
+  group_by(site_name, field, sys_trt, cc_trt) %>%
   summarize_if(is.numeric, sum) %>%
   select(-rep)
-datr %>%
+
+dat %>%
   ungroup() %>%
   summarize_if(is.numeric, sum) %>%
   rowSums(.)
-#5240 total seeds found, 15 of them are unknowns (0.0029)
+#4677 total seeds found
+
+datr %>%
+  ungroup() %>%
+  select(UG, UB) %>% 
+  summarize_if(is.numeric, sum)
+# 15 unknowns
+15/4677
+
 
 # total numbers of individual weeds species and their densities
-datw <- read_csv("_data/tidy/td-GHspecies.csv") %>%
-  unite("loc_sys", loc, cropsys, remove = FALSE)
-
-# I thought this was Matt's model, but it's not.....
-m1 <- lm(log(tot.m2) ~ loc_sys*cc_trt, data = datw)
-summary(m1)
-car::Anova(m1, type = "III") # lol everything is significant except cc? Why do I feel like this is wrong....
-
-# cover crop biomass info
-ccbio <- read_csv("_data/tidy/td-all-ryebm2008-2019-no0s.csv") %>%
-  # stout starts 2010
-  filter(year > 2009)
-
-# species list
-spp_list <- read_csv("_data/weed-spp-list.csv")
+datw <- 
+  pfi_ghobsraw %>%
+  unite("site_sys", site_name, sys_trt, remove = FALSE) %>% 
+  pfifun_sum_weedbyeu()
 
 # making datw into a wide dataframe
-wide_datw <- spread(datw, key = weed, value = seeds_m2) %>%
-  select(loc:rep, ABUTH:UG) %>%
+wide_datw <- 
+  datw %>% 
+  pivot_wider(names_from = weed, values_from = seeds) %>% 
+  select(site_name:blockID, AMATU:UB) %>%
   replace(., is.na(.), 0) %>%
-  group_by(loc, cropsys, cc_trt, rep) %>%
-  summarise_at(vars(ABUTH:UG), sum) 
+  group_by(site_name, sys_trt, cc_trt, blockID) %>%
+  summarise_at(vars(AMATU:UB), sum) 
 
 # environmental data matrix
 
-site_info <- dat_div %>%
+site_info <- pfi_siteinfo %>%
+  select(
   distinct(loc_sys, loc, crop_sys, cc_trt) 
 
-cc_env <- ccbio %>%
-  unite(loc_sys, location, crop_sys, sep = "_") %>%
-  group_by(loc_sys, cc_trt) %>% 
+cc_env <- 
+  pfi_ccbio %>%
+  unite(site_name, sys_trt, col = "site_sys") %>%
+  group_by(site_sys, cc_trt) %>% 
   summarise(cc_mean = mean(ccbio_Mgha, na.rm = TRUE), 
             cc_sd   = sd(ccbio_Mgha, na.rm = TRUE),
             cc_cv   = cc_sd/cc_mean*100, 

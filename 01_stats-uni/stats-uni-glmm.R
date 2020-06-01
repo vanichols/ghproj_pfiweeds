@@ -7,6 +7,7 @@
 # Notes:
 #
 # Last modified: 5/21/2020 (moved to new folder, cleaned up)
+#                6/1/2020 (I want estimates of contrasts also!
 ####################################
 
 rm(list = ls())
@@ -155,14 +156,14 @@ pval_sum <-
   bind_rows(pois_cont_full) %>% 
   bind_rows(binom_cont) %>% 
   bind_rows(binom_cont_full) %>% 
-  select(level1, level2, site_sys, p.value, model) 
+  select(level1, level2, site_sys, estimate, std.error, p.value, model) 
 
 
 # write results -----------------------------------------------------------
 
 est_sum %>%
-  write_csv("01_stats-uni/st_estimates.csv")
+  write_csv("01_stats-uni/st_weedseed-estimates.csv")
 
 pval_sum %>% 
-  write_csv("01_stats-uni/st_contrasts.csv")
+  write_csv("01_stats-uni/st_weedseed-contrasts.csv")
 

@@ -3,7 +3,7 @@
 # Created: may 13 2020
 # Purpose: make manuscript table
 #
-# Last modified: 
+# Last modified: 6/2/2020 (these values seems wrong, need to redo and include CIs)
 #
 #
 ####################################
@@ -16,18 +16,15 @@ library(gt)
 
 # table -------------------------------------------------------------------
 
-sb_pvals <- read_csv("data/smy/sd_contrasts.csv") %>% 
-    filter(model == "pois") %>% 
-    select(site_sys, p.value)
+sb_pvals <- read_csv("01_stats-uni/st_weedseed-contrasts-simp.csv")
   
-sb_est <- read_csv("01_stats-uni/st_estimates.csv") %>% 
-  filter(model == "pois")
+sb_est <- read_csv("01_stats-uni/st_weedseed-estimates-simp.csv") 
 
 dat_tbl <- 
   sb_est %>% 
-    select(site_sys, cc_trt, totseeds_m2) %>% 
+    select(site_sys, cc_trt, totseedsm2) %>% 
     pivot_wider(names_from = cc_trt,
-                values_from = totseeds_m2) %>% 
+                values_from = totseedsm2) %>% 
     #--rename sites
     mutate(site_id = recode(site_sys,
                             "Boyd_grain" = "Central1",
@@ -39,6 +36,7 @@ dat_tbl <-
            pct = paste0(round(Seeds/no * 100, 0), "%")) %>% 
     left_join(sb_pvals) %>% 
     mutate(p.value = round(p.value, 2)) %>% 
+  mutate(est_pct = (1 - exp(estimate))*100)
     select(-rye, -no, -site_sys) %>% 
   arrange(site_id)
 

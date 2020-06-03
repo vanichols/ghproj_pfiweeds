@@ -122,10 +122,15 @@ sb_pval <-
          p.value = paste0("p = ", round(p.value, 2))) %>% 
     select(site_sys, p.value, trt_eff_pct2)
   
+
 #--combine
 table_changes <- 
   sb_chng %>% 
   left_join(sb_pval) %>% 
+  left_join(sb_est %>% 
+              group_by(site_sys) %>% 
+              summarise(se_mx = max(se_hi)/1000)
+  ) %>% 
   separate(site_sys,
            into = c("site", "crop_sys"),
                                   remove = F) %>%
@@ -139,7 +144,7 @@ table_changes <-
     site = factor(site, levels = c("West", "Central", "East")),
     crop_sys = str_to_title(crop_sys)
   ) %>% 
-  select(site, crop_sys, p.value, trt_eff, trt_eff_pct2)
+  select(site, crop_sys, se_mx, p.value, trt_eff, trt_eff_pct2)
   
 
 
@@ -173,9 +178,9 @@ fig_dat %>%
            aes(fill = cc_trt)) +
   geom_linerange(position = position_dodge(width = 0.9),
                  aes(ymin = se_lo / 1000, ymax = se_hi / 1000, alpha = cc_trt)) +
-  geom_text(data = table_changes, aes(x = crop_sys, y = 11, label = p.value), fontface = "italic") +
-  geom_text(data = table_changes, aes(x = crop_sys, y = 12, label = trt_eff), fontface = "italic") +
-  geom_text(data = table_changes, aes(x = crop_sys, y = 11.5, label = trt_eff_pct2), fontface = "italic") +
+  geom_text(data = table_changes, aes(x = crop_sys, y = se_mx + 0.5, label = p.value), fontface = "italic") +
+  geom_text(data = table_changes, aes(x = crop_sys, y = se_mx + 1, label = trt_eff), fontface = "italic") +
+  geom_text(data = table_changes, aes(x = crop_sys, y = se_mx + 1.5, label = trt_eff_pct2), fontface = "italic") +
   scale_alpha_manual(values = c(1, 1)) +
   labs(y = labseedsm2,
        x = NULL,
@@ -184,21 +189,20 @@ fig_dat %>%
   scale_fill_manual(values = c("None" = cctrtpal[2],
                                "Rye Cover Crop" = cctrtpal[1])) +
   scale_color_manual(values = cctrtpal) +
-  scale_y_continuous(limits = c(0, 12)) +
   theme_bw() +
   facet_grid(. ~ site, scales = "free") +
   myaxistexttheme +
-  theme(legend.direction = "horizontal",
-        legend.position = "top",
-        #legend.justification = c(1, 1),
-        #legend.position = c(0.95, 0.95),
-        #legend.background = element_rect(color = "black", fill = "white"),
+  theme(#legend.direction = "horizontal",
+        #legend.position = "top",
+        legend.justification = c(1, 1),
+        legend.position = c(0.99, 0.99),
+        legend.background = element_rect(color = "black", fill = "white"),
         #legend.key.width = unit(1.4, "cm"),
         #legend.key.height = unit(0.5, "cm"),
         # legend.key.size = unit(1, "cm"),
         # axis.text.x = element_text(angle = 45,
         #                            vjust = 1))
-  )
+  ) -> fig_sb
         
 fig_sb
 
@@ -207,7 +211,18 @@ ggsave("02_make-figs/figs/fig1_bar-totseeds.png")
 # put together ------------------------------------------------------------
 
 #--total hack, doesn't work on desktop, works on laptop
-library(gridExtra)
-fig_sb + (fig_map /gridExtra::tableGrob(mtcars[1:10, c('mpg', 'disp')]))
+#library(gridExtra)
+#fig_sb + (fig_map /gridExtra::tableGrob(mtcars[1:10, c('mpg', 'disp')]))
+
+layout <- c(
+  area(t = 2, l = 1, b = 5, r = 4),
+  area(t = 1, l = 3, b = 3, r = 5)
+)
+
+fig_sb + fig_map + 
+  plot_layout(design = layout)
+
 
 ggsave("02_make-figs/figs/fig1_bar-map.png")
+
+fig_sb; print(fig_map, vp = viewport(0.8, 0.75, 0.4, 0.4))

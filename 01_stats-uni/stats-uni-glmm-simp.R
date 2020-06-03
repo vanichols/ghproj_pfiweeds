@@ -51,23 +51,39 @@ library(broom)
 
 #--use random factor for obs and block?
 
-pois_blobs <- glmer(totseeds ~ site_sys*cc_trt + (1|blockID) + (1|obs_id), data = dstat_outrm, 
+m1 <- glmer(totseeds ~ site_sys*cc_trt + (1|blockID) + (1|obs_id), data = dstat_outrm, 
                family = poisson(link = "log"))  
 
-pois_blobs_em <- emmeans(pois_blobs, pairwise ~ cc_trt|site_sys)
+m1_emlog <- emmeans(m1, pairwise ~ cc_trt|site_sys)
+m1_em <- emmeans(m1, pairwise ~ cc_trt|site_sys, type = "response")
 
-pois_blobs_em # ok these results are on the log scale
-
-pois_cont <- tidy(pois_blobs_em$contrasts) %>% 
+m1_estlog <- tidy(m1_emlog$contrasts) %>% 
   mutate(model = "pois")
 
-pois_est <- tidy(pois_blobs_em$emmeans) %>% 
+m1_contlog <- tidy(m1_emlog$emmeans) %>% 
   mutate(model = "pois")
+
+
+m1_est <- tidy(m1_em$contrasts) %>% 
+  mutate(model = "pois")
+
+m1_cont <- tidy(m1_em$emmeans) %>% 
+  mutate(model = "pois")
+
 
 # write results -----------------------------------------------------------
 
-pois_est %>%
-  write_csv("01_stats-uni/st_weedseed-estimates-simp.csv")
+#--log scale
+m1_estlog %>%
+  write_csv("01_stats-uni/st_weedseed-est-log.csv")
 
-pois_cont %>% 
-  write_csv("01_stats-uni/st_weedseed-contrasts-simp.csv")
+m1_contlog %>% 
+  write_csv("01_stats-uni/st_weedseed-contr-log.csv")
+
+
+#--response scale
+m1_est %>%
+  write_csv("01_stats-uni/st_weedseed-est.csv")
+
+m1_cont %>% 
+  write_csv("01_stats-uni/st_weedseed-contr.csv")

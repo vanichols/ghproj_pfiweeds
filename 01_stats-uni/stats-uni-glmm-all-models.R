@@ -142,28 +142,19 @@ est_sum <-
   pois_est %>% 
   bind_rows(pois_est_full) %>% 
   bind_rows(binom_est) %>% 
-  bind_rows(binom_est_full) %>% 
-  mutate(totseeds = exp(estimate),
-         totseeds_lo = exp(estimate - std.error),
-         totseeds_hi = exp(estimate + std.error),
-         totseeds_m2 = totseeds * tom2conv,
-         se_lo = totseeds_lo * tom2conv,
-         se_hi = totseeds_hi * tom2conv)  %>% 
-  select(model, site_sys, cc_trt, totseeds_m2, se_lo, se_hi)
+  bind_rows(binom_est_full) 
 
 pval_sum <- 
   pois_cont %>% 
   bind_rows(pois_cont_full) %>% 
   bind_rows(binom_cont) %>% 
-  bind_rows(binom_cont_full) %>% 
-  select(level1, level2, site_sys, estimate, std.error, p.value, model) 
-
+  bind_rows(binom_cont_full) 
 
 # write results -----------------------------------------------------------
 
 est_sum %>%
-  write_csv("01_stats-uni/st_weedseed-estimates.csv")
+  write_csv("01_stats-uni/st_weedseed-est-all-models.csv")
 
 pval_sum %>% 
-  write_csv("01_stats-uni/st_weedseed-contrasts.csv")
+  write_csv("01_stats-uni/st_weedseed-contr-all-models.csv")
 

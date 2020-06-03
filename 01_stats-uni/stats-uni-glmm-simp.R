@@ -49,7 +49,7 @@ library(broom)
 
 # poisson -----------------------------------------------------------------
 
-#--use random factor for obs and block?
+#--use random factor for obs and block
 
 m1 <- glmer(totseeds ~ site_sys*cc_trt + (1|blockID) + (1|obs_id), data = dstat_outrm, 
                family = poisson(link = "log"))  
@@ -57,17 +57,17 @@ m1 <- glmer(totseeds ~ site_sys*cc_trt + (1|blockID) + (1|obs_id), data = dstat_
 m1_emlog <- emmeans(m1, pairwise ~ cc_trt|site_sys)
 m1_em <- emmeans(m1, pairwise ~ cc_trt|site_sys, type = "response")
 
-m1_estlog <- tidy(m1_emlog$contrasts) %>% 
+m1_estlog <- tidy(m1_emlog$emmeans) %>% 
   mutate(model = "pois")
 
-m1_contlog <- tidy(m1_emlog$emmeans) %>% 
+m1_contlog <- tidy(m1_emlog$contrasts) %>% 
   mutate(model = "pois")
 
 
-m1_est <- tidy(m1_em$contrasts) %>% 
+m1_est <- tidy(m1_em$emmeans) %>% 
   mutate(model = "pois")
 
-m1_cont <- tidy(m1_em$emmeans) %>% 
+m1_cont <- tidy(m1_em$contrasts) %>% 
   mutate(model = "pois")
 
 

@@ -34,7 +34,9 @@ dstat <-
 
 dstat_outrm <- 
   dstat %>% 
-  filter(totseeds_m2 < 15000) #--outlier
+  filter(totseeds_m2 < 15000) %>%  #--outlier
+  mutate(cc_trt = recode(cc_trt, 
+                         "rye" = "ccrye"))
 
 
 

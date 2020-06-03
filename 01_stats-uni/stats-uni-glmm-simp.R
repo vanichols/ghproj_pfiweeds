@@ -42,7 +42,6 @@ dstat_outrm <-
 
 library(lme4) #--can do generalized linear models also
 library(lmerTest)
-library(performance)
 library(emmeans)
 library(broom)
 
@@ -56,32 +55,19 @@ pois_blobs <- glmer(totseeds ~ site_sys*cc_trt + (1|blockID) + (1|obs_id), data 
                family = poisson(link = "log"))  
 
 pois_blobs_em <- emmeans(pois_blobs, pairwise ~ cc_trt|site_sys)
+
 pois_blobs_em # ok these results are on the log scale
+
 pois_cont <- tidy(pois_blobs_em$contrasts) %>% 
   mutate(model = "pois")
+
 pois_est <- tidy(pois_blobs_em$emmeans) %>% 
   mutate(model = "pois")
 
-# summarise model results -------------------------------------------------
-
-tom2conv <- 1 / (((pi * 2.8575^2) * 20 ) / 10000 )
-
-est_sum <- 
-  pois_est %>% 
-  mutate(
-    totseedsm2 = exp(estimate)*tom2conv,
-    totseedsm2_se = exp(std.error)*tom2conv) 
-
-pval_sum <- 
-  pois_cont %>% 
-  select(-z.ratio) 
-
-
 # write results -----------------------------------------------------------
 
-est_sum %>%
+pois_est %>%
   write_csv("01_stats-uni/st_weedseed-estimates-simp.csv")
 
-pval_sum %>% 
+pois_cont %>% 
   write_csv("01_stats-uni/st_weedseed-contrasts-simp.csv")
-

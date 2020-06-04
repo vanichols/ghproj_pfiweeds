@@ -48,56 +48,6 @@ p_gray <- "#E7E6E6"
 
 scales::show_col(pptgreen)
 
-
-# map ---------------------------------------------------------------------
-
-
-map_iowa <- as_tibble(map_data('state')) %>%
-  filter(region == "iowa")
-
-locs <- pfi_siteinfo %>% 
-  unite(site_name, sys_trt, col = "site_sys", remove = F) %>% 
-  mutate(site_id = recode(site_sys,
-                          "Boyd_grain" = "Central1",
-                          "Boyd_silage" = "Central2\n(Silage)",
-                          "Funcke_grain" = "West",
-                          "Stout_grain" = "East"))
-
-
-map_iowa <- as_tibble(map_data('state')) %>% 
-  filter(region == "iowa")
-
-map_county <- as_tibble(map_data('county')) %>% 
-  filter(region == "iowa") 
-
-map_county3 <- map_county %>% filter(subregion %in% c("boone", "greene", "washington"))
-
-fig_map <- 
-  ggplot() +
-  geom_polygon(data = map_iowa, aes(x = long, y = lat, group = group), 
-               color = "black", fill = "white") +
-  geom_polygon(data = map_county, aes(x = long, y = lat, group = group), 
-               color = "gray80", fill = NA) +
-  geom_polygon(data = map_county3, aes(x = long, y = lat, group = group), 
-               color = "gray80", fill = p_pink, size = 2) +
-  
-  geom_text(aes(x = -95.5, y = 42.05), size = 5, label = "West") +
-  geom_text(aes(x = -93., y = 42.05), size = 5, label = "Central") +
-  geom_text(aes(x = -91.7, y = 41.70), size = 5, label = "East") +
-  theme_minimal()  +
-  mylegendtheme +
-  myaxistexttheme +
-  theme(axis.title = element_blank(),
-        axis.ticks = element_blank(),
-        axis.text = element_blank()) + 
-  coord_quickmap() + 
-  theme(panel.grid = element_blank())
-
-
-fig_map
-ggsave("make-figs/fig1_map.png")
-
-
 # bar graph ---------------------------------------------------------------
 
 
@@ -241,6 +191,7 @@ fig_dat %>%
         
 fig_sb
 
+saveRDS(fig_sb, "02_make-figs/figs/Robj_bar-totseeds.rds")
 ggsave("02_make-figs/figs/fig1_bar-totseeds.png")
 
 # put together ------------------------------------------------------------

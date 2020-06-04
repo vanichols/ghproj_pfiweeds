@@ -18,7 +18,7 @@ library(gt)
 
 # raw stat output ---------------------------------------------------------
 
-sb_pvals <- read_csv("01_stats-uni/st_weedseed-contr.csv")
+sb_contr <- read_csv("01_stats-uni/st_weedseed-contr.csv")
 sb_est <- read_csv("01_stats-uni/st_weedseed-est.csv") 
 
 

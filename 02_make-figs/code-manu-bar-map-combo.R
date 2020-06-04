@@ -36,9 +36,17 @@ myaxistexttheme <- theme(axis.text = element_text(size = rel(1.2)),
                          axis.title = element_text(size = rel(1.3)))
 
 
+p_green <- "#619B44"
+p_blue <- "#46B2B5"
+p_pink <- "#DC1A64"
+p_orange <- "#FFA726"
+p_yellow <- "#FFC000"
+p_gray <- "#E7E6E6"
+
+scales::show_col(pptgreen)
+
 
 # map ---------------------------------------------------------------------
-
 
 
 map_iowa <- as_tibble(map_data('state')) %>%
@@ -68,7 +76,7 @@ fig_map <-
   geom_polygon(data = map_county, aes(x = long, y = lat, group = group), 
                color = "gray80", fill = NA) +
   geom_polygon(data = map_county3, aes(x = long, y = lat, group = group), 
-               color = "gray80", fill = "gold", size = 2) +
+               color = "gray80", fill = p_pink, size = 2) +
   
   geom_text(aes(x = -95, y = 42.05), size = 5, label = "West") +
   geom_text(aes(x = -93.3, y = 42.05), size = 5, label = "Central") +

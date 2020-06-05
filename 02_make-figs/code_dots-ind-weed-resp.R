@@ -17,6 +17,14 @@ library(tidyverse)
 library(PFIweeds2020)
 
 
+p_green <- "#619B44"
+p_blue <- "#46B2B5"
+p_pink <- "#DC1A64"
+p_orange <- "#FFA726"
+p_yellow <- "#FFC000"
+p_gray <- "#E7E6E6"
+
+
 # data --------------------------------------------------------------------
 
 #--use data and fucntion from package
@@ -59,11 +67,12 @@ diff <-
   mutate(clr_id = ifelse(diff_ryetono < 0, "neg", 
                          ifelse(diff_ryetono > 0, "pos", "zero"))) %>% 
   mutate(site_id = recode(site_sys,
-                          "Boyd_grain" = "Central1",
-                          "Boyd_silage" = "Central2",
+                          "Boyd_grain" = "Central",
+                          "Boyd_silage" = "Central (Silage)",
                           "Funcke_grain" = "West",
                           "Stout_grain" = "East"),
-         site_id = factor(site_id, levels = rev(c("West", "Central2", "Central1", "East"))))
+         site_id = factor(site_id, levels = rev(c("West", "Central (Silage)", "Central", "East"))),
+         site_id2 = factor(site_id, levels = (c("West", "Central (Silage)", "Central", "East"))))
 
 
 #--get a factor order
@@ -93,7 +102,7 @@ diff %>%
             size = rel(3)) +
   scale_x_discrete(position = "top") +
   scale_fill_manual(values = c("thick" = "gray80", "thin" = "white")) +
-  scale_color_manual(values = c("neg" = "red", "pos" = "blue2", "zero" = "gray90")) + 
+  scale_color_manual(values = c("neg" = p_green, "pos" = p_pink, "zero" = "gray90")) + 
   #scale_size_continuous(range = c(1, 7)) +
   scale_size_area(max_size = 7) + #--this makes a value of 0 a 0 point, can't see anything
   guides(color = F, size = F, fill = F) +
@@ -101,7 +110,40 @@ diff %>%
   theme(axis.text.x = element_text(angle = 45, vjust = 0, hjust = 0)) + 
   labs(x = NULL, y = NULL) 
 
-ggsave("make-figs/fig2_change-by-weed.png", width = 10, height = 3)
+##--try coord flipped
+
+
+diff %>% 
+  mutate(weed = factor(weed, levels = c(rev(myorder), "Overall")),
+         thick_id = ifelse(weed == "Overall", "thick", "thin"),
+         difflog = log(abs(diff_ryetono)),
+         diff_ryetono2 = ifelse(diff_ryetono == 0, " ", round(diff_ryetono))) %>% 
+  ggplot(aes(site_id2, weed)) + 
+  geom_tile(color = "black", aes(fill = thick_id)) +
+  geom_point(aes(color = clr_id, 
+                 #size = (diff_ryetono),
+                 size = diff_ryetono),
+             alpha = 0.5,
+             stroke = 2) + 
+  geom_text(aes(label = diff_ryetono2),
+            #vjust = 0,
+            color = "black",
+            fontface = "italic",
+            size = rel(3.5)) +
+  scale_x_discrete(position = "top") +
+  scale_fill_manual(values = c("thick" = "gray80", "thin" = "white")) +
+  scale_color_manual(values = c("neg" = p_orange, "pos" = p_pink, "zero" = "gray90")) + 
+  #scale_size_continuous(range = c(1, 7)) +
+  scale_size_area(max_size = 5) + #--this makes a value of 0 a 0 point, can't see anything
+  guides(color = F, size = F, fill = F) +
+  theme_minimal() + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 0, hjust = 0)) + 
+  labs(x = NULL, y = NULL) 
+
+ggsave("02_make-figs/figs/figx_dots-ind-weed-resp.png", width = 3, height = 7)
+
+
+
 
 
 #--old drafts

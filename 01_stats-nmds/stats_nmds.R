@@ -17,11 +17,15 @@ data("pfi_weedsplist")
 
 # analysis ----------------------------------------------------------------
 
-mat_dat <- 
+df_dat <- 
   pfi_ghobsraw %>%
+  filter(!(site_name == "Funcke" & rep == 4)) %>% #--remove outlier
   group_by(site_name, sys_trt, cc_trt, blockID) %>%
   summarize_at(vars(AMATU:UB), ~sum(., na.rm = TRUE)) %>% 
-  unite("eu", site_name, sys_trt, cc_trt, blockID, remove = TRUE) %>% 
+  unite("eu", site_name, sys_trt, cc_trt, blockID, remove = TRUE) 
+
+mat_dat <- 
+  df_dat %>% 
   column_to_rownames(var = "eu")
 
 nmds_res <- metaMDS(mat_dat, distance = 'bray', autotransform = F, expand = F)
@@ -60,14 +64,6 @@ site_hull %>%
 
 
 
-# anosim? -----------------------------------------------------------------
-
-anosim(dat, grouping, permutations = 999, distance = "bray", strata = NULL,
-       parallel = getOption("mc.cores"))
-
-anosim(mat_dat, grouping = "sites", permutations = 9, distance = "bray", strata = NULL, parallel = getOption("mc.cores"))
-
-
 # exploratory figure ------------------------------------------------------
 
 # note: manuscript figure is created in make-figs folder
@@ -91,7 +87,7 @@ ggplot() +
                 y = NMDS2, 
                 label = speciesID), 
             alpha = 0.5) + # Species as text - better!
-  geom_polygon(data = hull_1, 
+  geom_polygon(data = site_hull, 
                aes(x = NMDS1, 
                    y = NMDS2, 
                    fill = site_sys_trt),
@@ -116,5 +112,105 @@ ggplot() +
         axis.text         = element_text(size = 12))
 
 
-ggsave("01_stats-nmds/fig_nmds.png")
 
+
+
+
+# tutor me ----------------------------------------------------------------
+# 
+# https://rstudio-pubs-static.s3.amazonaws.com/246172_1930ddfb5f064b2bab54b11016ab407e.html
+
+birds <- read.csv('https://raw.githubusercontent.com/collnell/lab-demo/master/bird_by_fg.csv')
+trees <- read.csv('https://raw.githubusercontent.com/collnell/lab-demo/master/tree_comp.csv')
+
+#--question, is tree B associated with differences in bird comp?
+
+bird.matrix <- as.matrix(birds[,3:9])##response variables in a sample x species matrix
+trees$B <- as.factor(trees$B)
+
+bird.manova <- manova(bird.matrix~as.factor(B), data=trees) ##manova test
+summary(bird.manova) #--sort of
+
+#--make data a matrix
+weed_matrix <- as.matrix(mat_dat)
+
+
+#--get groupings
+trts <- 
+  mat_dat %>% 
+  rownames_to_column() %>% 
+  separate(rowname, into = c("site", "crop_sys", "cc_trt", "field", "rep")) %>% 
+  mutate_if(is.character, as.factor) 
+
+#--doesn't work. just use adonis like lydia
+cc.manova <- manova(weed_matrix ~ as.factor(cc_trt), data = trts)
+summary(cc.manova)
+
+
+
+# lydias ------------------------------------------------------------------
+
+#dbRDA - don't like this....
+cc.dbrda <- capscale(weed_matrix ~ site + cc_trt, distance='bray', data = trts)
+plot(cc.dbrda)
+anova(cc.dbrda)
+
+# marginal SS
+# adonis2(matrix_dat ~ loc_sys+cc_trt, data = wide_datw, by = 'margin')
+# adonis2(weed_matrix ~ site + cc_trt, data = trts, by = 'margin')
+
+
+#--on all sites, duh site is sig, cc is not at all
+adonis2(df_dat %>% select(-1) %>% as.matrix() ~ 
+          site + cc_trt, data = (df_dat %>% 
+          separate(eu, into = c("site", "crop_sys", "cc_trt", "field", "rep")) %>% 
+          mutate_if(is.character, as.factor)),
+        by = "margin"
+)
+ 
+
+# individual sites, where cc-ing was sig? ---------------------------------
+
+#--funcke
+adonis2(df_dat %>%
+          separate(eu, into = c("site", "crop_sys", "cc_trt", "field", "rep")) %>% 
+          filter(site == "Funcke") %>%  
+          select(-(site:rep)) %>% 
+          as.matrix() ~ 
+          cc_trt, data = (df_dat %>% 
+                                   separate(eu, into = c("site", "crop_sys", "cc_trt", "field", "rep")) %>% 
+                                   filter(site == "Funcke") %>% 
+                                   mutate_if(is.character, as.factor)),
+        by = "margin"
+)
+
+
+#--silage
+adonis2(df_dat %>%
+          separate(eu, into = c("site", "crop_sys", "cc_trt", "field", "rep")) %>% 
+          filter(crop_sys == "silage") %>%  
+          select(-(site:rep)) %>% 
+          as.matrix() ~ 
+          cc_trt, data = (df_dat %>% 
+                            separate(eu, into = c("site", "crop_sys", "cc_trt", "field", "rep")) %>% 
+                            filter(crop_sys == "silage") %>% 
+                            mutate_if(is.character, as.factor))
+)
+
+
+
+
+#-----more lydia, haven't gone through
+
+
+# ^^ need to use betadispr to test for equal variance among groups
+groups <- wide_datw %>%
+  unite(loc_sys_cc, loc_sys, cc_trt, sep = "_") %>%
+  select(loc_sys_cc) %>%
+  unlist() %>%
+  unname()
+# testing homogeneity - CC is ok, CC*LOC is ok, LOC is not homoegenous...
+b <- betadisper(vegdist(matrix_dat), wide_datw$cc_trt)
+b
+anova(b)
+plot(b)

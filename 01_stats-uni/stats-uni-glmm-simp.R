@@ -38,6 +38,9 @@ dstat_outrm <-
   mutate(cc_trt = recode(cc_trt, 
                          "rye" = "ccrye"))
 
+#--F4 is the booger
+dstat %>% 
+  filter(totseeds_m2 > 15000)
 
 
 # poisson -----------------------------------------------------------------

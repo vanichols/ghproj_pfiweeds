@@ -168,4 +168,4 @@ tbl <-
 
 tbl
 #--doesn't work on desktop
-gtsave(tbl, "02_make-figs/figs/table1-samp-locs.png")
+gtsave(tbl, "02_make-figs/figs/tlb_site-info.png")

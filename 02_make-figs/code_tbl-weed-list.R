@@ -109,7 +109,7 @@ mytable
 
 #--doesn't run on work computer :(
 
-gtsave(mytable, "02_make-figs/figs/table-weeds.png")  
+gtsave(mytable, "02_make-figs/figs/tbl-weeds.png")  
 
 
   

@@ -191,30 +191,29 @@ fig_dat %>%
         
 fig_sb
 
-saveRDS(fig_sb, "02_make-figs/figs/Robj_bar-totseeds.rds")
-ggsave("02_make-figs/figs/fig1_bar-totseeds.png")
+ggsave("02_make-figs/figs/fig_bar.png")
 
 
 
 
 # put together ------------------------------------------------------------
-
-
-fig_map/fig_sb +  plot_layout(heights = c(1, 2))
-
-#--total hack, doesn't work on desktop, works on laptop
-library(gridExtra)
-fig_sb + (fig_map /gridExtra::tableGrob(mtcars[1:10, c('mpg', 'disp')]))
-
-# layout <- c(
-#   area(t = 2, l = 1, b = 5, r = 4),
-#   area(t = 1, l = 3, b = 3, r = 5)
-# )
 # 
-# fig_sb + fig_map + 
-#   plot_layout(design = layout)
-
-
-ggsave("02_make-figs/figs/fig1_bar-map.png")
-
-fig_sb; print(fig_map, vp = viewport(0.8, 0.75, 0.4, 0.4))
+# 
+# fig_map/fig_sb +  plot_layout(heights = c(1, 2))
+# 
+# #--total hack, doesn't work on desktop, works on laptop
+# library(gridExtra)
+# fig_sb + (fig_map /gridExtra::tableGrob(mtcars[1:10, c('mpg', 'disp')]))
+# 
+# # layout <- c(
+# #   area(t = 2, l = 1, b = 5, r = 4),
+# #   area(t = 1, l = 3, b = 3, r = 5)
+# # )
+# # 
+# # fig_sb + fig_map + 
+# #   plot_layout(design = layout)
+# 
+# 
+# ggsave("02_make-figs/figs/fig1_bar-map.png")
+# 
+# fig_sb; print(fig_map, vp = viewport(0.8, 0.75, 0.4, 0.4))

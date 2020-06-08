@@ -87,8 +87,9 @@ ggplot() +
                aes(x = NMDS1, 
                    y = NMDS2,
                    color = crop_sys,
-                   fill = cc_trt),
-               size = 2,
+                   fill = cc_trt, 
+                   linetype = crop_sys),
+               size = 1,
                alpha = 0.8) + 
   geom_text_repel(data = spp_scores, 
                   aes(x = NMDS1, 
@@ -101,11 +102,12 @@ ggplot() +
   facet_grid(.~site) +
   # -- the following stuff is for aesthetic purposes --
   scale_color_manual(values = c("Silage" = "black",
-                                "gray50")) +
-  scale_fill_manual(values = c("None" = p_blue, 
-                               p_yellow)) +
+                                "black")) +
+  scale_fill_manual(values = c("None" = p_yellow, 
+                               p_blue)) +
+  scale_linetype_manual(values = c("solid", "dashed")) +
   labs(color = NULL, shape = NULL, fill = NULL) +
-  #guides(fill = FALSE) +
+  guides(color = F, linetype = F) +
   theme(legend.direction  = "horizontal",
         legend.position = "bottom",
         legend.background = element_rect(color = "black"),
@@ -116,4 +118,4 @@ ggplot() +
         axis.text         = element_text(size = rel(1.2))) + 
   facet_wrap(~site)
 
-ggsave("02_make-figs/figs/fig2_nmds.png")
+ggsave("02_make-figs/figs/fig_nmds.png")

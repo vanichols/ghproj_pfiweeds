@@ -66,6 +66,8 @@ dat_table <-
 
 dat_table
 
+write_csv(dat_table, "02_make-figs/mf_weed-list-arranged.csv")
+
 # table -------------------------------------------------------------------
 
 library(gt)

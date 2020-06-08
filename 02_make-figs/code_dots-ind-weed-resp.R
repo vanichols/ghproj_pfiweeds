@@ -76,13 +76,16 @@ diff <-
 
 
 #--get a factor order
-myorder <- 
-  wdiff %>% 
-  group_by(weed) %>% 
-  summarise(mdiff = abs(mean(diff_ryetono, na.rm = T))) %>%
-  arrange(-mdiff) %>% 
-  pull(weed)
+# myorder <- 
+#   wdiff %>% 
+#   group_by(weed) %>% 
+#   summarise(mdiff = abs(mean(diff_ryetono, na.rm = T))) %>%
+#   arrange(-mdiff) %>% 
+#   pull(weed)
 
+myorder <- 
+  read_csv("02_make-figs/mf_weed-list-arranged.csv") %>% 
+  pull(code)
 
 #--weedss on top
 
@@ -140,7 +143,7 @@ diff %>%
   theme(axis.text.x = element_text(angle = 45, vjust = 0, hjust = 0)) + 
   labs(x = NULL, y = NULL) 
 
-ggsave("02_make-figs/figs/figx_dots-ind-weed-resp.png", width = 3, height = 7)
+ggsave("02_make-figs/figs/fig_dots-ind-weed-resp.png", width = 3, height = 7)
 
 
 

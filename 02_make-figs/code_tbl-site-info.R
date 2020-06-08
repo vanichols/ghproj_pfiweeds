@@ -94,6 +94,9 @@ tbl <-
                 rows = 2:3) %>%
   tab_row_group(group = "East",
                 rows = 4) %>% 
+  row_group_order(
+    groups = c("West", "Central", "East")
+  ) %>% 
   cols_align(align = c("center")) %>% 
   tab_style(
     style = list(
@@ -136,6 +139,17 @@ tbl <-
     #avgT_C = "Air Temp&degC",
     #avgp_mm = "Precip (mm)"
     #mccbio_Mgha = html("Mean Five-, Ten-Year Cover Crop Biomass (Mg ha<sup>-1)")
+  ) %>% 
+  #--footnotes
+  tab_footnote(
+    footnote = "Grain-based rotation",
+    locations = cells_body(columns = vars(latlon),
+                           rows = c(1, 2, 4))
+  ) %>% 
+  tab_footnote(
+    footnote = "Silage-based rotation",
+    locations = cells_body(columns = vars(latlon),
+                           rows = 3)
   )
 
 

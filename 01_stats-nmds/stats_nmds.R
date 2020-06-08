@@ -64,6 +64,50 @@ site_hull %>%
 
 
 
+# do anova ----------------------------------------------------------------
+
+
+#--on all sites, duh site is sig, cc is not at all
+adonis2(df_dat %>% select(-1) %>% as.matrix() ~ 
+          site + cc_trt, data = (df_dat %>% 
+                                   separate(eu, into = c("site", "crop_sys", "cc_trt", "field", "rep")) %>% 
+                                   mutate_if(is.character, as.factor)),
+        by = "margin"
+)
+
+
+# individual sites, where cc-ing was sig? ---------------------------------
+
+#--funcke
+adonis2(df_dat %>%
+          separate(eu, into = c("site", "crop_sys", "cc_trt", "field", "rep")) %>% 
+          filter(site == "Funcke") %>%  
+          select(-(site:rep)) %>% 
+          as.matrix() ~ 
+          cc_trt, data = (df_dat %>% 
+                            separate(eu, into = c("site", "crop_sys", "cc_trt", "field", "rep")) %>% 
+                            filter(site == "Funcke") %>% 
+                            mutate_if(is.character, as.factor)),
+        by = "margin"
+)
+
+
+#--silage
+adonis2(df_dat %>%
+          separate(eu, into = c("site", "crop_sys", "cc_trt", "field", "rep")) %>% 
+          filter(crop_sys == "silage") %>%  
+          select(-(site:rep)) %>% 
+          as.matrix() ~ 
+          cc_trt, data = (df_dat %>% 
+                            separate(eu, into = c("site", "crop_sys", "cc_trt", "field", "rep")) %>% 
+                            filter(crop_sys == "silage") %>% 
+                            mutate_if(is.character, as.factor))
+)
+
+
+
+
+
 # exploratory figure ------------------------------------------------------
 
 # note: manuscript figure is created in make-figs folder
@@ -158,45 +202,6 @@ anova(cc.dbrda)
 # marginal SS
 # adonis2(matrix_dat ~ loc_sys+cc_trt, data = wide_datw, by = 'margin')
 # adonis2(weed_matrix ~ site + cc_trt, data = trts, by = 'margin')
-
-
-#--on all sites, duh site is sig, cc is not at all
-adonis2(df_dat %>% select(-1) %>% as.matrix() ~ 
-          site + cc_trt, data = (df_dat %>% 
-          separate(eu, into = c("site", "crop_sys", "cc_trt", "field", "rep")) %>% 
-          mutate_if(is.character, as.factor)),
-        by = "margin"
-)
- 
-
-# individual sites, where cc-ing was sig? ---------------------------------
-
-#--funcke
-adonis2(df_dat %>%
-          separate(eu, into = c("site", "crop_sys", "cc_trt", "field", "rep")) %>% 
-          filter(site == "Funcke") %>%  
-          select(-(site:rep)) %>% 
-          as.matrix() ~ 
-          cc_trt, data = (df_dat %>% 
-                                   separate(eu, into = c("site", "crop_sys", "cc_trt", "field", "rep")) %>% 
-                                   filter(site == "Funcke") %>% 
-                                   mutate_if(is.character, as.factor)),
-        by = "margin"
-)
-
-
-#--silage
-adonis2(df_dat %>%
-          separate(eu, into = c("site", "crop_sys", "cc_trt", "field", "rep")) %>% 
-          filter(crop_sys == "silage") %>%  
-          select(-(site:rep)) %>% 
-          as.matrix() ~ 
-          cc_trt, data = (df_dat %>% 
-                            separate(eu, into = c("site", "crop_sys", "cc_trt", "field", "rep")) %>% 
-                            filter(crop_sys == "silage") %>% 
-                            mutate_if(is.character, as.factor))
-)
-
 
 
 

@@ -194,6 +194,9 @@ fig_sb
 saveRDS(fig_sb, "02_make-figs/figs/Robj_bar-totseeds.rds")
 ggsave("02_make-figs/figs/fig1_bar-totseeds.png")
 
+
+
+
 # put together ------------------------------------------------------------
 
 

@@ -94,6 +94,16 @@ pois_est <- tidy(pois_blobs_em$emmeans) %>%
 pois_blobs_full <- glmer(totseeds ~ site_sys*cc_trt + (1|obs_id) + (1|blockID),
                        data = dstat,
                        family = poisson(link = "log"))
+cooks.distance(pois_blobs_full)
+
+dstat %>% 
+  mutate(cd = cooks.distance(pois_blobs_full)) %>% 
+  ggplot(aes(obs_id, cd)) + 
+  geom_point(aes(color = cc_trt)) + 
+  facet_grid(.~site_sys)
+
+boxplot(dstat %>% filter(site_sys == "Funcke_grain") %>% select(totseeds) %>% pull())$out
+
 pois_blobs_em_full <- emmeans(pois_blobs_full, pairwise ~ cc_trt|site_sys)
 pois_cont_full <- tidy(pois_blobs_em_full$contrasts) %>% 
   mutate(model= "pois_full")

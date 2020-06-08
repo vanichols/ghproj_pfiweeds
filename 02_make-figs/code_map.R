@@ -96,6 +96,5 @@ fig_map <-
 
 fig_map
 
-saveRDS(fig_map, "02_make-figs/figs/Robj_map.rds")
-ggsave("make-figs/fig1_map.png")
+ggsave("02_make-figs/figs/fig_map.png", height = 3, width = 3.5)
 

@@ -35,6 +35,33 @@ div_rich <-
 
 write_csv(div_rich, "01_stats-uni/st_diversity-values.csv")
 
+#-- how many species WERE found in each treatment?
+
+pfi_ghobsraw %>% 
+  pfifun_sum_weedbyeu() %>% 
+  filter(seeds != 0) %>% 
+  mutate(n = 1) %>% 
+  group_by(site_name, field, sys_trt, cc_trt, rep) %>% 
+  summarise(n = sum(n)) %>% 
+  group_by(site_name, sys_trt, cc_trt) %>% 
+  summarise(mean_n = mean(n),
+            min_n = min(n),
+            max_n = max(n)) %>% 
+  unite(site_name, sys_trt, col = "site_sys") %>% 
+  arrange()
+
+#--what was in central silage no but not in rye
+pfi_ghobsraw %>% 
+  pfifun_sum_weedbyeu() %>% 
+  unite(site_name, sys_trt, rep, col = "site_sys") %>% 
+  filter(grepl("Boyd_silage", site_sys)) %>% 
+  select(-seeds_m2) %>% 
+  pivot_wider(names_from = cc_trt, values_from = seeds) %>% 
+  mutate(flag = ifelse((rye == 0 & no != 0), "yes",
+                       ifelse( (rye !=0 & no ==0), "yes", "no"))) %>% 
+  filter(flag == "yes")
+  
+
 # ---- making long dataset ----
 
 long_spp_list <- 

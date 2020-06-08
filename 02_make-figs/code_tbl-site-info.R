@@ -1,5 +1,7 @@
 # Gina
 # 5/29/2020
+# 6/8/2020 need to add year of initiation!
+
 
 library(tidyverse)
 library(ggrepel)
@@ -54,6 +56,15 @@ sampdate <- c("April 16 2019", "April 17 2019", "April 8-9 2019", "April 8-9 201
 
 dat_tbl <- 
   skel %>%
+  #--add year of init
+  mutate(
+    yrinit = case_when(
+      grepl("West", site_name2) ~ 2008,
+      grepl("East", site_name2) ~ 2009,
+      (grepl("Central", site_name2) & grepl("silage", sys_trt)) ~ 2002,
+      (grepl("Central", site_name2) & grepl("grain", sys_trt)) ~ 2009
+    )
+  ) %>% 
   mutate_at(vars(x5yr, x10yr), list(~round(., 2))) %>% 
   mutate_at(vars(avgT_c, avgp_mm), list(~round(., 0))) %>% 
   mutate(wea = paste0(avgT_c, "°C, ", avgp_mm, " mm")) %>% 
@@ -68,6 +79,7 @@ dat_tbl <-
   arrange(site_name2) %>% select(-site_name2, -sys_trt, -samps) %>%
   #--select what I want to appear in table
   select(latlon, 
+         yrinit,
          #wea,
          #crop19, 
          reps, plotsize,
@@ -118,7 +130,7 @@ tbl <-
       cell_text(weight = "bold", v_align = "middle")
     ),
     locations = list(
-      cells_column_labels(vars(latlon, reps, plotsize, sampdate)),
+      cells_column_labels(vars(latlon, yrinit, reps, plotsize, sampdate)),
       cells_column_spanners(vars(`30-year Mean Annual`, `Mean Cover Crop Biomass (Mg ha<sup>-1)`))
     )) %>%
   tab_style(
@@ -132,6 +144,7 @@ tbl <-
   #--labels
   cols_label(
     latlon = "Latitude, Longitude",
+    yrinit = "Year Initiated",
     #wea = "30-year Mean Annual\nAir Temperature\n, Precipitation",
     plotsize = "Plot Size",
     reps = "Number of Replicates",

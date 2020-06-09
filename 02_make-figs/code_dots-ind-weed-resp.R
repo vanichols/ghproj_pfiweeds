@@ -135,7 +135,7 @@ diff %>%
             size = rel(3.5)) +
   scale_x_discrete(position = "top") +
   scale_fill_manual(values = c("thick" = "gray80", "thin" = "white")) +
-  scale_color_manual(values = c("neg" = p_orange, "pos" = p_pink, "zero" = "gray90")) + 
+  scale_color_manual(values = c("neg" = p_pink, "pos" = p_green, "zero" = "gray90")) + 
   #scale_size_continuous(range = c(1, 7)) +
   scale_size_area(max_size = 5) + #--this makes a value of 0 a 0 point, can't see anything
   guides(color = F, size = F, fill = F) +

@@ -48,12 +48,13 @@ p_gray <- "#E7E6E6"
 
 scales::show_col(pptgreen)
 
+
 # bar graph ---------------------------------------------------------------
 
 
 cctrtpal <- c("darkolivegreen3", "lightsalmon4")
 
-labseedsm2 = expression('Weed Seeds\n (1000s m'^"-2)")
+#labseedsm2 = expression('Weed Seeds\n (1000s m'^"-2)")
 labseedsm2 <- bquote("Weed Seeds (1000s"~m^-2~")")
 
 #--raw values
@@ -193,6 +194,48 @@ fig_sb
 
 ggsave("02_make-figs/figs/fig_bar.png")
 
+
+
+# add values below --------------------------------------------------------
+
+cc <- c("None", "Winter Rye")
+
+#--none lables
+nolabs <- 
+  table_changes %>% 
+  select(site, crop_sys) %>% 
+  arrange(site, crop_sys) %>% 
+  mutate(statlet = c("A", "D", "C", "D"),
+         statplace = case_when(
+           grepl("West", site) ~ 1,
+           grepl("East", site) ~ 1,
+           grepl("Silage", crop_sys) ~ 1,
+           TRUE ~ 2),
+         statplace = statplace - 0.25) 
+
+#--cc lables
+cclabs <- 
+  table_changes %>% 
+  select(site, crop_sys) %>% 
+  arrange(site, crop_sys) %>% 
+  mutate(statlet = c("B", "D", "D", "D"),
+         statplace = case_when(
+           grepl("West", site) ~ 1,
+           grepl("East", site) ~ 1,
+           grepl("Silage", crop_sys) ~ 1,
+           TRUE ~ 2),
+         statplace = statplace + 0.25) 
+
+fig_sb + 
+  geom_text(data = nolabs,
+            aes(x = statplace, y = -1, label = statlet),
+             fontface = "italic") + 
+  geom_text(data = cclabs,
+            aes(x = statplace, y = -1, label = statlet),
+            fontface = "italic")
+
+
+ggsave("02_make-figs/figs/fig_bar.png")
 
 
 

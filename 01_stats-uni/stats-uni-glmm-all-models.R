@@ -48,7 +48,9 @@ library(broom)
 
 
 
-# poisson -----------------------------------------------------------------
+# poisson w/o outlier-------------------------------------------------------------
+
+#--nonsense-------------
 
 #--fit a fixed effect glm to pooled data (?)
 pois1 <- glm(totseeds ~ site_sys*cc_trt, data = dstat_outrm, 
@@ -82,6 +84,9 @@ performance::compare_performance(pois_obs, pois_blobs)
 #--ummmm block isn't doing much, it seems
 emmeans(pois_obs, pairwise ~ cc_trt|site_sys)
 
+
+#--actual model------------
+
 #--buuuut it makes things significant
 pois_blobs_em <- emmeans(pois_blobs, pairwise ~ cc_trt|site_sys)
 pois_blobs_em # ok these results are on the log scale
@@ -90,11 +95,34 @@ pois_cont <- tidy(pois_blobs_em$contrasts) %>%
 pois_est <- tidy(pois_blobs_em$emmeans) %>% 
   mutate(model = "pois")
 
+#--how do I compare within just boyd?
+
+boyd_ems <- 
+  emmeans(pois_blobs, pairwise ~ cc_trt * site_sys)$contrasts %>%
+  tidy() %>%
+  filter(grepl("Boyd_grain", level1),
+         grepl("Boyd_silage", level2)) %>%
+  bind_rows(
+    emmeans(pois_blobs, pairwise ~ cc_trt * site_sys)$contrasts %>%
+      tidy() %>%
+      filter(grepl("Boyd", level1),
+             grepl("Stout", level2))
+  )
+
+
+
+write_csv(boyd_ems, "01_stats-uni/st_boyd-contrasts.csv")
+
+
+# poisson with outlier ----------------------------------------------------
+
+
 #--fit pois_obs w/full dataset (includes outlier)
 pois_blobs_full <- glmer(totseeds ~ site_sys*cc_trt + (1|obs_id) + (1|blockID),
                        data = dstat,
                        family = poisson(link = "log"))
-cooks.distance(pois_blobs_full)
+
+summary(pois_blobs_full)
 
 dstat %>% 
   mutate(cd = cooks.distance(pois_blobs_full)) %>% 

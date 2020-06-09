@@ -12,6 +12,15 @@
 rm(list = ls())
 library(tidyverse)
 
+
+p_green <- "#619B44"
+p_blue <- "#46B2B5"
+p_pink <- "#DC1A64"
+p_orange <- "#FFA726"
+p_yellow <- "#FFC000"
+p_gray <- "#E7E6E6"
+
+
 # data --------------------------------------------------------------------
 
 
@@ -42,7 +51,7 @@ myaxistexttheme <- theme(axis.text = element_text(size = rel(1.2)),
 
 cctrtpal <- c("darkolivegreen3", "lightsalmon4")
 
-labseedsm2 = expression('Weed Seeds\n (1000s m'^"-2)")
+#labseedsm2 = expression('Weed Seeds\n (1000s m'^"-2)")
 labseedsm2 <- bquote("Weed Seeds (1000s"~m^-2~")")
 
 
@@ -63,10 +72,10 @@ stodom %>%
   ggridges::geom_density_line(stat = "identity", size = 0.5, alpha = 0.7) +
   geom_line(size = 1) +
   geom_point(size = 2, color = "black") +
-  scale_fill_manual(values = c("None" = cctrtpal[2],
-                               "Rye Cover Crop" = cctrtpal[1])) +
-  scale_color_manual(values = c("None" = cctrtpal[2],
-                                "Rye Cover Crop" = cctrtpal[1])) +
+  scale_fill_manual(values = c("None" = p_yellow,
+                               "Rye Cover Crop" = p_blue)) +
+  scale_color_manual(values = c("None" = p_yellow,
+                                "Rye Cover Crop" = p_blue)) +
   geom_vline(xintercept = 350/1000, linetype = "dashed") +
   theme_bw() + 
   scale_y_continuous(labels = label_percent()) +
@@ -79,7 +88,7 @@ stodom %>%
        shape = NULL)
 
 
-ggsave("02_make-figs/figs/figX_stoch-dom.png")
+ggsave("02_make-figs/figs/fig_stoch-dom.png")
 
 #--these are 'rough drafts'
 

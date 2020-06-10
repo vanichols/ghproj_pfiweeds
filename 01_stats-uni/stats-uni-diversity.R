@@ -8,6 +8,8 @@ library(vegan)
 library(PFIweeds2020)
 library(emmeans)
 library(broom)
+library(dplyr)
+library(ggplot2)
 
 
 data("pfi_ghobsraw")
@@ -18,7 +20,7 @@ dat <-
   pfi_ghobsraw %>%
   group_by(site_name, sys_trt, cc_trt, blockID) %>%
   summarize_at(vars(AMATU:UB), ~sum(., na.rm = TRUE)) %>% 
-  unite("site_sys", site_name, sys_trt, remove = FALSE) %>% 
+  tidyr::unite("site_sys", site_name, sys_trt, remove = FALSE) %>% 
   ungroup()
 
 
@@ -47,16 +49,16 @@ pfi_ghobsraw %>%
   summarise(mean_n = mean(n),
             min_n = min(n),
             max_n = max(n)) %>% 
-  unite(site_name, sys_trt, col = "site_sys") %>% 
+  tidyr::unite(site_name, sys_trt, col = "site_sys") %>% 
   arrange()
 
 #--what was in central silage no but not in rye
 pfi_ghobsraw %>% 
   pfifun_sum_weedbyeu() %>% 
-  unite(site_name, sys_trt, rep, col = "site_sys") %>% 
+  tidyr::unite(site_name, sys_trt, rep, col = "site_sys") %>% 
   filter(grepl("Boyd_silage", site_sys)) %>% 
   select(-seeds_m2) %>% 
-  pivot_wider(names_from = cc_trt, values_from = seeds) %>% 
+  tidyr::pivot_wider(names_from = cc_trt, values_from = seeds) %>% 
   mutate(flag = ifelse((rye == 0 & no != 0), "yes",
                        ifelse( (rye !=0 & no ==0), "yes", "no"))) %>% 
   filter(flag == "yes")
@@ -66,7 +68,7 @@ pfi_ghobsraw %>%
 
 long_spp_list <- 
   dat %>%
-  pivot_longer(cols = c(AMATU:UB), names_to = "code", values_to = "numSeedlings") %>%
+  tidyr::pivot_longer(cols = c(AMATU:UB), names_to = "code", values_to = "numSeedlings") %>%
   left_join(pfi_weedsplist, by = "code") %>%
   filter(numSeedlings > 0)
      
@@ -77,6 +79,7 @@ long_spp_list <-
 div1 <- lmer(shan_hill ~ site_sys*cc_trt + (1|blockID), data = div_rich)
 anova(div1)
 div1_stats <- emmeans(div1, specs = pairwise ~ cc_trt|site_sys)$contrasts %>% tidy() %>% mutate(metric = "shan_hill")
+div1_stats
 
 div_rich %>%
   ggplot(aes(site_sys, shan_hill)) +

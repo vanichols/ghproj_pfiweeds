@@ -121,8 +121,8 @@ div_dat %>%
   ggplot(aes(site_sys, log(AMATU)))+
   geom_boxplot(aes(color = cc_trt))
 
-a1 <- lmer(AMATU ~ site_sys * cc_trt + (1|blockID), div_dat)
-a1b <- lmer(AMATU ~ site_sys + cc_trt + (1|blockID), div_dat)
+a1 <- lmer(log(AMATU) ~ site_sys * cc_trt + (1|blockID), div_dat)
+a1b <- lmer(log(AMATU) ~ site_sys + cc_trt + (1|blockID), div_dat)
 anova(a1, a1b)  # get rid of interaction
 summary(a1b)
 

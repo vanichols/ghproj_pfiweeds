@@ -49,7 +49,7 @@ site_scores <-
       "Stout" = "East"
     ),
     site = factor(site, levels = c("West", "Central", "East")),
-    crop_sys = str_to_title(sys_trt),
+    crop_sys = stringr::str_to_title(sys_trt),
     cc_trt = recode(cc_trt, 
                     "no" = "None",
                     "rye" = "Winter Rye"))
@@ -66,7 +66,7 @@ site_hull <-
       "Stout" = "East"
     ),
     site = factor(site, levels = c("West", "Central", "East")),
-    crop_sys = str_to_title(sys_trt),
+    crop_sys = stringr::str_to_title(sys_trt),
     cc_trt = recode(cc_trt, 
                          "no" = "None",
                          "rye" = "Winter Rye"))

@@ -169,7 +169,7 @@ fig_dat %>%
   geom_linerange(position = position_dodge(width = 0.9),
                  aes(ymin = se_lo / 1000, ymax = se_hi / 1000, alpha = cc_trt)) +
   geom_text(data = table_changes, aes(x = crop_sys, y = se_mx + 1.5, label = p.value), fontface = "italic") +
-  geom_text(data = table_changes, aes(x = crop_sys, y = se_mx + 2, label = trt_eff), fontface = "italic") +
+  geom_text(data = table_changes, aes(x = crop_sys, y = se_mx + 2, label = paste0(trt_eff, " seeds"), fontface = "italic")) +
   geom_text(data = table_changes, aes(x = crop_sys, y = se_mx + 2.5, label = trt_eff_pct2), fontface = "italic") +
   scale_alpha_manual(values = c(1, 1)) +
   labs(y = labseedsm2,
@@ -215,9 +215,9 @@ fig_dat %>%
   geom_linerange(position = position_dodge(width = 0.9),
                  aes(ymin = se_lo / 1000, ymax = se_hi / 1000, alpha = cc_trt)) +
   geom_text(data = table_changes, 
-            aes(x = crop_sys, y = se_mx + 2, label = trt_eff), fontface = "italic") +
+            aes(x = crop_sys, y = se_mx + 1.5, label = paste0(trt_eff, " seeds"), fontface = "italic")) +
   geom_text(data = table_changes, 
-            aes(x = crop_sys, y = se_mx + 2.5, label = trt_eff_pct3), fontface = "italic") +
+            aes(x = crop_sys, y = se_mx + 2, label = trt_eff_pct3), fontface = "italic") +
   scale_alpha_manual(values = c(1, 1)) +
   labs(y = labseedsm2,
        x = NULL,

@@ -24,7 +24,8 @@ skel <-
   mutate(deg = (round(value, 0)),
          mins = abs((value - deg)),
          mins2 = round(mins*60, 0),
-         deg_mins = paste0(abs(deg), "°",mins2, "'"),
+         mins3 = str_pad(mins2, 2, "left", "0"),
+         deg_mins = paste0(abs(deg), "°",mins3, "'"),
          deg_mins2 = ifelse(name == "lat", paste0(deg_mins, "N"), paste0(deg_mins, "W"))) %>% 
   select(-(value:deg_mins)) %>% 
   pivot_wider(names_from = name, values_from = deg_mins2) %>% 
@@ -47,7 +48,7 @@ skel <-
   select(site_name2, sys_trt, lat, lon, avgT_c, avgp_mm, x5yr, x10yr)
 
 
-crop19 <- c("Soybean", "Maize", "Maize/\nSoybean", "Maize Silage/\nSoybean")
+crop19 <- c("Maize", "Soybean", "Maize/\nSoybean", "Maize Silage/\nSoybean")
 plotsize <- c("XxX", "XxX", "55m x 3.8m", "55m x 3.8m")
 reps <- c("4", "4", "5", "5")
 samps <- c("8", "8", "10", "5")
@@ -81,8 +82,8 @@ dat_tbl <-
   select(latlon, 
          yrinit,
          #wea,
-         #crop19, 
          reps, plotsize,
+         crop19, 
          sampdate, 
          avgT_c, avgp_mm, 
          #mccbio_Mgha,
@@ -130,7 +131,7 @@ tbl <-
       cell_text(weight = "bold", v_align = "middle")
     ),
     locations = list(
-      cells_column_labels(vars(latlon, yrinit, reps, plotsize, sampdate)),
+      cells_column_labels(vars(latlon, yrinit, reps, plotsize, sampdate, crop19)),
       cells_column_spanners(vars(`30-year Mean Annual`, `Mean Cover Crop Biomass (Mg ha<sup>-1)`))
     )) %>%
   tab_style(
@@ -145,6 +146,7 @@ tbl <-
   cols_label(
     latlon = "Latitude, Longitude",
     yrinit = "Year Initiated",
+    crop19 = "2018 Crop",
     #wea = "30-year Mean Annual\nAir Temperature\n, Precipitation",
     plotsize = "Plot Size",
     reps = "Number of Replicates",

@@ -59,23 +59,45 @@ library(broom)
 m1 <- glmer(totseeds ~ site_sys*cc_trt + (1|blockID) + (1|obs_id), data = dstat_outrm, 
                family = poisson(link = "log"))  
 
+
+# get estimates -----------------------------------------------------------
+
+
 m1_emlog <- emmeans(m1, pairwise ~ cc_trt|site_sys)
 m1_em <- emmeans(m1, pairwise ~ cc_trt|site_sys, type = "response")
 
+
+#--log scale
 m1_estlog <- tidy(m1_emlog$emmeans) %>% 
   mutate(model = "pois")
 
 m1_contlog <- tidy(m1_emlog$contrasts) %>% 
   mutate(model = "pois")
 
-
+#--original scale
 m1_est <- tidy(m1_em$emmeans) %>% 
   mutate(model = "pois")
 
-m1_cont <- tidy(m1_em$contrasts) %>% 
-  mutate(model = "pois")
+m1_cont <- 
+  tidy(m1_em$contrasts) %>% 
+  mutate(model = "pois") %>% 
+  left_join(m1_em$contrasts %>% 
+  confint() %>% 
+  as_tibble() %>% 
+  mutate(model = "pois"))
 
 
+#--overall
+oa <- 
+  emmeans(m1, pairwise ~ cc_trt:site_sys, type = "response")$contrasts %>% 
+  summary() %>% 
+  as_tibble() %>% 
+  separate(contrast, into = c("level1", "level2"), sep = "/") %>% 
+  mutate(p.value = round(p.value, 3)) 
+
+oa %>% 
+  filter(grepl("Funcke", level1))
+  
 # write results -----------------------------------------------------------
 
 #--log scale

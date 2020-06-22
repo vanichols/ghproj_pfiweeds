@@ -4,6 +4,7 @@
 # Last modified: Jan 8 2020 - Lydia trying to run things (see note)...
 #                April 28 2020 - blowing things up and starting over....
 #                june 3 2020 - change groupings based on Matt's feedback
+#                june 22 2020 - use CIs, fix overall letters
 #
 # Purpose: make manuscript figs
 #
@@ -99,9 +100,14 @@ sb_pval <-
   read_csv("01_stats-uni/st_weedseed-contr.csv") %>% 
   mutate(rye_no = (round((ratio-1)*100, 0)),
          stderr = round(std.error * 100, 0),
+         CI_lo = round((asymp.LCL - 1)*100, 0),
+         CI_lo = ifelse(CI_lo <0, CI_lo, paste0("+", CI_lo)),
+         CI_hi = round((asymp.UCL - 1)*100, 0),
+         CI_hi = ifelse(CI_hi <0, CI_hi, paste0("+", CI_hi)),
          trt_eff_pct2 = paste0(rye_no, "%", "(±", stderr, "%)"),
+         trt_eff_pct3 = paste0(rye_no, "%", ", CI(", CI_lo, ",", CI_hi,"%)"),
          p.value = paste0("p = ", round(p.value, 2))) %>% 
-    select(site_sys, p.value, trt_eff_pct2)
+    select(site_sys, p.value, trt_eff_pct2, CI_lo, CI_hi, trt_eff_pct3)
   
 
 #--combine
@@ -125,7 +131,7 @@ table_changes <-
     site = factor(site, levels = c("West", "Central", "East")),
     crop_sys = str_to_title(crop_sys)
   ) %>% 
-  select(site, crop_sys, se_mx, p.value, trt_eff, trt_eff_pct2)
+  select(site, crop_sys, se_mx, p.value, trt_eff, trt_eff_pct2, trt_eff_pct3)
   
 
 
@@ -195,11 +201,60 @@ fig_sb
 ggsave("02_make-figs/figs/fig_bar.png")
 
 
+# alternative with CIs instead of SEs -------------------------------------
+
+fig_dat %>% 
+  ggplot(aes(reorder(crop_sys, totseeds_m2, mean), totseeds_m2 / 1000)) +
+  geom_col(position = position_dodge(width = 0.9),
+           color = "black",
+           size = 1.2,
+           aes(fill = cc_trt)) +
+  geom_point(data = raws, aes(crop_sys, totseeds_m2/1000, color = cc_trt), 
+             pch = 21, position = position_dodge(0.9), size = 3, fill = "gray80", alpha = 0.5) +
+  
+  geom_linerange(position = position_dodge(width = 0.9),
+                 aes(ymin = se_lo / 1000, ymax = se_hi / 1000, alpha = cc_trt)) +
+  geom_text(data = table_changes, 
+            aes(x = crop_sys, y = se_mx + 2, label = trt_eff), fontface = "italic") +
+  geom_text(data = table_changes, 
+            aes(x = crop_sys, y = se_mx + 2.5, label = trt_eff_pct3), fontface = "italic") +
+  scale_alpha_manual(values = c(1, 1)) +
+  labs(y = labseedsm2,
+       x = NULL,
+       fill = "Cover Crop Treatment") +
+  guides(alpha = F,
+         color = F) +
+  scale_fill_manual(values = c("None" = p_yellow,
+                               "Winter Rye" = p_blue)) +
+  scale_color_manual(values = c("gray50", "gray50")) +
+  theme_bw() +
+  facet_grid(. ~ site, scales = "free") +
+  myaxistexttheme +
+  theme(#legend.direction = "horizontal",
+    #legend.position = "top",
+    legend.justification = c(1, 1),
+    legend.position = c(0.99, 0.99),
+    legend.background = element_rect(color = "black", fill = "white"),
+    legend.title = element_text(size = rel(1.4)),
+    #legend.key.width = unit(1.4, "cm"),
+    #legend.key.height = unit(0.5, "cm"),
+    # legend.key.size = unit(1, "cm"),
+    # axis.text.x = element_text(angle = 45,
+    #                            vjust = 1))
+  ) -> fig_sb
+
+fig_sb
+
+ggsave("02_make-figs/figs/fig_bar.png")
+
+
+
 
 # add values below --------------------------------------------------------
 
 cc <- c("None", "Winter Rye")
 
+#---at 90% confidence level
 #--none lables
 nolabs <- 
   table_changes %>% 

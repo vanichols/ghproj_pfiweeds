@@ -82,14 +82,14 @@ m1_cont <-
   tidy(m1_em$contrasts) %>% 
   mutate(model = "pois") %>% 
   left_join(m1_em$contrasts %>% 
-  confint() %>% 
+  confint( level = 0.9) %>% 
   as_tibble() %>% 
   mutate(model = "pois"))
 
 
 #--overall
 oa <- 
-  emmeans(m1, pairwise ~ cc_trt:site_sys, type = "response")$contrasts %>% 
+  emmeans(m1, pairwise ~ cc_trt:site_sys, type = "response", )$contrasts %>% 
   summary() %>% 
   as_tibble() %>% 
   separate(contrast, into = c("level1", "level2"), sep = "/") %>% 

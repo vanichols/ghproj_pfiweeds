@@ -51,7 +51,7 @@ site_scores <-
     site = factor(site, levels = c("West", "Central", "East")),
     crop_sys = stringr::str_to_title(sys_trt),
     cc_trt = recode(cc_trt, 
-                    "no" = "None",
+                    "no" = "No Cover",
                     "rye" = "Winter Rye"))
 
 spp_scores  <- read_csv("01_stats-nmds/st_nmds-spp.csv")
@@ -68,54 +68,67 @@ site_hull <-
     site = factor(site, levels = c("West", "Central", "East")),
     crop_sys = stringr::str_to_title(sys_trt),
     cc_trt = recode(cc_trt, 
-                         "no" = "None",
+                         "no" = "No Cover",
                          "rye" = "Winter Rye"))
 
 
 # figure ------------------------------------------------------------------
 
+site_hull2 <- 
+  site_hull %>% 
+  group_by(cc_trt, crop_sys, site) %>% 
+  slice(c(1, n()))
+
+
 ggplot() +
-  # geom_point(data = site_scores, 
-  #            aes(x = NMDS1, 
-  #                y = NMDS2, 
-  #                #color = cc_trt, 
-  #                shape = crop_sys
-  #                ), 
-  #            size = 2, 
-  #            alpha = 1) +
-  geom_polygon(data = site_hull, 
+  geom_polygon(data = site_hull,
+               aes(x = NMDS1,
+                   y = NMDS2,
+                   group = interaction(cc_trt, crop_sys, site),
+                   #color = crop_sys,
+                   fill = cc_trt
+                   ),
+               #color = "black",
+               size = 1,
+               alpha = 0.8) +
+  geom_path(data = site_hull,
                aes(x = NMDS1, 
                    y = NMDS2,
-                   color = crop_sys,
-                   fill = cc_trt, 
-                   linetype = crop_sys),
-               size = 1,
-               alpha = 0.8) + 
+                   group = interaction(cc_trt, crop_sys, site),
+                   linetype = crop_sys
+               ),
+            na.rm = TRUE,
+               color = "black",
+               size = 1) +
+  geom_path(data = site_hull2, 
+            aes(x = NMDS1, 
+                y = NMDS2,
+                group = interaction(cc_trt, crop_sys, site),
+                linetype = crop_sys
+            ),
+            na.rm = TRUE,
+            color = "black",
+            size = 1) +
   geom_text_repel(data = spp_scores, 
                   aes(x = NMDS1, 
                       y = NMDS2, 
                       label = speciesID), 
                   alpha = 0.5,
-                  size = 3) + # Species as text - better!
-  #geom_hline(yintercept = 0, lty = 2) +
-  #geom_vline(xintercept = 0, lty = 2) +
+                  size = 3) + 
   facet_grid(.~site) +
-  # -- the following stuff is for aesthetic purposes --
-  scale_color_manual(values = c("Silage" = "black",
-                                "black")) +
-  scale_fill_manual(values = c("None" = p_yellow, 
+  scale_fill_manual(values = c("No Cover" = p_yellow, 
                                p_blue)) +
   scale_linetype_manual(values = c("solid", "dashed")) +
-  labs(color = NULL, shape = NULL, fill = NULL) +
-  guides(color = F, linetype = F) +
+  labs(fill = NULL, linetype = NULL) +
+  guides(linetype = guide_legend(order = 1)) + #--make crop_sys leg appear first
   theme(legend.direction  = "horizontal",
         legend.position = "bottom",
-        legend.background = element_rect(color = "black"),
+        legend.box.background = element_rect(color = "black"),
+        legend.background = element_blank(),
         strip.text        = element_text(size = rel(1.2)),
         legend.text       = element_text(size = rel(1.2)),
         legend.title      = element_text(size = rel(1.2)),
         axis.title        = element_text(size = rel(1.2)),
-        axis.text         = element_text(size = rel(1.2))) + 
-  facet_wrap(~site)
+        axis.text         = element_text(size = rel(1.2))) 
 
 ggsave("02_make-figs/figs/fig_nmds.png")

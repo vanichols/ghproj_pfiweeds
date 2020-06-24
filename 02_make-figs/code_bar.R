@@ -74,7 +74,7 @@ raws <-
     site = factor(site, levels = c("West", "Central", "East")),
     crop_sys = str_to_title(crop_sys),
     cc_trt = recode(cc_trt,
-                    "no" = "None",
+                    "no" = "No Cover",
                     "rye" = "Winter Rye")
   ) %>% 
   filter(totseeds_m2 < 15000)
@@ -153,7 +153,7 @@ fig_dat <-
     site = factor(site, levels = c("West", "Central", "East")),
     crop_sys = str_to_title(crop_sys),
     cc_trt = recode(cc_trt,
-                    "no" = "None",
+                    "no" = "No Cover",
                     "ccrye" = "Winter Rye")) %>%
     select(site, cc_trt, crop_sys, totseeds_m2, se_lo, se_hi)
 
@@ -177,7 +177,7 @@ fig_dat %>%
        fill = "Cover Crop Treatment") +
   guides(alpha = F,
          color = F) +
-  scale_fill_manual(values = c("None" = p_yellow,
+  scale_fill_manual(values = c("No Cover" = p_yellow,
                                "Winter Rye" = p_blue)) +
   scale_color_manual(values = c("gray50", "gray50")) +
   theme_bw() +
@@ -224,7 +224,7 @@ fig_dat %>%
        fill = "Cover Crop Treatment") +
   guides(alpha = F,
          color = F) +
-  scale_fill_manual(values = c("None" = p_yellow,
+  scale_fill_manual(values = c("No Cover" = p_yellow,
                                "Winter Rye" = p_blue)) +
   scale_color_manual(values = c("gray50", "gray50")) +
   theme_bw() +
@@ -252,10 +252,10 @@ ggsave("02_make-figs/figs/fig_bar.png")
 
 # add values below --------------------------------------------------------
 
-cc <- c("None", "Winter Rye")
+cc <- c("No Cover", "Winter Rye")
 
 #---at 90% confidence level
-#--none lables
+#--No Cover lables
 nolabs <- 
   table_changes %>% 
   select(site, crop_sys) %>% 

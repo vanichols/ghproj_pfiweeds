@@ -19,13 +19,14 @@ library(PFIweeds2020)
 
 ccbio <- read_csv("01_stats-ccbio/sc_ccbio-metrics.csv")
 
-wseed <- read_csv("01_stats-uni/st_weedseed-contrasts.csv") %>%
+wseed <- read_csv("01_stats-uni/st_weedseed-contr-all-models.csv") %>%
   filter(model == "pois") %>%
   mutate(estimate = -estimate) %>% #--I want rye vs none
   select(site_sys, estimate)
 
+# this no longer works bc 'totseeds_m2' is no longer a column in any of the csvs. 
 rye_eff <- 
-  read_csv("01_stats-uni/st_weedseed-estimates.csv") %>% 
+  read_csv("01_stats-uni/st_weedseed-est-all-models.csv") %>% 
   filter(model == "pois") %>% 
   select(site_sys, cc_trt, totseeds_m2) %>% 
   pivot_wider(names_from = cc_trt,

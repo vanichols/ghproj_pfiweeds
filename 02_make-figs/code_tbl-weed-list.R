@@ -5,7 +5,7 @@
 # Purpose: make manuscript figs
 #
 # Notes: 
-# Last modified: 
+# Last modified: 7/13/2020 (change UB/UG to UD/UM)
 #
 ####################################
 
@@ -76,18 +76,18 @@ library(gt)
 dat_table %>% 
   gt() %>% 
   tab_footnote(
-    footnote = "Unknown broadleaf",
+    footnote = "Unknown dicotyldeon",
     locations = cells_body(columns = vars(code),
-                           rows = code == "UB")
+                           rows = code == "UD")
   ) %>% 
   fmt_missing(
     columns = 1:5,
     missing_text = "-"
   ) %>% 
   tab_footnote(
-    footnote = "Unknown grass",
+    footnote = "Unknown monocotyledon",
     locations = cells_body(columns = vars(code),
-                           rows = code == "UG")
+                           rows = code == "UM")
   ) %>% 
   cols_label(
     code = "Code",

@@ -207,13 +207,18 @@ fig_dat %>%
   ggplot(aes(reorder(crop_sys, totseeds_m2, mean), totseeds_m2 / 1000)) +
   geom_col(position = position_dodge(width = 0.9),
            color = "black",
-           size = 1.2,
+           size = 0.9,
            aes(fill = cc_trt)) +
-  geom_point(data = raws, aes(crop_sys, totseeds_m2/1000, color = cc_trt), 
-             pch = 21, position = position_dodge(0.9), size = 3, fill = "gray80", alpha = 0.5) +
-  
+  # geom_point(data = raws, aes(crop_sys, totseeds_m2/1000, color = cc_trt), 
+  #            pch = 21, position = position_dodge(0.9), size = 3, fill = "white", alpha = 0.7, stroke = 1.2) +
+  geom_point(data = raws, aes(crop_sys, totseeds_m2/1000, fill = cc_trt), 
+             pch = 21, 
+             position = position_jitterdodge(dodge.width = 0.9, jitter.width = 0.1), 
+             size = 2, 
+             color = "black") +
   geom_linerange(position = position_dodge(width = 0.9),
-                 aes(ymin = se_lo / 1000, ymax = se_hi / 1000, alpha = cc_trt)) +
+                 aes(ymin = se_lo / 1000, ymax = se_hi / 1000, alpha = cc_trt),
+                 size = 1.2, color = "black") +
   geom_text(data = table_changes, 
             aes(x = crop_sys, y = se_mx + 1.5, label = paste0(trt_eff, " seeds"), fontface = "italic")) +
   geom_text(data = table_changes, 
@@ -226,7 +231,7 @@ fig_dat %>%
          color = F) +
   scale_fill_manual(values = c("No Cover" = p_yellow,
                                "Winter Rye" = p_blue)) +
-  scale_color_manual(values = c("gray50", "gray50")) +
+  scale_color_manual(values = c("black", "black")) +
   theme_bw() +
   facet_grid(. ~ site, scales = "free") +
   myaxistexttheme +

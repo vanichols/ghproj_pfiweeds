@@ -102,7 +102,7 @@ dat_table %>%
       columns = vars(scientific_name)
     )
   ) %>% 
-  cols_align(align = c("center")) ->mytable
+  cols_align(align = c("center")) -> mytable
 
 
 mytable

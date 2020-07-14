@@ -21,7 +21,7 @@ df_dat <-
   pfi_ghobsraw %>%
   filter(!(site_name == "Funcke" & rep == 4)) %>% #--remove outlier
   group_by(site_name, sys_trt, cc_trt, blockID) %>%
-  summarize_at(vars(AMATU:UB), ~sum(., na.rm = TRUE)) %>% 
+  summarize_at(vars(AMATU:UD), ~sum(., na.rm = TRUE)) %>% 
   unite("eu", site_name, sys_trt, cc_trt, blockID, remove = TRUE) 
 
 mat_dat <- 

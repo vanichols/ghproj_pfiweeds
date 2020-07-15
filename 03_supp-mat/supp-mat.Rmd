@@ -54,9 +54,10 @@ pfi_tb <- pfi_sitemgmt %>%
 pfi_tb %>% 
   select(1:7) %>% 
   kable(caption = "General Site Description", booktabs = T, align = "c") %>% 
+  collapse_rows(columns = 1, latex_hline = "major") %>% 
   kable_styling(latex_options = c("striped", "HOLD_position"), position = "center", full_width = F) %>% 
-  column_spec(column = c(2, 3, 6), width = "10em")  %>% 
-  column_spec(column = c(4, 5, 7), width = "5em") 
+  column_spec(column = c(2, 3), width = "10em")  %>% 
+  column_spec(column = c(4:6), width = "5em") 
 ```
 
 \newpage
@@ -67,8 +68,8 @@ pfi_tb %>%
   select(1, 8:10) %>% 
   kable(caption = "2018-2019 Herbicide Use", booktabs = T, align = "c") %>% 
   kable_styling(latex_options = c("striped", "HOLD_position"), position = "center", full_width = F) %>% 
-  column_spec(column = c(2,4), width = "10em") %>% 
-  column_spec(column = c(1, 3), width = "5em") 
+  column_spec(column = c(1:4), width = "8em") %>% 
+  collapse_rows(columns = 1, latex_hline = "major")
 ```
 
 \newpage
@@ -80,7 +81,8 @@ pfi_tb %>%
   select(1, 11:16) %>% 
   kable(caption = "General Management", booktabs = T, align = "c") %>% 
   kable_styling(latex_options = c("striped", "HOLD_position"), position = "center", full_width = F) %>% 
-  column_spec(column = c(2, 6), width = "10em") 
+  column_spec(column = c(2, 6), width = "10em") %>% 
+   collapse_rows(columns = 1, latex_hline = "major")
   
 ```
 
@@ -90,7 +92,8 @@ pfi_tb %>%
 ```{r}
 pfi_soilwgts %>% 
   kable(caption = "Wet Soil Weights Immediately After Sampling", booktabs = T, align = "c") %>% 
-  kable_styling(latex_options = c("striped", "HOLD_position"), position = "center", full_width = F)
+  kable_styling(latex_options = c("striped", "HOLD_position"), position = "center", full_width = F) %>% 
+  collapse_rows(columns = 1, latex_hline = "major", valign = "top")
 ```
 
 \newpage
@@ -104,18 +107,21 @@ Values are presented for the models run with the full dataset (XX_full) and with
 
 ```{r}
 read_csv("../01_stats-uni/st_weedseed-contr-all-models.csv") %>% 
-  select(model, everything(), -df) %>% 
+  select(model, site_sys, everything(), -df) %>% 
   mutate_if(is.numeric, round, 2) %>% 
   kable(caption = "Contrasts with full dataset and dataset with outlier removed", booktabs = T, align = "c") %>% 
-  kable_styling(latex_options = c("striped", "HOLD_position"), position = "center", full_width = F)
+  kable_styling(latex_options = c("striped", "HOLD_position"), position = "center", full_width = F) %>% 
+  collapse_rows(columns = c(1), latex_hline = "major", valign = "middle") 
 ```
 
 ```{r}
 read_csv("../01_stats-uni/st_weedseed-est-all-models.csv") %>%  
   mutate_if(is.numeric, round, 2) %>% 
-  select(model, everything(), -df) %>% 
+  select(model, site_sys, everything(), -df) %>% 
   kable(caption = "Estimates with full dataset and dataset with outlier removed", booktabs = T, align = "c") %>% 
-  kable_styling(latex_options = c("striped", "HOLD_position"), position = "center", full_width = F)
+  kable_styling(latex_options = c("striped", "HOLD_position"), position = "center", full_width = F) %>% 
+  collapse_rows(columns = c(1, 2), latex_hline = "major", valign = "middle") 
+
 ```
 
 \newpage

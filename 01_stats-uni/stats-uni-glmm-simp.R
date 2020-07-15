@@ -36,10 +36,8 @@ dstat <-
 
 dstat_outrm <- 
   dstat %>% 
-  filter(totseeds_m2 < 15000) %>%  #--outlier
-  mutate(cc_trt = recode(cc_trt, 
-                         "rye" = "ccrye"))
-
+  filter(totseeds_m2 < 15000)  #--outlier
+  
 
 # poisson -----------------------------------------------------------------
 
@@ -150,7 +148,7 @@ mf1_cont <-
   left_join(mf1_em$contrasts %>% 
               confint( level = 0.9) %>% 
               as_tibble() %>% 
-              mutate(model = "pois"))
+              mutate(model = "pois_full"))
 
 
 #--overall
@@ -180,3 +178,4 @@ mf1_est %>%
 
 mf1_cont %>% 
   write_csv("01_stats-uni/st_weedseed-contr-full.csv")
+

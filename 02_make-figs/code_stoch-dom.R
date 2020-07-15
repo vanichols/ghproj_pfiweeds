@@ -90,6 +90,14 @@ stodom %>%
 
 ggsave("02_make-figs/figs/fig_stoch-dom.png")
 
+
+
+
+
+
+# other attempts ----------------------------------------------------------
+
+
 #--these are 'rough drafts'
 
 #--cum diff

@@ -12,6 +12,7 @@
 rm(list = ls())
 library(tidyverse)
 library(PFIweeds2020)
+library(generalCorr)
 
 
 # data --------------------------------------------------------------------
@@ -19,6 +20,9 @@ library(PFIweeds2020)
 #--use data and fucntion from package
 
 pfi_ghobsraw
+
+
+########################## outlier removed ####################################
 
 dat <- pfifun_sum_byeu(pfi_ghobsraw) %>% 
   ungroup() %>% 
@@ -29,7 +33,6 @@ dat <- pfifun_sum_byeu(pfi_ghobsraw) %>%
 
 # try stochastic dominance ------------------------------------------------
 
-library(generalCorr)
 
 
 #--vectors of seed values for each treatment
@@ -66,6 +69,60 @@ gina
 
 gina %>% 
   write_csv("01_stats-stoch-dom/st_stoch-dom-res.csv")
+
+########################## full dataset ####################################
+
+dat_full <- 
+  pfifun_sum_byeu(pfi_ghobsraw) %>% 
+  ungroup() %>% 
+  unite(site_name, sys_trt, col = "site_sys", remove = T) %>% 
+  select(-field, -rep) #%>% 
+  #filter(totseeds < 860) #remove outlier
+
+
+# stochastic dominance ------------------------------------------------
+
+
+#--vectors of seed values for each treatment
+xa <- dat_full %>% filter(cc_trt == "no") %>% select(totseeds_m2) %>% pull()
+xb <- dat_full %>% filter(cc_trt == "rye") %>% select(totseeds_m2) %>% pull()
+Ta = length(xa)
+Tb = length(xb)
+k = Ta + Tb 
+pa0 = rep(1/Ta, Ta) #--probability of getting each value
+pb0 = rep(1/Tb, Tb)
+
+#--just creates a 'weighting' for the cumulative distribution
+pra <- prelec2(n = Ta + Tb)
+
+
+gina_full <- #--my equivalent of xpapb
+  tibble(seeds = c(xa, xb)) %>% 
+  mutate(prob_no = c(pa0, rep(0, Tb)),
+         prob_rye = c(rep(0, Ta), pb0)) %>% 
+  arrange(seeds) %>% 
+  mutate(prob_no2 = prob_no * pra$pdif,
+         prob_rye2 = prob_rye * pra$pdif) %>%
+  filter(!is.na(seeds)) %>% 
+  mutate(nocum = cumsum(prob_no2),
+         ryecum = cumsum(prob_rye2)) %>% 
+  mutate(mx_nocum = max(nocum),
+         mx_ryecum = max(ryecum),
+         sc_nocum = nocum/mx_nocum,
+         sc_ryecum = ryecum/mx_ryecum) %>%
+  mutate(probdiff = nocum-ryecum) %>% 
+  select(seeds, sc_nocum, sc_ryecum)
+
+gina_full
+
+gina_full %>% 
+  write_csv("01_stats-stoch-dom/st_stoch-dom-res-full.csv")
+
+
+
+
+# just looking at things --------------------------------------------------
+
 
 #--cum diff
 gina %>% 

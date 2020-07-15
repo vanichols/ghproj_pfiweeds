@@ -14,6 +14,7 @@ library(PFIweeds2020)
 data("pfi_ghobsraw")
 data("pfi_weedsplist")
 
+################# remove outlier ################################
 
 # analysis ----------------------------------------------------------------
 
@@ -105,6 +106,55 @@ adonis2(df_dat %>%
 )
 
 
+################# keep outlier ################################
+
+# analysis ----------------------------------------------------------------
+
+df_dat_full <- 
+  pfi_ghobsraw %>%
+  #filter(!(site_name == "Funcke" & rep == 4)) %>% #--remove outlier
+  group_by(site_name, sys_trt, cc_trt, blockID) %>%
+  summarize_at(vars(AMATU:UD), ~sum(., na.rm = TRUE)) %>% 
+  unite("eu", site_name, sys_trt, cc_trt, blockID, remove = TRUE) 
+
+mat_dat_full <- 
+  df_dat_full %>% 
+  column_to_rownames(var = "eu")
+
+nmds_res <- metaMDS(mat_dat_full, distance = 'bray', autotransform = F, expand = F)
+#stress = 0.102
+plot(nmds_res)
+cc_pdist <- dist(scores(nmds_res, display = 'sites'))
+
+#--need help knowing what to report about this fit
+
+site_scores <- 
+  as.data.frame(scores(nmds_res)) %>%
+  rownames_to_column() %>% 
+  separate(rowname, into = c("site", "sys_trt", "cc_trt", "blockID", "rep"), remove = F) %>% 
+  rename(site_sys = rowname) %>% 
+  unite("site_sys", site, sys_trt, remove = F)
+
+site_scores %>% 
+  write_csv("01_stats-nmds/st_nmds-site-full.csv")
+
+spp_scores  <- 
+  as.data.frame(scores(nmds_res, "species")) %>%
+  rownames_to_column(., var = "speciesID")
+
+spp_scores %>% 
+  write_csv("01_stats-nmds/st_nmds-spp-full.csv")
+
+# Makes polygons for site by treatment
+site_hull <- 
+  site_scores %>% # dataframe of site scores
+  unite("site_sys_trt", site, sys_trt, cc_trt, remove = FALSE) %>%
+  group_by(site_sys_trt) %>% # grouping variables: farm AND treatmnet
+  slice(chull(NMDS1, NMDS2)) # points that polygons will connect
+
+site_hull %>% 
+  write_csv("01_stats-nmds/st_nmds-site-hulls-full.csv")
+
 
 
 
@@ -154,6 +204,13 @@ ggplot() +
         legend.title      = element_text(size = 14),
         axis.title        = element_text(size = 14),
         axis.text         = element_text(size = 12))
+
+
+
+
+
+
+
 
 
 

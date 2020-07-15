@@ -91,9 +91,9 @@ emmeans(pois_obs, pairwise ~ cc_trt|site_sys)
 pois_blobs_em <- emmeans(pois_blobs, pairwise ~ cc_trt|site_sys)
 pois_blobs_em # ok these results are on the log scale
 pois_cont <- tidy(pois_blobs_em$contrasts) %>% 
-  mutate(model = "pois")
+  mutate(model = "pois_out-rm")
 pois_est <- tidy(pois_blobs_em$emmeans) %>% 
-  mutate(model = "pois")
+  mutate(model = "pois_out-rm")
 
 #--how do I compare within just boyd?
 
@@ -147,9 +147,9 @@ pois_est_full <- tidy(pois_blobs_em_full$emmeans) %>%
 binom <- glmer.nb(totseeds ~ site_sys*cc_trt + (1|blockID), data = dstat_outrm)
 binom_em <- emmeans(binom, pairwise ~ cc_trt|site_sys)
 binom_cont <- tidy(binom_em$contrasts) %>% 
-  mutate(model = "binom")
+  mutate(model = "binom_out-rm")
 binom_est <- tidy(binom_em$emmeans) %>% 
-  mutate(model = "binom")
+  mutate(model = "binom_out-rm")
 
 
 #--on full dataset

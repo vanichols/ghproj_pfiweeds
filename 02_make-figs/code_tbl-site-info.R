@@ -64,7 +64,7 @@ crop19 <- c("Soybean", #--west
             "Maize") 
 plotsize <- c("25m x 250m", "3.8m x 55m", "3.8m x 55m", "3.8m x 55m", "25m x 275m" )
 reps <- c("4", "5", "5", "5", "4")
-sampdate <- c("April 17 2019", "April 8-9 2019", "April 8-9 2019", "April 8-9 2019", "April 16 2019")
+sampdate <- c("April 17 2019", "April 8-9 2019", "April 8-9 2019", "April 16 2019", "April 6 2019")
 
 
 dat_tbl <- 
@@ -185,6 +185,7 @@ tbl <-
 
 
 tbl
+
 #--doesn't work on desktop
 gtsave(tbl, "02_make-figs/figs/tlb_site-info.png")
 

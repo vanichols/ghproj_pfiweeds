@@ -3,6 +3,7 @@
 # Created: 4/14/2020
 #
 # Last modified: 6/1/2020 (cleaning up?)
+#                7/16/2020 (redoing calc of changes, used code from bar fig)
 #
 # Purpose: calculate cc biomass things
 #
@@ -17,28 +18,27 @@ library(tidyverse)
 library(PFIweeds2020)
 
 
-ccbio <- read_csv("01_stats-ccbio/sc_ccbio-metrics.csv")
+pfi_ccbio
 
-wseed <- read_csv("01_stats-uni/st_weedseed-contrasts.csv") %>%
-  filter(model == "pois") %>%
-  mutate(estimate = -estimate) %>% #--I want rye vs none
-  select(site_sys, estimate)
+ccbio <- read_csv("01_stats-ccbio/sc_ccbio-metrics.csv") #--this is created in code-summarise-ccbio
 
-rye_eff <- 
-  read_csv("01_stats-uni/st_weedseed-estimates.csv") %>% 
-  filter(model == "pois") %>% 
-  select(site_sys, cc_trt, totseeds_m2) %>% 
-  pivot_wider(names_from = cc_trt,
-              values_from = totseeds_m2) %>% 
-  mutate(absdiff_rye_to_no_seedsm2 = rye - no,
-         reldiff_rye_to_no_seedsm2 = (absdiff_rye_to_no_seedsm2 / no) * 100) %>% 
-  select(site_sys, absdiff_rye_to_no_seedsm2, reldiff_rye_to_no_seedsm2)
-
+sb_chng <- 
+  read_csv("01_stats-uni/st_weedseed-est.csv") %>% 
+  mutate(totseeds_m2 = pfifun_seedstom2conv(rate)) %>% 
+  select(cc_trt, site_sys, totseeds_m2) %>% 
+  pivot_wider(names_from = cc_trt, values_from = totseeds_m2) %>% 
+  mutate(trt_eff_abs = ccrye - no,
+         trt_eff_rel = trt_eff_abs/no) %>% 
+    select(site_sys, trt_eff_abs, trt_eff_rel)
 
 
 ccbio_mod <- 
   ccbio %>% 
-  left_join(rye_eff)
+  left_join(sb_chng)
+
+
+ccbio_mod %>% 
+  write_csv("01_stats-ccbio/sc_ccbio-metrics-effects.csv")
 
 
 ccbio_mod %>%
@@ -48,18 +48,18 @@ ccbio_mod %>%
   group_by(metric, yr_span) %>%
   nest() %>%
   mutate(spcor_abs = data %>%
-           map(
+           purrr::map(
              ~ cor(
-               .$absdiff_rye_to_no_seedsm2,
+               .$trt_eff_abs,
                .$value,
                use = "complete.obs",
                method = "spearman"
              )
            ),
          spcor_rel = data %>%
-           map(
+           purrr::map(
              ~ cor(
-               .$reldiff_rye_to_no_seedsm2,
+               .$trt_eff_rel,
                .$value,
                use = "complete.obs",
                method = "spearman"
@@ -67,9 +67,9 @@ ccbio_mod %>%
            )) %>%
   select(yr_span, metric, spcor_abs, spcor_rel) %>%
   unnest(cols = c(spcor_abs, spcor_rel)) %>%
-  arrange(yr_span, spcor_abs)
+  arrange(yr_span, spcor_abs) %>% 
+  write_csv("01_stats-ccbio/sc_ccbio-spear-cors.csv")
+  
 
-ccbio_mod %>%
-  filter(yr_span == "10yr") %>% 
-  ggplot(aes(ccbio_cv, absdiff_rye_to_no_seedsm2)) + 
-  geom_point()
+
+

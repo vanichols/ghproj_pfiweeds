@@ -74,14 +74,15 @@ raws <-
     site = factor(site, levels = c("West", "Central", "East")),
     crop_sys = str_to_title(crop_sys),
     cc_trt = recode(cc_trt,
-                    "no" = "None",
+                    "no" = "No Cover",
                     "rye" = "Winter Rye")
   ) %>% 
   filter(totseeds_m2 < 15000)
 
 
 #--raw means 
-sb_est <- read_csv("01_stats-uni/st_weedseed-est.csv") %>% 
+sb_est <- 
+  read_csv("01_stats-uni/st_weedseed-est.csv") %>% 
   mutate(totseeds_m2 = pfifun_seedstom2conv(rate),
          totseeds_se = pfifun_seedstom2conv(std.error),
          se_lo = totseeds_m2 - totseeds_se,
@@ -153,7 +154,7 @@ fig_dat <-
     site = factor(site, levels = c("West", "Central", "East")),
     crop_sys = str_to_title(crop_sys),
     cc_trt = recode(cc_trt,
-                    "no" = "None",
+                    "no" = "No Cover",
                     "ccrye" = "Winter Rye")) %>%
     select(site, cc_trt, crop_sys, totseeds_m2, se_lo, se_hi)
 
@@ -177,7 +178,7 @@ fig_dat %>%
        fill = "Cover Crop Treatment") +
   guides(alpha = F,
          color = F) +
-  scale_fill_manual(values = c("None" = p_yellow,
+  scale_fill_manual(values = c("No Cover" = p_yellow,
                                "Winter Rye" = p_blue)) +
   scale_color_manual(values = c("gray50", "gray50")) +
   theme_bw() +
@@ -207,13 +208,18 @@ fig_dat %>%
   ggplot(aes(reorder(crop_sys, totseeds_m2, mean), totseeds_m2 / 1000)) +
   geom_col(position = position_dodge(width = 0.9),
            color = "black",
-           size = 1.2,
+           size = 0.9,
            aes(fill = cc_trt)) +
-  geom_point(data = raws, aes(crop_sys, totseeds_m2/1000, color = cc_trt), 
-             pch = 21, position = position_dodge(0.9), size = 3, fill = "gray80", alpha = 0.5) +
-  
+  # geom_point(data = raws, aes(crop_sys, totseeds_m2/1000, color = cc_trt), 
+  #            pch = 21, position = position_dodge(0.9), size = 3, fill = "white", alpha = 0.7, stroke = 1.2) +
+  geom_point(data = raws, aes(crop_sys, totseeds_m2/1000, fill = cc_trt), 
+             pch = 21, 
+             position = position_jitterdodge(dodge.width = 0.9, jitter.width = 0.1), 
+             size = 2, 
+             color = "black") +
   geom_linerange(position = position_dodge(width = 0.9),
-                 aes(ymin = se_lo / 1000, ymax = se_hi / 1000, alpha = cc_trt)) +
+                 aes(ymin = se_lo / 1000, ymax = se_hi / 1000, alpha = cc_trt),
+                 size = 1.2, color = "black") +
   geom_text(data = table_changes, 
             aes(x = crop_sys, y = se_mx + 1.5, label = paste0(trt_eff, " seeds"), fontface = "italic")) +
   geom_text(data = table_changes, 
@@ -224,9 +230,9 @@ fig_dat %>%
        fill = "Cover Crop Treatment") +
   guides(alpha = F,
          color = F) +
-  scale_fill_manual(values = c("None" = p_yellow,
+  scale_fill_manual(values = c("No Cover" = p_yellow,
                                "Winter Rye" = p_blue)) +
-  scale_color_manual(values = c("gray50", "gray50")) +
+  scale_color_manual(values = c("black", "black")) +
   theme_bw() +
   facet_grid(. ~ site, scales = "free") +
   myaxistexttheme +
@@ -252,10 +258,10 @@ ggsave("02_make-figs/figs/fig_bar.png")
 
 # add values below --------------------------------------------------------
 
-cc <- c("None", "Winter Rye")
+cc <- c("No Cover", "Winter Rye")
 
 #---at 90% confidence level
-#--none lables
+#--No Cover lables
 nolabs <- 
   table_changes %>% 
   select(site, crop_sys) %>% 

@@ -29,19 +29,15 @@ dat <- pfifun_sum_byeu(pfi_ghobsraw) %>%
 dstat <- 
   dat %>% 
   mutate(obs_id = 1:n(),
-         obs_id = paste("obs", obs_id, sep = "_"))
+         obs_id = paste("obs", obs_id, sep = "_")) %>% 
+  mutate(cc_trt = recode(cc_trt, 
+                         "rye" = "ccrye"))
 
 
 dstat_outrm <- 
   dstat %>% 
-  filter(totseeds_m2 < 15000) %>%  #--outlier
-  mutate(cc_trt = recode(cc_trt, 
-                         "rye" = "ccrye"))
-
-#--F4 is the booger
-dstat %>% 
-  filter(totseeds_m2 > 15000)
-
+  filter(totseeds_m2 < 15000)  #--outlier
+  
 
 # poisson -----------------------------------------------------------------
 
@@ -51,6 +47,7 @@ library(emmeans)
 library(broom)
 
 
+############### outlier removed #################
 
 # poisson -----------------------------------------------------------------
 
@@ -114,3 +111,71 @@ m1_est %>%
 
 m1_cont %>% 
   write_csv("01_stats-uni/st_weedseed-contr.csv")
+
+
+
+############### outlier stays #################
+
+# poisson -----------------------------------------------------------------
+
+#--use random factor for obs and block
+
+mf1 <- glmer(totseeds ~ site_sys*cc_trt + (1|blockID) + (1|obs_id), data = dstat, 
+            family = poisson(link = "log"))  
+
+
+# get estimates -----------------------------------------------------------
+
+
+mf1_emlog <- emmeans(mf1, pairwise ~ cc_trt|site_sys)
+mf1_em <- emmeans(mf1, pairwise ~ cc_trt|site_sys, type = "response")
+
+
+#--log scale
+mf1_estlog <- tidy(mf1_emlog$emmeans) %>% 
+  mutate(model = "pois_full")
+
+mf1_contlog <- tidy(mf1_emlog$contrasts) %>% 
+  mutate(model = "pois_full")
+
+#--original scale
+mf1_est <- tidy(mf1_em$emmeans) %>% 
+  mutate(model = "pois_full")
+
+mf1_cont <- 
+  tidy(mf1_em$contrasts) %>% 
+  mutate(model = "pois_full") %>% 
+  left_join(mf1_em$contrasts %>% 
+              confint( level = 0.9) %>% 
+              as_tibble() %>% 
+              mutate(model = "pois_full"))
+
+
+#--overall
+oaf <- 
+  emmeans(mf1, pairwise ~ cc_trt:site_sys, type = "response", )$contrasts %>% 
+  summary() %>% 
+  as_tibble() %>% 
+  separate(contrast, into = c("level1", "level2"), sep = "/") %>% 
+  mutate(p.value = round(p.value, 3)) 
+
+oaf %>% 
+  filter(grepl("Funcke", level1))
+
+# write results -----------------------------------------------------------
+
+#--log scale
+mf1_estlog %>%
+  write_csv("01_stats-uni/st_weedseed-est-log-full.csv")
+
+mf1_contlog %>% 
+  write_csv("01_stats-uni/st_weedseed-contr-log-full.csv")
+
+
+#--response scale
+mf1_est %>%
+  write_csv("01_stats-uni/st_weedseed-est-full.csv")
+
+mf1_cont %>% 
+  write_csv("01_stats-uni/st_weedseed-contr-full.csv")
+

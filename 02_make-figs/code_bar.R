@@ -81,7 +81,8 @@ raws <-
 
 
 #--raw means 
-sb_est <- read_csv("01_stats-uni/st_weedseed-est.csv") %>% 
+sb_est <- 
+  read_csv("01_stats-uni/st_weedseed-est.csv") %>% 
   mutate(totseeds_m2 = pfifun_seedstom2conv(rate),
          totseeds_se = pfifun_seedstom2conv(std.error),
          se_lo = totseeds_m2 - totseeds_se,

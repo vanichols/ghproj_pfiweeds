@@ -373,6 +373,96 @@ fig_dat %>%
   ) 
 ```
 
+```{r, fig.cap="Figure 4 using full dataset"}
+
+wdat <- pfifun_sum_weedbyeu(pfi_ghobsraw) %>% 
+  ungroup() %>% 
+  unite(site_name, sys_trt, col = "site_sys", remove = T) #%>% 
+  #filter(seeds < 750) #--funcke point
+
+adat <- pfifun_sum_byeu(pfi_ghobsraw) %>% 
+  ungroup() %>% 
+  unite(site_name, sys_trt, col = "site_sys", remove = T) #%>% 
+  #filter(totseeds < 750) #--funcke point
+
+
+# abs diffs -----------------------------------------------------------------
+
+adiff <- 
+  adat %>% 
+  group_by(site_sys, cc_trt) %>% 
+  summarise(mtot_m2 = mean(totseeds_m2)) %>% 
+  pivot_wider(names_from = cc_trt, values_from = mtot_m2) %>% 
+  mutate(diff_ryetono = rye - no) %>% 
+  mutate(weed = "Overall")
+
+
+wdiff <- 
+  wdat %>% 
+  group_by(site_sys, cc_trt, weed) %>% 
+  summarise(mtot_m2 = mean(seeds_m2)) %>% 
+  pivot_wider(names_from = cc_trt, values_from = mtot_m2) %>% 
+  mutate(diff_ryetono = rye - no)
+
+
+diff <- 
+  adiff %>% 
+  bind_rows(wdiff) %>% 
+  mutate(clr_id = ifelse(diff_ryetono < 0, "neg", 
+                         ifelse(diff_ryetono > 0, "pos", "zero"))) %>% 
+  mutate(site_id = recode(site_sys,
+                          "Boyd_grain" = "Central",
+                          "Boyd_silage" = "Central (Silage)",
+                          "Funcke_grain" = "West",
+                          "Stout_grain" = "East"),
+         site_id = factor(site_id, levels = rev(c("West", "Central (Silage)", "Central", "East"))),
+         site_id2 = factor(site_id, levels = (c("West", "Central (Silage)", "Central", "East"))))
+
+
+#--get a factor order
+# myorder <- 
+#   wdiff %>% 
+#   group_by(weed) %>% 
+#   summarise(mdiff = abs(mean(diff_ryetono, na.rm = T))) %>%
+#   arrange(-mdiff) %>% 
+#   pull(weed)
+
+myorder <- 
+  read_csv("../02_make-figs/mf_weed-list-arranged.csv") %>% 
+  pull(code)
+
+diff %>% 
+  mutate(weed = factor(weed, levels = c(rev(myorder), "Overall")),
+         thick_id = ifelse(weed == "Overall", "thick", "thin"),
+         difflog = log(abs(diff_ryetono)),
+         diff_ryetono2 = ifelse(diff_ryetono == 0, " ", round(diff_ryetono))) %>% 
+  ggplot(aes(site_id2, weed)) + 
+  geom_tile(color = "black", aes(fill = thick_id)) +
+  geom_point(aes(color = clr_id, 
+                 #size = (diff_ryetono),
+                 size = diff_ryetono),
+             alpha = 0.5,
+             stroke = 2) + 
+  geom_text(aes(label = diff_ryetono2),
+            #vjust = 0,
+            color = "black",
+            fontface = "italic",
+            size = rel(3.5)) +
+  scale_x_discrete(position = "top") +
+  scale_fill_manual(values = c("thick" = "gray80", "thin" = "white")) +
+  scale_color_manual(values = c("neg" = p_pink, "pos" = p_green, "zero" = "gray90")) + 
+  #scale_size_continuous(range = c(1, 7)) +
+  scale_size_area(max_size = 5) + #--this makes a value of 0 a 0 point, can't see anything
+  guides(color = F, size = F, fill = F) +
+  theme_minimal() + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 0, hjust = 0)) + 
+  labs(x = NULL, y = NULL) 
+
+
+```
+
+
+
 \newpage
 
 ```{r, fig.cap = "Figure 4 on full dataset"}

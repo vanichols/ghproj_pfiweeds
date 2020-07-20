@@ -17,7 +17,7 @@ p_green <- "#619B44"
 p_blue <- "#46B2B5"
 p_pink <- "#DC1A64"
 p_orange <- "#FFA726"
-p_yellow <- "#FFC000"
+p_yellow <- "#FFE100"
 p_gray <- "#E7E6E6"
 
 
@@ -49,10 +49,8 @@ myaxistexttheme <- theme(axis.text = element_text(size = rel(1.2)),
                          axis.title = element_text(size = rel(1.3)))
 
 
-cctrtpal <- c("darkolivegreen3", "lightsalmon4")
-
 #labseedsm2 = expression('Weed Seeds\n (1000s m'^"-2)")
-labseedsm2 <- bquote("Weed Seeds (1000s"~m^-2~")")
+labseedsm2 <- bquote("Weed Seed Density (1000s"~m^-2~")")
 
 
 # fig ---------------------------------------------------------------------

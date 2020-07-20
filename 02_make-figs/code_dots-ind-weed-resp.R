@@ -27,6 +27,12 @@ p_gray <- "#E7E6E6"
 
 # data --------------------------------------------------------------------
 
+#--how many species were identified?
+pfi_weedsplist %>% 
+  filter(!is.na(scientific_name)) %>% 
+  count()
+
+
 #--use data and fucntion from package
 
 pfi_ghobsraw

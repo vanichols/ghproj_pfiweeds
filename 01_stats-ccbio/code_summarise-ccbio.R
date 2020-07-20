@@ -50,6 +50,14 @@ ggsave("01_stats-ccbio/fig_ccbio-over-years.png")
 
 # calculate different things ----------------------------------------------
 
+yr_span <- c("5yr", "10yr")
+
+cc_2019 <- 
+  ccbio %>% 
+  filter(year == 2019) %>% 
+  rename(ccbio_2019 = ccbio_Mgha) %>% 
+  select(-year) %>%  
+  expand_grid(yr_span)
 
 cc_10yrs <-
   ccbio %>%
@@ -95,8 +103,9 @@ cc_5yrs <-
 
 
 newdata <- 
-  cc_5yrs %>% 
   bind_rows(cc_10yrs) %>% 
+  bind_rows(cc_5yrs) %>% 
+  left_join(cc_2019) %>% 
   select(site_sys, yr_span, everything())
 
 

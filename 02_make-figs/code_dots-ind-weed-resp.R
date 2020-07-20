@@ -98,29 +98,67 @@ myorder <-
 diff %>% 
   mutate(weed = factor(weed, levels = c("Overall", myorder)),
          thick_id = ifelse(weed == "Overall", "thick", "thin"),
-         difflog = log(abs(diff_ryetono))) %>% 
+         difflog = log(abs(diff_ryetono)),
+         diff_lab = round(diff_ryetono, 0),
+         diff_lab2 = ifelse(diff_lab == 0, paste(""), diff_lab)) %>% 
   ggplot(aes(weed, site_id)) + 
   geom_tile(color = "black", aes(fill = thick_id)) +
   geom_point(aes(color = clr_id, 
-                 #size = (diff_ryetono),
-                 size = difflog)) + 
-  geom_text(aes(label = round(diff_ryetono, 0)),
+                 #size = abs(diff_ryetono),
+                 size = difflog
+                 )) + 
+  geom_text(aes(label = diff_lab2),
             vjust = 2.5,
             color = "gray50",
             fontface = "italic",
             size = rel(3)) +
   scale_x_discrete(position = "top") +
   scale_fill_manual(values = c("thick" = "gray80", "thin" = "white")) +
-  scale_color_manual(values = c("neg" = p_green, "pos" = p_pink, "zero" = "gray90")) + 
+  scale_color_manual(values = c("neg" = p_orange, "pos" = p_gray, "zero" = "gray90")) + 
   #scale_size_continuous(range = c(1, 7)) +
-  scale_size_area(max_size = 7) + #--this makes a value of 0 a 0 point, can't see anything
+  #scale_size_area(max_size = 7) + #--this makes a value of 0 a 0 point, can't see anything
+  guides(color = F, size = F, fill = F) +
+  theme_minimal() + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 0, hjust = 0),
+        axis.text.y = element_text(face = c("plain", "plain", "bold", "bold"))) + 
+  labs(x = NULL, y = NULL) 
+
+ggsave("02_make-figs/figs/fig_dots-ind-weed-resp1.png", width = 7, height = 3)
+
+##--try coord flipped
+
+diff %>% 
+  mutate(weed = factor(weed, levels = c(rev(myorder), "Overall")),
+         thick_id = ifelse(weed == "Overall", "thick", "thin"),
+         difflog = log(abs(diff_ryetono)),
+         diff_ryetono2 = ifelse(diff_ryetono == 0, " ", round(diff_ryetono))) %>% 
+  ggplot(aes(site_id2, weed)) + 
+  geom_tile(color = "black", aes(fill = thick_id)) +
+  geom_point(aes(color = clr_id, 
+                 size = abs(diff_ryetono),
+                 #size = difflog
+                 ),
+             #alpha = 0.5
+             ) + 
+  geom_text(aes(label = diff_ryetono2, color = clr_id),
+            vjust = 1.5,
+            color = "gray70",
+            fontface = "italic",
+            size = rel(3.5)) +
+  scale_x_discrete(position = "top") +
+  scale_fill_manual(values = c("thick" = "gray80", "thin" = "white")) +
+  scale_color_manual(values = c("neg" = p_pink, "pos" = p_green, "zero" = "gray90")) + 
+  #scale_size_continuous(range = c(1, 7)) +
+  scale_size(range = c(1, 9)) + #--this makes a value of 0 a 0 point, can't see anything
   guides(color = F, size = F, fill = F) +
   theme_minimal() + 
   theme(axis.text.x = element_text(angle = 45, vjust = 0, hjust = 0)) + 
   labs(x = NULL, y = NULL) 
 
-##--try coord flipped
+ggsave("02_make-figs/figs/fig_dots-ind-weed-resp2.png", width = 3, height = 7)
 
+
+##--try different dot sizes
 
 diff %>% 
   mutate(weed = factor(weed, levels = c(rev(myorder), "Overall")),
@@ -149,7 +187,7 @@ diff %>%
   theme(axis.text.x = element_text(angle = 45, vjust = 0, hjust = 0)) + 
   labs(x = NULL, y = NULL) 
 
-ggsave("02_make-figs/figs/fig_dots-ind-weed-resp.png", width = 3, height = 7)
+ggsave("02_make-figs/figs/fig_dots-ind-weed-resp3.png", width = 3, height = 7)
 
 
 

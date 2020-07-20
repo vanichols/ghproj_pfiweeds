@@ -1,5 +1,5 @@
 ---
-title: "Supplementary Material for 'Long-term use of cover crops'"
+title: "Supplementary Material for 'Long-term use of cover crops reduces weed seedbanks'"
 author: "Nichols et al. 2020"
 date: "7/15/2020"
 header-includes: #allows you to add in your own Latex packages
@@ -30,6 +30,7 @@ library(kableExtra)
 # General Site Management Summary
 
 ```{r}
+
 pfi_tb <- pfi_sitemgmt %>%
   rename(
     "Site Description" = site_desc, 
@@ -56,7 +57,9 @@ pfi_tb %>%
   kable(caption = "General Site Description", booktabs = T, align = "c") %>% 
   collapse_rows(columns = 1, latex_hline = "major") %>% 
   kable_styling(latex_options = c("striped", "HOLD_position"), position = "center", full_width = F) %>% 
-  column_spec(column = c(2, 3), width = "10em")  %>% 
+  column_spec(column = c(1), width = "3em")  %>% 
+  column_spec(column = c(2), width = "7em")  %>% 
+  column_spec(column = c(3), width = "5em")  %>% 
   column_spec(column = c(4:6), width = "5em") 
 ```
 
@@ -81,7 +84,8 @@ pfi_tb %>%
   select(1, 11:16) %>% 
   kable(caption = "General Management", booktabs = T, align = "c") %>% 
   kable_styling(latex_options = c("striped", "HOLD_position"), position = "center", full_width = F) %>% 
-  column_spec(column = c(2, 6), width = "10em") %>% 
+  column_spec(column = c(2), width = "7em") %>% 
+   column_spec(column = c(3:7), width = "5em") %>% 
    collapse_rows(columns = 1, latex_hline = "major")
   
 ```
@@ -132,8 +136,7 @@ read_csv("../01_stats-ccbio/sc_ccbio-metrics.csv") %>%
   mutate_if(is.numeric, round, 2) %>% 
   kable(caption = "Cover crop biomass metrics", booktabs = T, align = "c") %>% 
   kable_styling(latex_options = c("striped", "HOLD_position"), position = "center", full_width = F) %>% 
-  collapse_rows(columns = c(2), latex_hline = "major", valign = "middle") 
-
+  collapse_rows(columns = c(2), latex_hline = "major", valign = "middle")
 ```
 
 
@@ -142,7 +145,7 @@ sp_effs <- read_csv("../01_stats-ccbio/sc_ccbio-metrics-effects.csv")
 sp_cors <- read_csv("../01_stats-ccbio/sc_ccbio-spear-cors.csv")
 
 sp_effs %>% 
-  pivot_longer(cols = c(nabove1:ccbio_stab),
+  pivot_longer(cols = c(nabove1:ccbio_2019),
                names_to = 'metric') %>%
   left_join(sp_cors) %>% 
   ggplot(aes(value, -trt_eff_abs)) + 
@@ -167,7 +170,7 @@ sp_effs %>%
 
 ```{r, fig.cap = "Relative Change in Seedbank Density vs. Cover Crop Biomass Metrics"}
 sp_effs %>% 
-  pivot_longer(cols = c(nabove1:ccbio_stab),
+  pivot_longer(cols = c(nabove1:ccbio_2019),
                names_to = 'metric') %>%
   left_join(sp_cors) %>% 
   ggplot(aes(value, trt_eff_rel)) + 

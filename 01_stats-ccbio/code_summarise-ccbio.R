@@ -68,14 +68,17 @@ cc_10yrs <-
          mx_minus_10 = mxyear - 10) %>% 
   filter(year >= mx_minus_10) %>% 
   mutate(above1 = case_when(ccbio_Mgha > 1 ~ 1,
+                            TRUE ~ 0),
+         above2 = case_when(ccbio_Mgha > 2 ~ 1,
                             TRUE ~ 0)) %>%
   summarise(
     nabove1 = sum(above1),
+    nabove2 = sum(above2),
     #--mean, med, var, cv, max
     ccbio_mean = mean(ccbio_Mgha,   na.rm = TRUE),
     ccbio_med  = median(ccbio_Mgha, na.rm = TRUE),
     ccbio_var  = var(ccbio_Mgha,     na.rm = TRUE),
-    ccbio_cv   = ccbio_var / ccbio_mean,
+    #ccbio_cv   = ccbio_var / ccbio_mean,
     ccbio_max  = max(ccbio_Mgha, na.rm = TRUE),
     ccbio_stab = sd(ccbio_Mgha, na.rm = TRUE) / ccbio_mean
   ) %>% 
@@ -88,14 +91,17 @@ cc_5yrs <-
   #--number of years w/>1 Mg produced
   group_by(site_sys) %>%
   mutate(above1 = case_when(ccbio_Mgha > 1 ~ 1,
+                            TRUE ~ 0),
+         above2 = case_when(ccbio_Mgha > 2 ~ 1,
                             TRUE ~ 0)) %>%
   summarise(
     nabove1 = sum(above1),
+    nabove2 = sum(above2),
     #--mean, med, var, cv, max
     ccbio_mean = mean(ccbio_Mgha,   na.rm = TRUE),
     ccbio_med  = median(ccbio_Mgha, na.rm = TRUE),
     ccbio_var  = var(ccbio_Mgha,     na.rm = TRUE),
-    ccbio_cv   = ccbio_var / ccbio_mean,
+    #ccbio_cv   = ccbio_var / ccbio_mean,
     ccbio_max  = max(ccbio_Mgha, na.rm = TRUE),
     ccbio_stab = sd(ccbio_Mgha, na.rm = TRUE) / ccbio_mean
   ) %>% 
@@ -108,7 +114,7 @@ newdata <-
   left_join(cc_2019) %>% 
   select(site_sys, yr_span, everything())
 
-
+newdata
 
 # write it ----------------------------------------------------------------
 

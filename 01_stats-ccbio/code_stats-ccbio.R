@@ -42,7 +42,7 @@ ccbio_mod %>%
 
 
 ccbio_mod %>%
-  pivot_longer(cols = c(nabove1:ccbio_stab),
+  pivot_longer(cols = c(nabove1:ccbio_2019),
                names_to = 'metric') %>%
   arrange(metric, yr_span) %>%
   group_by(metric, yr_span) %>%

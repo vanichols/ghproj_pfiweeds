@@ -44,10 +44,10 @@ p_green <- "#619B44"
 p_blue <- "#46B2B5"
 p_pink <- "#DC1A64"
 p_orange <- "#FFA726"
-p_yellow <- "#FFC000"
+p_yellow <- "#FFE100"
 p_gray <- "#E7E6E6"
 
-scales::show_col(pptgreen)
+scales::show_col(p_yellow)
 
 
 # bar graph ---------------------------------------------------------------

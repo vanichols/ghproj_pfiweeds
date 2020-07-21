@@ -29,7 +29,7 @@ library(kableExtra)
 
 # General Site Management Summary
 
-```{r}
+```{r gentbl}
 
 pfi_tb <- pfi_sitemgmt %>%
   rename(
@@ -57,15 +57,15 @@ pfi_tb %>%
   kable(caption = "General Site Description", booktabs = T, align = "c") %>% 
   collapse_rows(columns = 1, latex_hline = "major") %>% 
   kable_styling(latex_options = c("striped", "HOLD_position"), position = "center", full_width = F) %>% 
-  column_spec(column = c(1), width = "3em")  %>% 
-  column_spec(column = c(2), width = "7em")  %>% 
+  column_spec(column = c(1), width = "5em")  %>% 
+  column_spec(column = c(2), width = "5em")  %>% 
   column_spec(column = c(3), width = "5em")  %>% 
-  column_spec(column = c(4:6), width = "5em") 
+  column_spec(column = c(4:6), width = "3em") 
 ```
 
 \newpage
 
-```{r}
+```{r herbtable}
 #--herbicide
 pfi_tb %>% 
   select(1, 8:10) %>% 
@@ -77,7 +77,7 @@ pfi_tb %>%
 
 \newpage
 
-```{r}
+```{r mgmttable}
 
 #--mgmt
 pfi_tb %>% 
@@ -93,7 +93,7 @@ pfi_tb %>%
 \newpage
 # Field wet soil amounts
 
-```{r}
+```{r soilwgtstbl}
 pfi_soilwgts %>% 
   kable(caption = "Wet Soil Weights Immediately After Sampling", booktabs = T, align = "c") %>% 
   kable_styling(latex_options = c("striped", "HOLD_position"), position = "center", full_width = F) %>% 
@@ -109,7 +109,7 @@ pfi_soilwgts %>%
 
 Values are presented for the models run with the full dataset (XX_full) and with the outlier removed (XX_out-rm)
 
-```{r}
+```{r contrasts}
 read_csv("../01_stats-uni/st_weedseed-contr-all-models.csv") %>% 
   select(model, site_sys, everything(), -df) %>% 
   mutate_if(is.numeric, round, 2) %>% 
@@ -118,7 +118,7 @@ read_csv("../01_stats-uni/st_weedseed-contr-all-models.csv") %>%
   collapse_rows(columns = c(1), latex_hline = "major", valign = "middle") 
 ```
 
-```{r}
+```{r estimates}
 read_csv("../01_stats-uni/st_weedseed-est-all-models.csv") %>%  
   mutate_if(is.numeric, round, 2) %>% 
   select(model, site_sys, everything(), -df) %>% 
@@ -131,14 +131,25 @@ read_csv("../01_stats-uni/st_weedseed-est-all-models.csv") %>%
 
 ## Biomass metrics
 
-```{r}
+```{r ccbio10yr}
 read_csv("../01_stats-ccbio/sc_ccbio-metrics.csv") %>% 
   mutate_if(is.numeric, round, 2) %>% 
-  kable(caption = "Cover crop biomass metrics", booktabs = T, align = "c") %>% 
+  filter(yr_span == '10yr') %>% 
+  select(-yr_span) %>% 
+  kable(caption = "Cover crop biomass metrics, 10-year time frame", booktabs = T, align = "c") %>% 
   kable_styling(latex_options = c("striped", "HOLD_position"), position = "center", full_width = F) %>% 
   collapse_rows(columns = c(2), latex_hline = "major", valign = "middle")
 ```
 
+```{r ccbio5yr}
+read_csv("../01_stats-ccbio/sc_ccbio-metrics.csv") %>% 
+  mutate_if(is.numeric, round, 2) %>% 
+  filter(yr_span == '5yr') %>% 
+  select(-yr_span) %>% 
+  kable(caption = "Cover crop biomass metrics, 5-year time frame", booktabs = T, align = "c") %>% 
+  kable_styling(latex_options = c("striped", "HOLD_position"), position = "center", full_width = F) %>% 
+  collapse_rows(columns = c(2), latex_hline = "major", valign = "middle")
+```
 
 ```{r, fig.cap="Absolute Change in Seedbank Density vs. Cover Crop Biomass Metrics"}
 sp_effs <- read_csv("../01_stats-ccbio/sc_ccbio-metrics-effects.csv")
@@ -199,7 +210,7 @@ sp_effs %>%
 \newpage
 ## Manuscript figures with full datasets
 
-```{r, fig.cap = "Figure 2 on full dataset"}
+```{r bargraph, fig.cap = "Manuscript Fig. 2 using full dataset"}
 
 # constant themes ---------------------------------------------------------
 
@@ -376,7 +387,7 @@ fig_dat %>%
   ) 
 ```
 
-```{r, fig.cap="Figure 4 using full dataset"}
+```{r dotplot, fig.cap="Manuscript fig. 4 using full dataset"}
 
 wdat <- pfifun_sum_weedbyeu(pfi_ghobsraw) %>% 
   ungroup() %>% 
@@ -468,7 +479,7 @@ diff %>%
 
 \newpage
 
-```{r, fig.cap = "Figure 4 on full dataset"}
+```{r nmds, fig.cap = "Manuscript fig. 4 using full dataset"}
 
 
 # fig settings ------------------------------------------------------------
@@ -658,7 +669,7 @@ nmds3 + leg_nmds2 +
 
 \newpage
 
-```{r, fig.cap = "Figure 5 on full dataset"}
+```{r stochdom, fig.cap = "Manuscript fig. 5 using full dataset"}
 
 stodom <- read_csv("../01_stats-stoch-dom/st_stoch-dom-res-full.csv")
 

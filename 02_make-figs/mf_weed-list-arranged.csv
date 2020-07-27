@@ -5,15 +5,15 @@ POROL,Portulaca oleracea,Purslane,C4 forb,1.28%
 DIGSA,Digitaria sanguinalis,Large crabgrass,C4 grass,1%
 EUPMA,Euphorbia maculata,Spotted spurge,C4 forb,0.41%
 PLAMA,Plantago major,Plantain,C3 forb,0.41%
-SOLPT,Solanum ptycanthum,Nightshade,C3 forb,0.34%
-CONCA,Conyza canadensis,Marestail,C3 forb,0.32%
+SOPT7,Solanum ptycanthum,Eastern Nightshade,C3 forb,0.34%
+ERICA,Erigeron canadensis,Horseweed,C3 forb,0.32%
 SETFA,Setaria faberi,Giant foxtail,C4 grass,0.24%
-UD,NA,NA,NA,0.17%
+UD,NA,Unknown dicotyledon,NA forb,0.17%
 SETVI,Setaria viridis,Green foxtail,C4 grass,0.15%
-UM,NA,NA,NA,0.15%
+UM,NA,Unknown monocotyledon,NA grass,0.15%
 POLAV,Polygonum aviculare,Prostrate knotweed,C3 forb,0.11%
 SECCE,Secale cereale,Cereal rye,C3 grass,<0.10%
 ABUTH,Abutilon theophrasti,Velvet leaf,C3 forb,<0.10%
 OXAST,Oxalis stricta,Yellow woodsorrel,C3 forb,<0.10%
-RAPSA,Raphanus sativus,Radish,NA,<0.10%
+RAPSR,Raphanus sativus,Radish,NA forb,<0.10%
 TAROF,Taraxacum officinale,Dandelion,C3 forb,<0.10%

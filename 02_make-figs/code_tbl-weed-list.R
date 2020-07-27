@@ -61,6 +61,8 @@ dat_table <-
   mutate(scientific_name = str_to_sentence(scientific_name),
          common_name = str_to_sentence(common_name),
          common_name = ifelse(common_name == "Water hemp", "Waterhemp", common_name),
+         common_name = ifelse(common_name == "Marestail", "Horseweed", common_name),
+         common_name = ifelse(common_name == "Nightshade", "Eastern black nightshade", common_name),
          common_name = ifelse(common_name == "Rye (cereal)", "Cereal rye", common_name),
          desc = ifelse(desc == "NA NA", NA, desc))
 

@@ -24,20 +24,20 @@ myaxistexttheme <- theme(axis.text = element_text(size = rel(1.2)),
                          strip.text = element_text(size = rel(1.3)))
 
 
+
 p_green <- "#619B44"
-p_blue <- "#46B2B5"
+p_blue <- "dodgerblue4"#"#46B2B5"
 p_pink <- "#DC1A64"
 p_orange <- "#FFA726"
-p_yellow <- "#FFC000"
+p_yellow <- "#FAE549FD" #"#FFE100"
 p_gray <- "#E7E6E6"
+p_purp <- "#8B1C62"
 
-
+# lydia's colors
 mycols <- c("#1B9E77", "#D95F02", "#7570B3", "#E6AB02")
 scales::show_col(mycols)
 theme_set(theme_bw())
 
-
-cctrtpal <- c("lightsalmon4", "darkolivegreen3")
 
 # data --------------------------------------------------------------------
 
@@ -83,17 +83,167 @@ site_hull2 <-
   group_by(cc_trt, crop_sys, site) %>% 
   slice(c(1, n()))
 
+nmds3 <- 
+  ggplot() +
+   #--grasses
+  geom_text_repel(data = spp_scores %>% filter(functional_grp == "grass"), 
+                  aes(x = NMDS1, 
+                      y = NMDS2, 
+                      label = speciesID),
+                  fontface = "italic",
+                  alpha = 0.5) + # Species as text - better!
+  #--forbs
+  geom_text_repel(data = spp_scores %>% filter(functional_grp == "forb"), 
+                  aes(x = NMDS1, 
+                      y = NMDS2, 
+                      label = speciesID),
+                  fontface = "bold",
+                  alpha = 0.6) + # Species as text - better!
+  geom_polygon(data = site_hull, 
+               aes(x = NMDS1, 
+                   y = NMDS2, 
+                   fill = site_sys_trt),
+               alpha = 0.3) + 
+  geom_path(data = site_hull,
+            aes(x = NMDS1, 
+                y = NMDS2,
+                group = interaction(cc_trt, crop_sys, site),
+                linetype = cc_trt
+            ),
+            na.rm = TRUE,
+            color = "gray40",
+            size = 1) +
+  geom_path(data = site_hull2, 
+            aes(x = NMDS1, 
+                y = NMDS2,
+                group = interaction(cc_trt, crop_sys, site),
+                linetype = cc_trt
+            ),
+            na.rm = TRUE,
+            color = "gray40",
+            size = 0.9) +
+  #geom_hline(yintercept = 0, lty = 2) +
+  #geom_vline(xintercept = 0, lty = 2) +
+  # -- the following stuff is for aesthetic purposes --
+  scale_color_manual(values = c(p_pink, p_green, p_blue, p_orange)) +
+  scale_fill_manual(values = c(p_yellow, p_yellow,
+                               p_purp, p_purp,
+                               p_green, p_green,
+                               p_blue, p_blue)) +
+  labs(color = "Site",
+       linetype = "Cover Crop Treatment")+
+  guides(fill = FALSE,
+         shape = F)+
+  theme_bw() +
+  theme(legend.direction  = "vertical",
+        legend.background = element_rect(color = "black"),
+        legend.justification = c(0, 1),
+        legend.position = c(0.01, 0.99),
+        legend.text       = element_text(size = 12),
+        legend.title      = element_text(size = 14),
+        axis.title        = element_text(size = 14),
+        axis.text         = element_text(size = 12)) 
+
+nmds3
+
+
+#--this is just for the legend
+nmds2 <- 
+  ggplot() +
+  geom_point(data = site_scores, 
+             aes(x = NMDS1, 
+                 y = NMDS2, 
+                 color = site_sys, shape = cc_trt), 
+             size = 3, 
+             alpha = 0.5) +
+  #--grasses
+  geom_text_repel(data = spp_scores %>% filter(functional_grp == "grass"), 
+                  aes(x = NMDS1, 
+                      y = NMDS2, 
+                      label = speciesID),
+                  fontface = "italic",
+                  alpha = 0.5) + # Species as text - better!
+  #--forbs
+  geom_text_repel(data = spp_scores %>% filter(functional_grp == "forb"), 
+                  aes(x = NMDS1, 
+                      y = NMDS2, 
+                      label = speciesID),
+                  fontface = "bold",
+                  alpha = 0.6) + # Species as text - better!
+  geom_polygon(data = site_hull, 
+               aes(x = NMDS1, 
+                   y = NMDS2, 
+                   fill = site_sys_trt),
+               alpha = 0.3) + 
+  #geom_hline(yintercept = 0, lty = 2) +
+  #geom_vline(xintercept = 0, lty = 2) +
+  # -- the following stuff is for aesthetic purposes --
+  scale_color_manual(values = c("Central Grain" = p_yellow, 
+                                "Central Silage" = p_purp,
+                                "East Grain" = p_blue,
+                                "West Grain" = p_green)) +
+  scale_fill_manual(values = c(p_yellow, p_yellow,
+                               p_purp, p_purp,
+                               p_green, p_green,
+                               p_blue, p_blue)) +
+  labs(color = "Site",
+       shape = "Cover Crop Treatment")+
+  guides(fill = FALSE)+
+  theme_bw() +
+  theme(legend.direction  = "vertical",
+        legend.background = element_rect(color = "black"),
+        legend.text       = element_text(size = 12),
+        legend.title      = element_text(size = 14),
+        axis.title        = element_text(size = 14),
+        axis.text         = element_text(size = 12))
+
+nmds2
+
+# get legend from different plot ------------------------------------------
+
+library(cowplot)
+
+#--remove point legend
+dum_p1 <- 
+  nmds2 + 
+  guides(shape = F)
+  
+# extract legend w/just site
+leg_nmds2 <- get_legend(dum_p1)
+
+# #--plot legend next to plot
+# ggdraw(plot_grid(plot_grid(nmds3, ncol = 2),
+#                  plot_grid(NULL, leg_nmds2, ncol = 1)))
+
+library(patchwork)
+
+set.seed(61)
+nmds3 + leg_nmds2 + 
+  plot_layout(widths = c(2, 0.5))
+
+ggsave("02_make-figs/figs/fig_nmds3.png")
+
+# Now plots are aligned vertically with the legend to the right
+# ggdraw(plot_grid(plot_grid(p1, plot.mpg, ncol=1, align='v'),
+#                  plot_grid(NULL, legend, ncol=1),
+#                  rel_widths=c(1, 0.2)))
+
+
+
+# separate panels by site -------------------------------------------------
+
+
 set.seed(2091)
 ggplot() +
   geom_path(data = site_hull,
-               aes(x = NMDS1, 
-                   y = NMDS2,
-                   group = interaction(cc_trt, crop_sys, site),
-                   linetype = crop_sys
-               ),
+            aes(x = NMDS1, 
+                y = NMDS2,
+                group = interaction(cc_trt, crop_sys, site),
+                linetype = crop_sys
+            ),
             na.rm = TRUE,
-               color = "gray40",
-               size = 1) +
+            color = "gray40",
+            size = 1) +
   geom_path(data = site_hull2, 
             aes(x = NMDS1, 
                 y = NMDS2,
@@ -145,8 +295,6 @@ ggplot() +
 
 ggsave("02_make-figs/figs/fig_nmds.png")
 
-
-
 # figure alt --------------------------------------------------------------
 
 set.seed(59)
@@ -182,9 +330,9 @@ nmds2 <-
   #geom_vline(xintercept = 0, lty = 2) +
   # -- the following stuff is for aesthetic purposes --
   scale_color_manual(values = c(p_pink, p_green, p_blue, p_orange)) +
-  scale_fill_manual(values = c(p_pink, p_pink,
+  scale_fill_manual(values = c(p_yellow, p_yellow,
+                               p_purp, p_purp,
                                p_green, p_green,
-                               p_orange, p_orange,
                                p_blue, p_blue)) +
   labs(color = "Site",
        shape = "Cover Crop Treatment")+
@@ -201,97 +349,3 @@ nmds2
 
 ggsave("02_make-figs/figs/fig_nmds2.png")
 
-
-# figure alt --------------------------------------------------------------
-
-set.seed(59)
-nmds3 <- 
-  ggplot() +
-   #--grasses
-  geom_text_repel(data = spp_scores %>% filter(functional_grp == "grass"), 
-                  aes(x = NMDS1, 
-                      y = NMDS2, 
-                      label = speciesID),
-                  fontface = "italic",
-                  alpha = 0.5) + # Species as text - better!
-  #--forbs
-  geom_text_repel(data = spp_scores %>% filter(functional_grp == "forb"), 
-                  aes(x = NMDS1, 
-                      y = NMDS2, 
-                      label = speciesID),
-                  fontface = "bold",
-                  alpha = 0.6) + # Species as text - better!
-  geom_polygon(data = site_hull, 
-               aes(x = NMDS1, 
-                   y = NMDS2, 
-                   fill = site_sys_trt),
-               alpha = 0.3) + 
-  geom_path(data = site_hull,
-            aes(x = NMDS1, 
-                y = NMDS2,
-                group = interaction(cc_trt, crop_sys, site),
-                linetype = cc_trt
-            ),
-            na.rm = TRUE,
-            color = "gray40",
-            size = 1) +
-  geom_path(data = site_hull2, 
-            aes(x = NMDS1, 
-                y = NMDS2,
-                group = interaction(cc_trt, crop_sys, site),
-                linetype = cc_trt
-            ),
-            na.rm = TRUE,
-            color = "gray40",
-            size = 0.9) +
-  #geom_hline(yintercept = 0, lty = 2) +
-  #geom_vline(xintercept = 0, lty = 2) +
-  # -- the following stuff is for aesthetic purposes --
-  scale_color_manual(values = c(p_pink, p_green, p_blue, p_orange)) +
-  scale_fill_manual(values = c(p_pink, p_pink,
-                               p_green, p_green,
-                               p_orange, p_orange,
-                               p_blue, p_blue)) +
-  labs(color = "Site",
-       linetype = "Cover Crop Treatment")+
-  guides(fill = FALSE,
-         shape = F)+
-  theme_bw() +
-  theme(legend.direction  = "vertical",
-        legend.background = element_rect(color = "black"),
-        legend.justification = c(0, 1),
-        legend.position = c(0.01, 0.99),
-        legend.text       = element_text(size = 12),
-        legend.title      = element_text(size = 14),
-        axis.title        = element_text(size = 14),
-        axis.text         = element_text(size = 12)) 
-
-nmds3
-
-# get legend from different plot ------------------------------------------
-
-library(cowplot)
-
-#--remove point legend
-dum_p1 <- 
-  nmds2 + 
-  guides(shape = F)
-  
-# extract legend w/just site
-leg_nmds2 <- get_legend(dum_p1)
-
-#--plot legend next to plot
-ggdraw(plot_grid(plot_grid(nmds3, ncol = 2),
-                 plot_grid(NULL, leg_nmds2, ncol = 1)))
-
-library(patchwork)
-
-nmds3 + leg_nmds2 + 
-  plot_layout(widths = c(2, 0.5))
-
-ggsave("02_make-figs/figs/fig_nmds3.png")
-
-# Now plots are aligned vertically with the legend to the right
-# ggdraw(plot_grid(plot_grid(p1, plot.mpg, ncol=1, align='v'),
-#                  plot_grid(NULL, legend, ncol=1),
-#                  rel_widths=c(1, 0.2)))

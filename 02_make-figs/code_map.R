@@ -24,6 +24,7 @@ library(stringr)
 
 library(patchwork)
 library(maps)
+library(cowplot)
 library(PFIweeds2020)
 
 
@@ -42,10 +43,10 @@ myaxistexttheme <- theme(axis.text = element_text(size = rel(1.2)),
 
 
 p_green <- "#619B44"
-p_blue <- "#46B2B5"
+p_blue <- "dodgerblue4"#"#46B2B5"
 p_pink <- "#DC1A64"
 p_orange <- "#FFA726"
-p_yellow <- "#FFE100"
+p_yellow <- "#FAE549FD" #"#FFE100"
 p_gray <- "#E7E6E6"
 
 scales::show_col(p_yellow)
@@ -127,7 +128,7 @@ fig_ccbio <-
        x = NULL) + 
   theme_bw() + 
   myaxistexttheme + 
-  theme(axis.title.y = element_text(hjust = 0.5),
+  theme(axis.title.y = element_text(hjust = 0.5, size = rel(1.2)),
         legend.position = "bottom")
 
 fig_ccbio

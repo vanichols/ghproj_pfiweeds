@@ -18,12 +18,14 @@ library(PFIweeds2020)
 
 
 p_green <- "#619B44"
-p_blue <- "#46B2B5"
+p_blue <- "dodgerblue4"#"#46B2B5"
 p_pink <- "#DC1A64"
 p_orange <- "#FFA726"
-p_yellow <- "#FFC000"
+p_yellow <- "#FAE549FD" #"#FFE100"
 p_gray <- "#E7E6E6"
+p_purp <- "#8B1C62"
 
+scales::show_col(p_purp)
 
 # data --------------------------------------------------------------------
 
@@ -105,8 +107,7 @@ diff %>%
   geom_tile(color = "black", aes(fill = thick_id)) +
   geom_point(aes(color = clr_id, 
                  #size = abs(diff_ryetono),
-                 size = difflog
-                 )) + 
+                 size = difflog)) + 
   geom_text(aes(label = diff_lab2),
             vjust = 2.5,
             color = "gray50",
@@ -114,7 +115,7 @@ diff %>%
             size = rel(3)) +
   scale_x_discrete(position = "top") +
   scale_fill_manual(values = c("thick" = "gray80", "thin" = "white")) +
-  scale_color_manual(values = c("neg" = p_orange, "pos" = p_gray, "zero" = "gray90")) + 
+  scale_color_manual(values = c("neg" = p_purp, "pos" = p_gray, "zero" = "gray90")) + 
   #scale_size_continuous(range = c(1, 7)) +
   #scale_size_area(max_size = 7) + #--this makes a value of 0 a 0 point, can't see anything
   guides(color = F, size = F, fill = F) +

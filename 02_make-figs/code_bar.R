@@ -41,19 +41,18 @@ myaxistexttheme <- theme(axis.text = element_text(size = rel(1.2)),
 
 
 p_green <- "#619B44"
-p_blue <- "#46B2B5"
+p_blue <- "dodgerblue4"#"#46B2B5"
 p_pink <- "#DC1A64"
 p_orange <- "#FFA726"
-p_yellow <- "#FFE100"
+p_yellow <- "#FAE549FD" #"#FFE100"
 p_gray <- "#E7E6E6"
 
 scales::show_col(p_yellow)
+scales::show_col("dodgerblue3")
 
 
 # bar graph ---------------------------------------------------------------
 
-
-cctrtpal <- c("darkolivegreen3", "lightsalmon4")
 
 #labseedsm2 = expression('Weed Seeds\n (1000s m'^"-2)")
 labseedsm2 <- bquote("Weed Seeds (1000s"~m^-2~")")
@@ -158,50 +157,6 @@ fig_dat <-
                     "ccrye" = "Winter Rye")) %>%
     select(site, cc_trt, crop_sys, totseeds_m2, se_lo, se_hi)
 
-fig_dat %>% 
-  ggplot(aes(reorder(crop_sys, totseeds_m2, mean), totseeds_m2 / 1000)) +
-  geom_col(position = position_dodge(width = 0.9),
-           color = "black",
-           size = 1.2,
-           aes(fill = cc_trt)) +
-  geom_point(data = raws, aes(crop_sys, totseeds_m2/1000, color = cc_trt), 
-             pch = 21, position = position_dodge(0.9), size = 3, fill = "gray80", alpha = 0.5) +
-  
-  geom_linerange(position = position_dodge(width = 0.9),
-                 aes(ymin = se_lo / 1000, ymax = se_hi / 1000, alpha = cc_trt)) +
-  geom_text(data = table_changes, aes(x = crop_sys, y = se_mx + 1.5, label = p.value), fontface = "italic") +
-  geom_text(data = table_changes, aes(x = crop_sys, y = se_mx + 2, label = paste0(trt_eff, " seeds"), fontface = "italic")) +
-  geom_text(data = table_changes, aes(x = crop_sys, y = se_mx + 2.5, label = trt_eff_pct2), fontface = "italic") +
-  scale_alpha_manual(values = c(1, 1)) +
-  labs(y = labseedsm2,
-       x = NULL,
-       fill = "Cover Crop Treatment") +
-  guides(alpha = F,
-         color = F) +
-  scale_fill_manual(values = c("No Cover" = p_yellow,
-                               "Winter Rye" = p_blue)) +
-  scale_color_manual(values = c("gray50", "gray50")) +
-  theme_bw() +
-  facet_grid(. ~ site, scales = "free") +
-  myaxistexttheme +
-  theme(#legend.direction = "horizontal",
-        #legend.position = "top",
-        legend.justification = c(1, 1),
-        legend.position = c(0.99, 0.99),
-        legend.background = element_rect(color = "black", fill = "white"),
-        legend.title = element_text(size = rel(1.4)),
-        #legend.key.width = unit(1.4, "cm"),
-        #legend.key.height = unit(0.5, "cm"),
-        # legend.key.size = unit(1, "cm"),
-        # axis.text.x = element_text(angle = 45,
-        #                            vjust = 1))
-  ) -> fig_sb
-        
-fig_sb
-
-ggsave("02_make-figs/figs/fig_bar.png")
-
-
 # alternative with CIs instead of SEs -------------------------------------
 
 fig_dat %>% 
@@ -209,14 +164,19 @@ fig_dat %>%
   geom_col(position = position_dodge(width = 0.9),
            color = "black",
            size = 0.9,
+           alpha = 0.9,
            aes(fill = cc_trt)) +
   # geom_point(data = raws, aes(crop_sys, totseeds_m2/1000, color = cc_trt), 
   #            pch = 21, position = position_dodge(0.9), size = 3, fill = "white", alpha = 0.7, stroke = 1.2) +
-  geom_point(data = raws, aes(crop_sys, totseeds_m2/1000, fill = cc_trt), 
-             pch = 21, 
+  geom_point(data = raws, 
+             aes(crop_sys, totseeds_m2/1000, 
+                 color = cc_trt,
+                 pch = cc_trt), 
+             #pch = 21, 
              position = position_jitterdodge(dodge.width = 0.9, jitter.width = 0.1), 
-             size = 2, 
-             color = "black") +
+             size = 2,
+             fill = "gray80",
+             alpha = 0.7, stroke = 1.2) +
   geom_linerange(position = position_dodge(width = 0.9),
                  aes(ymin = se_lo / 1000, ymax = se_hi / 1000, alpha = cc_trt),
                  size = 1.2, color = "black") +
@@ -227,12 +187,17 @@ fig_dat %>%
   scale_alpha_manual(values = c(1, 1)) +
   labs(y = labseedsm2,
        x = NULL,
-       fill = "Cover Crop Treatment") +
-  guides(alpha = F,
-         color = F) +
+       fill = "Cover Crop Treatment",
+       color = "Cover Crop Treatment",
+       shape = "Cover Crop Treatment") +
+  guides(alpha = F
+         #color = F
+         ) +
   scale_fill_manual(values = c("No Cover" = p_yellow,
                                "Winter Rye" = p_blue)) +
-  scale_color_manual(values = c("black", "black")) +
+  scale_color_manual(values = c("gray50", "gray50")) +
+  scale_shape_manual(values = c("No Cover" = 21,
+                                "Winter Rye" = 24)) +
   theme_bw() +
   facet_grid(. ~ site, scales = "free") +
   myaxistexttheme +
@@ -250,11 +215,6 @@ fig_dat %>%
   ) -> fig_sb
 
 fig_sb
-
-ggsave("02_make-figs/figs/fig_bar.png")
-
-
-
 
 # add values below --------------------------------------------------------
 
@@ -290,13 +250,64 @@ cclabs <-
 fig_sb + 
   geom_text(data = nolabs,
             aes(x = statplace, y = -1, label = statlet),
-             fontface = "italic") + 
+            fontface = "italic") + 
   geom_text(data = cclabs,
             aes(x = statplace, y = -1, label = statlet),
             fontface = "italic")
 
 
 ggsave("02_make-figs/figs/fig_bar.png")
+
+
+
+#--with SEs
+fig_dat %>% 
+  ggplot(aes(reorder(crop_sys, totseeds_m2, mean), totseeds_m2 / 1000)) +
+  geom_col(position = position_dodge(width = 0.9),
+           color = "black",
+           size = 1.2,
+           aes(fill = cc_trt)) +
+  geom_point(data = raws, aes(crop_sys, totseeds_m2/1000, color = cc_trt), 
+             pch = 21, 
+             position = position_dodge(0.9), 
+             size = 3,
+             fill = "gray80", 
+             alpha = 0.5) +
+  
+  geom_linerange(position = position_dodge(width = 0.9),
+                 aes(ymin = se_lo / 1000, ymax = se_hi / 1000, alpha = cc_trt)) +
+  geom_text(data = table_changes, aes(x = crop_sys, y = se_mx + 1.5, label = p.value), fontface = "italic") +
+  geom_text(data = table_changes, aes(x = crop_sys, y = se_mx + 2, label = paste0(trt_eff, " seeds"), fontface = "italic")) +
+  geom_text(data = table_changes, aes(x = crop_sys, y = se_mx + 2.5, label = trt_eff_pct2), fontface = "italic") +
+  scale_alpha_manual(values = c(1, 1)) +
+  labs(y = labseedsm2,
+       x = NULL,
+       fill = "Cover Crop Treatment") +
+  guides(alpha = F,
+         color = F) +
+  scale_fill_manual(values = c("No Cover" = p_yellow,
+                               "Winter Rye" = p_blue)) +
+  scale_color_manual(values = c("gray50", "gray50")) +
+  theme_bw() +
+  facet_grid(. ~ site, scales = "free") +
+  myaxistexttheme +
+  theme(#legend.direction = "horizontal",
+    #legend.position = "top",
+    legend.justification = c(1, 1),
+    legend.position = c(0.99, 0.99),
+    legend.background = element_rect(color = "black", fill = "white"),
+    legend.title = element_text(size = rel(1.4)),
+    #legend.key.width = unit(1.4, "cm"),
+    #legend.key.height = unit(0.5, "cm"),
+    # legend.key.size = unit(1, "cm"),
+    # axis.text.x = element_text(angle = 45,
+    #                            vjust = 1))
+  ) -> fig_sb
+
+fig_sb
+
+ggsave("02_make-figs/figs/fig_bar.png")
+
 
 
 

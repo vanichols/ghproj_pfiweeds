@@ -76,7 +76,10 @@ stodom %>%
   select(seeds, name, value) %>% 
   mutate(inv_value = 1 - value) %>% 
   ggplot(aes(seeds/1000, inv_value, color = name, fill = name, group = name, shape = name)) + 
-  ggridges::geom_density_line(stat = "identity", size = 0.5, alpha = 0.7) +
+  ggridges::geom_density_line(stat = "identity", 
+                              size = 0.5, 
+                              #alpha = 0.7
+                              ) +
   geom_line(size = 1) +
   geom_point(size = 2, color = "black") +
   scale_fill_manual(values = c("No Cover" = p_yellow,

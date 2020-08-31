@@ -8,6 +8,7 @@
 #
 # Last modified: 5/21/2020 (moved to new folder, cleaned up)
 #                6/1/2020 (I want estimates of contrasts also!
+#                8/31/2020 (run w/central-grain phases)
 ####################################
 
 rm(list = ls())
@@ -20,7 +21,8 @@ library(PFIweeds2020)
 
 pfi_ghobsraw
 
-dat <- pfifun_sum_byeu(pfi_ghobsraw) %>% 
+dat <- 
+  pfifun_sum_byeu(pfi_ghobsraw) %>% 
   ungroup() %>% 
   unite(site_name, sys_trt, col = "site_sys", remove = T) %>% 
   select(-field, -rep)
@@ -32,13 +34,28 @@ dstat <-
          obs_id = paste("obs", obs_id, sep = "_")) %>% 
   mutate(cc_trt = recode(cc_trt, 
                          "rye" = "ccrye"))
-
-
 dstat_outrm <- 
   dstat %>% 
   filter(totseeds_m2 < 15000)  #--outlier
-  
 
+#--keep field in site_id to see if soy/corn phase differed in central site
+dat2 <- 
+  pfifun_sum_byeu(pfi_ghobsraw) %>% 
+  ungroup() %>% 
+  unite(site_name, field, sys_trt, col = "site_sys", remove = T) %>% 
+  select(-rep)
+
+dstat2 <- 
+  dat2 %>% 
+  mutate(obs_id = 1:n(),
+         obs_id = paste("obs", obs_id, sep = "_")) %>% 
+  mutate(cc_trt = recode(cc_trt, 
+                         "rye" = "ccrye"))
+dstat_outrm2 <- 
+  dstat2 %>% 
+  filter(totseeds_m2 < 15000)  #--outlier
+
+  
 # poisson -----------------------------------------------------------------
 
 library(lme4) #--can do generalized linear models also
@@ -47,14 +64,15 @@ library(emmeans)
 library(broom)
 
 
-############### outlier removed #################
+
+############### keep soy/corn of central-grain separate #################
 
 # poisson -----------------------------------------------------------------
 
 #--use random factor for obs and block
 
-m1 <- glmer(totseeds ~ site_sys*cc_trt + (1|blockID) + (1|obs_id), data = dstat_outrm, 
-               family = poisson(link = "log"))  
+m1 <- glmer(totseeds ~ site_sys*cc_trt + (1|blockID) + (1|obs_id), data = dstat_outrm2, 
+            family = poisson(link = "log"))  
 
 
 # get estimates -----------------------------------------------------------
@@ -79,10 +97,9 @@ m1_cont <-
   tidy(m1_em$contrasts) %>% 
   mutate(model = "pois") %>% 
   left_join(m1_em$contrasts %>% 
-  confint( level = 0.9) %>% 
-  as_tibble() %>% 
-  mutate(model = "pois"))
-
+              confint( level = 0.9) %>% 
+              as_tibble() %>% 
+              mutate(model = "pois"))
 
 #--overall
 oa <- 
@@ -94,7 +111,7 @@ oa <-
 
 oa %>% 
   filter(grepl("Funcke", level1))
-  
+
 # write results -----------------------------------------------------------
 
 #--log scale
@@ -120,7 +137,7 @@ m1_cont %>%
 
 #--use random factor for obs and block
 
-mf1 <- glmer(totseeds ~ site_sys*cc_trt + (1|blockID) + (1|obs_id), data = dstat, 
+mf1 <- glmer(totseeds ~ site_sys*cc_trt + (1|blockID) + (1|obs_id), data = dstat2, 
             family = poisson(link = "log"))  
 
 
@@ -178,4 +195,6 @@ mf1_est %>%
 
 mf1_cont %>% 
   write_csv("01_stats-uni/st_weedseed-contr-full.csv")
+
+
 

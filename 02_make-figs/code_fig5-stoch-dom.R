@@ -100,7 +100,7 @@ stodom %>%
 
 
 ggsave("02_make-figs/figs/fig_stoch-dom.png", width = 6, height = 5)
-
+ggsave("02_make-figs/manu/Fig5.jpg", width = 6, height = 5)
 
 
 

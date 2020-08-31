@@ -55,6 +55,19 @@ dstat_outrm2 <-
   dstat2 %>% 
   filter(totseeds_m2 < 15000)  #--outlier
 
+#--can I pool w/in central-grain? test sig of field effect. no, can't pool
+datcg <- 
+  dat2 %>% 
+  separate(site_sys, into = c("site", "field", "sys"), remove = F) %>% 
+  filter(site == "Boyd",
+         sys == "grain") %>% 
+  mutate(obs_id = 1:n(),
+         obs_id = paste("obs", obs_id, sep = "_"))
+
+m1 <- glmer(totseeds ~ field*cc_trt + (1|blockID) + (1|obs_id), data = datcg, 
+            family = poisson(link = "log"))  
+
+summary(m1)
   
 # poisson -----------------------------------------------------------------
 

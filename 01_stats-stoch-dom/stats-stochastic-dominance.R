@@ -5,6 +5,7 @@
 # Purpose: do stochastic dominance analysis
 #
 # Last modified: 5/21/2020 (after mtg w/consultants)
+#                8/31/2020 (keep field in there)
 #
 # Notes:
 ####################################
@@ -24,10 +25,13 @@ pfi_ghobsraw
 
 ########################## outlier removed ####################################
 
-dat <- pfifun_sum_byeu(pfi_ghobsraw) %>% 
+#--keep the field in there...
+
+dat <- 
+  pfifun_sum_byeu(pfi_ghobsraw) %>% 
   ungroup() %>% 
-  unite(site_name, sys_trt, col = "site_sys", remove = T) %>% 
-  select(-field, -rep) %>% 
+  unite(site_name, field, sys_trt, col = "site_sys", remove = T) %>% 
+  select(-rep) %>% 
   filter(totseeds < 860) #remove outlier
 
 

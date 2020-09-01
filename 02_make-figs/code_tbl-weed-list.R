@@ -70,6 +70,113 @@ dat_table
 
 write_csv(dat_table, "02_make-figs/mf_weed-list-arranged.csv")
 
+
+# weed list, by trial ---------------------------------------------------------------
+
+dat_table_trial <- 
+  pfi_ghobsraw %>% 
+  pfifun_sum_weedbyeu() %>% 
+  unite(site_name, field, sys_trt, col = "site_sys") %>% 
+  group_by(site_sys, weed) %>% 
+  summarise(tot_seeds  = sum(seeds)) %>% 
+  mutate(sum = sum(tot_seeds),
+         pct = round(tot_seeds/sum*100, 2),
+         pct2 = ifelse(pct < 0.1, "<0.10", pct),
+         pct2 = paste0(pct2, "%")) %>% 
+  arrange(-pct) %>% 
+  select(site_sys, weed, pct2) %>% 
+  pivot_wider(names_from = site_sys, values_from = pct2)
+
+dat_table_trial
+
+write_csv(dat_table_trial, "02_make-figs/mf_weed-list-arranged-by-trial.csv")
+
+
+
+# is there a better way ---------------------------------------------------
+
+dat_all <- 
+  bind_rows(
+  pfi_ghobsraw %>% 
+  pfifun_sum_weedbyeu() %>% 
+  unite(site_name, field, sys_trt, col = "site_sys") %>% 
+  group_by(site_sys, weed) %>% 
+  summarise(tot_seeds  = sum(seeds)) %>% 
+  mutate(sum = sum(tot_seeds),
+         pct = round(tot_seeds/sum*100, 2)) %>% 
+  select(site_sys, weed, pct),
+pfi_ghobsraw %>% 
+  pfifun_sum_weedbyeu() %>% 
+  group_by(weed) %>% 
+  summarise(tot_seeds  = sum(seeds)) %>% 
+  mutate(sum = sum(tot_seeds),
+         pct = round(tot_seeds/sum*100, 2)) %>% 
+  select(weed, pct) %>% 
+  mutate(site_sys = "overall")
+) %>% 
+  mutate(weed = factor(weed, levels = rev(dat_table$code)))
+
+dat_all %>% 
+  mutate(site_sys2 = case_when(
+    site_sys == "Boyd_B42_grain" ~ "Central Grain_Maize",
+    site_sys == "Boyd_B44_grain" ~ "Central Grain_Soybean",
+    site_sys == "Boyd_B44_silage" ~ "Central Silage_Soybean",
+    site_sys == "Funcke_F_grain" ~ "West Grain_Soybean",
+    site_sys == "Stout_S_grain" ~ "East Grain_Maize",
+    site_sys == "overall" ~ "Overall_Overall")
+    ) %>% 
+  separate(site_sys2, into = c("site_sys2", "residue"), sep = "_") %>% 
+  mutate(site_sys2 = factor(site_sys2, levels = c("Overall", "West Grain", "Central Silage", "Central Grain", "East Grain"))) %>% 
+  ggplot(aes(residue, weed)) + 
+  geom_tile(aes(fill = log(pct))) + 
+  scale_fill_viridis_c(option = "plasma") +
+  facet_grid(.~site_sys2, scales = "free")
+
+
+# what if I break it up by cover croo too? --------------------------------
+
+
+dat_by_trt <- 
+  bind_rows(
+  pfi_ghobsraw %>% 
+      pfifun_sum_weedbyeu() %>% 
+      unite(site_name, field, sys_trt, col = "site_sys") %>% 
+      select(site_sys, cc_trt, weed, seeds) %>% 
+      group_by(site_sys, cc_trt, weed) %>% 
+  summarise(weed_trt_tot = sum(seeds)) %>% 
+  group_by(site_sys, cc_trt) %>% 
+  mutate(tot_trt = sum(weed_trt_tot),
+         pct = round(weed_trt_tot/tot_trt*100, 2)) %>% 
+      select(site_sys, cc_trt, weed, pct),
+  #--overall cover crop treatemtns?
+  pfi_ghobsraw %>% 
+    pfifun_sum_weedbyeu() %>% 
+    group_by(weed) %>% 
+    summarise(tot_seeds  = sum(seeds)) %>% 
+    mutate(sum = sum(tot_seeds),
+           pct = round(tot_seeds/sum*100, 2)) %>% 
+    select(weed, pct) %>% 
+    mutate(site_sys = "overall",
+           cc_trt = "Overall")
+  )
+
+dat_by_trt %>% 
+  mutate(weed = factor(weed, levels = rev(dat_table$code))) %>% 
+  mutate(site_sys2 = case_when(
+    site_sys == "Boyd_B42_grain" ~ "Central Grain_Maize",
+    site_sys == "Boyd_B44_grain" ~ "Central Grain_Soybean",
+    site_sys == "Boyd_B44_silage" ~ "Central Silage_Soybean",
+    site_sys == "Funcke_F_grain" ~ "West Grain_Soybean",
+    site_sys == "Stout_S_grain" ~ "East Grain_Maize",
+    site_sys == "overall" ~ "Overall_ ")
+  ) %>% 
+  separate(site_sys2, into = c("site_sys2", "residue"), sep = "_") %>% 
+  mutate(site_sys2 = factor(site_sys2, levels = c("Overall", "West Grain", "Central Silage", "Central Grain", "East Grain"))) %>% 
+  ggplot(aes(cc_trt, weed)) + 
+  geom_tile(aes(fill = log(pct))) + 
+  scale_fill_viridis_c(option = "plasma") +
+  facet_grid(.~site_sys2+residue, scales = "free")
+
 # table -------------------------------------------------------------------
 
 library(gt)

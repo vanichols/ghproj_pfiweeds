@@ -59,7 +59,7 @@ labseedsm2 <- bquote("Weed Seeds (1000s"~m^-2~")")
 
 #pfi_eus has sys_trt, site_name, and field
 
-pfi_eus
+a <- pfi_eus
 
 #--raw values
 raws <-

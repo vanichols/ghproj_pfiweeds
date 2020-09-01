@@ -129,7 +129,7 @@ dat_all %>%
   mutate(site_sys2 = factor(site_sys2, levels = c("Overall", "West Grain", "Central Silage", "Central Grain", "East Grain"))) %>% 
   ggplot(aes(residue, weed)) + 
   geom_tile(aes(fill = log(pct))) + 
-  scale_fill_viridis_c(option = "plasma") +
+  scale_fill_viridis_c(option = "cividis") +
   facet_grid(.~site_sys2, scales = "free")
 
 
@@ -174,8 +174,211 @@ dat_by_trt %>%
   mutate(site_sys2 = factor(site_sys2, levels = c("Overall", "West Grain", "Central Silage", "Central Grain", "East Grain"))) %>% 
   ggplot(aes(cc_trt, weed)) + 
   geom_tile(aes(fill = log(pct))) + 
-  scale_fill_viridis_c(option = "plasma") +
+  scale_fill_viridis_c(option = "cividis") +
   facet_grid(.~site_sys2+residue, scales = "free")
+
+
+# raw values, geom_tile ---------------------------------------------------
+
+dat_by_trt_raw <- 
+  pfi_ghobsraw %>% 
+      pfifun_sum_weedbyeu() %>% 
+      unite(site_name, field, sys_trt, col = "site_sys") %>% 
+      select(site_sys, cc_trt, weed, seeds) %>%
+      group_by(site_sys, cc_trt, weed) %>% 
+      summarise(weed_trt_tot = sum(seeds)) %>% 
+      group_by(site_sys, cc_trt) %>% 
+      mutate(tot_trt = sum(weed_trt_tot),
+             pct = round(weed_trt_tot/tot_trt*100, 2)) %>% 
+  #--make things anonymous
+  mutate(site_sys2 = case_when(
+    site_sys == "Central_B42_grain" ~ "Central Grain_Maize",
+    site_sys == "Central_B44_grain" ~ "Central Grain_Soybean",
+    site_sys == "Central_B44_silage" ~ "Central Silage_Soybean",
+    site_sys == "West_F_grain" ~ "West Grain_Soybean",
+    site_sys == "East_S_grain" ~ "East Grain_Maize",
+    site_sys == "overall" ~ "Overall_ ")
+  ) %>%
+  #--get sites/residues
+  separate(site_sys2, into = c("site_sys2", "residue"), sep = "_") %>% 
+  mutate(site_sys2 = factor(site_sys2, levels = c("Overall", "West Grain", "Central Silage", "Central Grain", "East Grain"))) %>%
+  ungroup() %>% 
+  mutate(cc_trt = recode(cc_trt,
+                  "no" = "No Cover",
+                  "rye" = "Winter Rye")) %>% 
+  #--get scientific names
+  left_join(pfi_weedsplist %>% rename("weed" = "code") %>% select(weed, scientific_name)) %>% 
+  #--define order of weeds
+  mutate(scientific_name = factor(scientific_name, levels = rev(dat_table$scientific_name))) %>% 
+  #--make 0s NAs
+  mutate(weed_trt_tot = ifelse(weed_trt_tot==0, NA, weed_trt_tot))
+
+
+#--do them individually and patchwork them
+dat_by_trt_raw %>% 
+  ggplot(aes(cc_trt, scientific_name)) + 
+  geom_tile(aes(fill = log(weed_trt_tot))) + 
+  scale_fill_viridis_c(option = "cividis") +
+  facet_grid(.~site_sys2+residue, scales = "free")
+
+
+library(ggpubr)
+
+my_lab <- labs(x = NULL,
+               y = NULL)
+
+legend_title <- bquote(Seeds)
+
+
+p1 <- 
+  dat_by_trt_raw %>% 
+  filter(site_sys2 == "West Grain") %>% 
+  ggplot(aes(cc_trt, scientific_name)) + 
+  geom_tile(aes(fill = weed_trt_tot)) + 
+  scale_fill_gradient(
+    low = "lightblue",
+    high = "darkblue",
+    na.value = "gray50",
+    guide = guide_colorbar(
+      title = legend_title,
+      direction = "horizontal",
+      title.position = "top",
+      title.hjust = 0.5
+    )
+  ) +
+  facet_grid(.~site_sys2+residue, scales = "free") +
+  theme_minimal() +
+  theme(legend.position = "top",
+        axis.text.y = element_text(face = "italic"),
+        strip.text = element_text(face = "bold"),
+        legend.title = element_text(size = rel(0.9)),
+        legend.text = element_text(size = rel(0.7))) + 
+  my_lab
+
+p1
+
+p2 <- 
+  dat_by_trt_raw %>% 
+  filter(site_sys2 == "Central Silage") %>% 
+  ggplot(aes(cc_trt, scientific_name)) + 
+  geom_tile(aes(fill = weed_trt_tot)) + 
+  scale_fill_gradient(low = "lightblue", 
+                      high = "darkblue",
+                      na.value = "gray50") +
+  scale_fill_gradient(
+    low = "lightblue",
+    high = "darkblue",
+    na.value = "gray50",
+    guide = guide_colorbar(
+      title = legend_title,
+      direction = "horizontal",
+      title.position = "top",
+      title.hjust = 0.5
+    )
+  ) +
+  facet_grid(.~site_sys2+residue, scales = "free") +
+  theme_minimal() +
+  theme(legend.position = "top",
+        axis.text.y = element_blank(),
+        strip.text = element_text(face = "bold"),
+        legend.title = element_text(size = rel(0.9)),
+        legend.text = element_text(size = rel(0.7))) + 
+  my_lab
+
+
+
+p3 <- 
+  dat_by_trt_raw %>% 
+  filter(site_sys2 == "Central Grain",
+         residue == "Soybean") %>% 
+  ggplot(aes(cc_trt, scientific_name)) + 
+  geom_tile(aes(fill = weed_trt_tot)) + 
+  scale_fill_gradient(
+    low = "lightblue",
+    high = "darkblue",
+    na.value = "gray50",
+    guide = guide_colorbar(
+      title = legend_title,
+      direction = "horizontal",
+      title.position = "top",
+      title.hjust = 0.5
+    )
+  ) +
+  facet_grid(.~site_sys2+residue, scales = "free") +
+  theme_minimal() +
+  theme(legend.position = "top",
+        axis.text.y = element_blank(),
+        strip.text = element_text(face = "bold"),
+        legend.title = element_text(size = rel(0.9)),
+        legend.text = element_text(size = rel(0.7))) + 
+  my_lab
+
+p4 <- 
+  dat_by_trt_raw %>% 
+  filter(site_sys2 == "Central Grain",
+         residue == "Maize") %>% 
+  ggplot(aes(cc_trt, scientific_name)) + 
+  geom_tile(aes(fill = weed_trt_tot)) + 
+  scale_fill_gradient(
+    low = "lightblue",
+    high = "darkblue",
+    na.value = "gray50",
+    guide = guide_colorbar(
+      title = legend_title,
+      direction = "horizontal",
+      title.position = "top",
+      title.hjust = 0.5
+    )
+  ) +
+  facet_grid(.~site_sys2+residue, scales = "free") +
+  theme_minimal() +
+  theme(legend.position = "top",
+        axis.text.y = element_blank(),
+        strip.text = element_text(face = "bold"),
+        legend.title = element_text(size = rel(0.9)),
+        legend.text = element_text(size = rel(0.7))) + 
+  my_lab
+
+p5 <- 
+  dat_by_trt_raw %>% 
+  filter(site_sys2 == "East Grain") %>% 
+  ggplot(aes(cc_trt, scientific_name)) + 
+  geom_tile(aes(fill = weed_trt_tot)) + 
+  scale_fill_gradient(
+    low = "lightblue",
+    high = "darkblue",
+    na.value = "gray50",
+    guide = guide_colorbar(
+      title = legend_title,
+      direction = "horizontal",
+      title.position = "top",
+      title.hjust = 0.5
+    )
+  ) +
+  # scale_fill_viridis_c(option = "cividis", 
+  #                      direction = 1,
+  #                      guide = guide_colorbar(title = legend_title, 
+  #                                             direction = "horizontal",
+  #                                             title.position = "top",
+  #                                             title.hjust = 0.5)) +
+  facet_grid(.~site_sys2+residue, scales = "free") +
+  theme_minimal() +
+  theme(legend.position = "top",
+        axis.text.y = element_blank(),
+        strip.text = element_text(face = "bold"),
+        legend.title = element_text(size = rel(0.9)),
+        legend.text = element_text(size = rel(0.7))) + 
+  my_lab
+
+
+
+library(cowplot)
+plot_grid(p1, p2, p3, p4, p5, 
+          rel_widths = c(0.47, 0.25, 0.25, 0.25, 0.25),
+          nrow = 1)
+
+
+ggsave("02_make-figs/manu/fig3_new.png")
 
 # table -------------------------------------------------------------------
 

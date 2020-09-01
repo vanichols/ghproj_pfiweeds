@@ -260,6 +260,9 @@ fig_dat %>%
 
 fig_sb
 
+#ggsave("02_make-figs/figs/fig_bar.png")
+ggsave("02_make-figs/manu/Fig2-new.jpg")
+
 # add values below --------------------------------------------------------
 #--don't do this any more
 

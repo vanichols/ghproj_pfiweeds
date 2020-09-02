@@ -152,7 +152,7 @@ plot_fun_no_axis <- function(fun_site_sys = "Central_B42_grain", left_axis = "no
            legend.key.size = unit(0.8, "lines"),
            legend.title = element_text(size = rel(0.9)),
            legend.text = element_text(size = rel(0.7))) + 
-     my_lab
+    labs(x = NULL, y = NULL)
   
   return(new_plot)
   
@@ -174,5 +174,5 @@ plot_grid(p1, p2, p3, p4, p5,
           nrow = 1)
 
 
-ggsave("02_make-figs/manu/fig3_new.png")
+ggsave("02_make-figs/manu-new/fig2.jpg")
 

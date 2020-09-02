@@ -229,148 +229,84 @@ my_lab <- labs(x = NULL,
 
 legend_title <- bquote(Seeds)
 
-
-p1 <- 
+thesites <- 
   dat_by_trt_raw %>% 
-  filter(site_sys2 == "West Grain") %>% 
-  ggplot(aes(cc_trt, scientific_name)) + 
-  geom_tile(aes(fill = weed_trt_tot)) + 
-  scale_fill_gradient(
-    low = "lightblue",
-    high = "darkblue",
-    na.value = "gray50",
-    guide = guide_colorbar(
-      title = legend_title,
-      direction = "horizontal",
-      title.position = "top",
-      title.hjust = 0.5
-    )
-  ) +
-  facet_grid(.~site_sys2+residue, scales = "free") +
-  theme_minimal() +
-  theme(legend.position = "top",
-        axis.text.y = element_text(face = "italic"),
-        strip.text = element_text(face = "bold"),
-        legend.title = element_text(size = rel(0.9)),
-        legend.text = element_text(size = rel(0.7))) + 
-  my_lab
-
-p1
-
-p2 <- 
-  dat_by_trt_raw %>% 
-  filter(site_sys2 == "Central Silage") %>% 
-  ggplot(aes(cc_trt, scientific_name)) + 
-  geom_tile(aes(fill = weed_trt_tot)) + 
-  scale_fill_gradient(low = "lightblue", 
-                      high = "darkblue",
-                      na.value = "gray50") +
-  scale_fill_gradient(
-    low = "lightblue",
-    high = "darkblue",
-    na.value = "gray50",
-    guide = guide_colorbar(
-      title = legend_title,
-      direction = "horizontal",
-      title.position = "top",
-      title.hjust = 0.5
-    )
-  ) +
-  facet_grid(.~site_sys2+residue, scales = "free") +
-  theme_minimal() +
-  theme(legend.position = "top",
-        axis.text.y = element_blank(),
-        strip.text = element_text(face = "bold"),
-        legend.title = element_text(size = rel(0.9)),
-        legend.text = element_text(size = rel(0.7))) + 
-  my_lab
+  select(site_sys) %>% 
+  distinct() %>% 
+  pull() 
 
 
-
-p3 <- 
-  dat_by_trt_raw %>% 
-  filter(site_sys2 == "Central Grain",
-         residue == "Soybean") %>% 
-  ggplot(aes(cc_trt, scientific_name)) + 
-  geom_tile(aes(fill = weed_trt_tot)) + 
-  scale_fill_gradient(
-    low = "lightblue",
-    high = "darkblue",
-    na.value = "gray50",
-    guide = guide_colorbar(
-      title = legend_title,
-      direction = "horizontal",
-      title.position = "top",
-      title.hjust = 0.5
-    )
-  ) +
-  facet_grid(.~site_sys2+residue, scales = "free") +
-  theme_minimal() +
-  theme(legend.position = "top",
-        axis.text.y = element_blank(),
-        strip.text = element_text(face = "bold"),
-        legend.title = element_text(size = rel(0.9)),
-        legend.text = element_text(size = rel(0.7))) + 
-  my_lab
-
-p4 <- 
-  dat_by_trt_raw %>% 
-  filter(site_sys2 == "Central Grain",
-         residue == "Maize") %>% 
-  ggplot(aes(cc_trt, scientific_name)) + 
-  geom_tile(aes(fill = weed_trt_tot)) + 
-  scale_fill_gradient(
-    low = "lightblue",
-    high = "darkblue",
-    na.value = "gray50",
-    guide = guide_colorbar(
-      title = legend_title,
-      direction = "horizontal",
-      title.position = "top",
-      title.hjust = 0.5
-    )
-  ) +
-  facet_grid(.~site_sys2+residue, scales = "free") +
-  theme_minimal() +
-  theme(legend.position = "top",
-        axis.text.y = element_blank(),
-        strip.text = element_text(face = "bold"),
-        legend.title = element_text(size = rel(0.9)),
-        legend.text = element_text(size = rel(0.7))) + 
-  my_lab
-
-p5 <- 
-  dat_by_trt_raw %>% 
-  filter(site_sys2 == "East Grain") %>% 
-  ggplot(aes(cc_trt, scientific_name)) + 
-  geom_tile(aes(fill = weed_trt_tot)) + 
-  scale_fill_gradient(
-    low = "lightblue",
-    high = "darkblue",
-    na.value = "gray50",
-    guide = guide_colorbar(
-      title = legend_title,
-      direction = "horizontal",
-      title.position = "top",
-      title.hjust = 0.5
-    )
-  ) +
-  # scale_fill_viridis_c(option = "cividis", 
-  #                      direction = 1,
-  #                      guide = guide_colorbar(title = legend_title, 
-  #                                             direction = "horizontal",
-  #                                             title.position = "top",
-  #                                             title.hjust = 0.5)) +
-  facet_grid(.~site_sys2+residue, scales = "free") +
-  theme_minimal() +
-  theme(legend.position = "top",
-        axis.text.y = element_blank(),
-        strip.text = element_text(face = "bold"),
-        legend.title = element_text(size = rel(0.9)),
-        legend.text = element_text(size = rel(0.7))) + 
-  my_lab
+thesites <- c("West_F_Grain",
+    "Central_B44_Silage",
+    "Central_B44_Grain",
+    "Central_B42_Grain",
+    "East_S_Grain")
+  
+thesites[1]
 
 
+plot_fun_no_axis <- function(fun_site_sys = "Central_B42_grain", left_axis = "no"){
+  
+  plot_dat <- 
+      dat_by_trt_raw %>% 
+      filter(site_sys == fun_site_sys)
+  
+  plot_tmp <- 
+    plot_dat %>% 
+    ggplot(aes(cc_trt, scientific_name)) + 
+    geom_tile(aes(fill = weed_trt_tot)) + 
+    scale_fill_viridis_c(
+      option = "plasma",
+      guide = guide_colorbar(
+        title = legend_title,
+        direction = "horizontal",
+        title.position = "top",
+        title.hjust = 0.5
+      )
+    ) +
+    facet_grid(.~site_sys2+residue, scales = "free") +
+    theme_minimal() 
+  
+  
+  if(left_axis == "no") 
+  
+  (new_plot <- 
+    plot_tmp +
+    theme(legend.position = "top",
+          axis.text.y = element_blank(),
+          axis.text.x = element_text(angle = 45, vjust = 0.5),
+          strip.text = element_text(face = "bold"),
+          legend.title = element_text(size = rel(0.9)),
+          legend.text = element_text(size = rel(0.7))) + 
+    my_lab)
+  
+  else(
+  
+  (new_plot <- 
+     plot_tmp +
+     theme(legend.position = "top",
+           #axis.text.y = element_blank(),
+           axis.text.x = element_text(angle = 45, vjust = 0.5),
+           strip.text = element_text(face = "bold"),
+           legend.title = element_text(size = rel(0.9)),
+           legend.text = element_text(size = rel(0.7))) + 
+     my_lab)
+  
+  )
+  
+  return(new_plot)
+  
+}
+
+#--practice
+plot_fun_no_axis(thesites[1], left_axis = "yes")
+
+#--make plots
+p1 <- plot_fun_no_axis(thesites[1], left_axis = "yes")
+p2 <- plot_fun_no_axis(thesites[2])
+p3 <- plot_fun_no_axis(thesites[3])
+p4 <- plot_fun_no_axis(thesites[4])
+p5 <- plot_fun_no_axis(thesites[5])
 
 library(cowplot)
 plot_grid(p1, p2, p3, p4, p5, 

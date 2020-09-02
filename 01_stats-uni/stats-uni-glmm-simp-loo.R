@@ -27,6 +27,7 @@ dat <-
   unite(site_name, sys_trt, col = "site_sys", remove = T) %>% 
   select(-field, -rep)
 
+
 dstat <- 
   dat %>% 
   mutate(obs_id = 1:n(),
@@ -58,7 +59,7 @@ dstat_outrm2 <-
 datcg <- 
   dat2 %>% 
   separate(site_sys, into = c("site", "field", "sys"), remove = F) %>% 
-  filter(site == "Central",
+  filter(site == "Boyd",
          sys == "grain") %>% 
   mutate(obs_id = 1:n(),
          obs_id = paste("obs", obs_id, sep = "_"))
@@ -84,6 +85,8 @@ library(broom)
 #--use random factor for obs and block
 
 m1 <- glmer(totseeds_m2 ~ site_sys*cc_trt + (1|blockID) + (1|obs_id), data = dstat_outrm2, 
+            family = poisson(link = "log"))  
+m1nox <- glmer(totseeds_m2 ~ site_sys+cc_trt + (1|blockID) + (1|obs_id), data = dstat_outrm2, 
             family = poisson(link = "log"))  
 
 #--do it on converted seeds, it barks at you but it's fine

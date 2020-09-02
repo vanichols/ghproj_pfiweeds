@@ -15,6 +15,14 @@ rm(list = ls())
 library(tidyverse)
 library(PFIweeds2020)
 
+library(lme4) #--can do generalized linear models also
+library(lmerTest)
+library(emmeans)
+library(broom)
+
+
+
+
 # data --------------------------------------------------------------------
 
 #--use data and fucntion from package
@@ -26,6 +34,10 @@ dat <-
   ungroup() %>% 
   unite(site_name, sys_trt, col = "site_sys", remove = T) %>% 
   select(-field, -rep)
+
+
+
+# data for stats w/obs_id -------------------------------------------------
 
 dstat <- 
   dat %>% 
@@ -67,15 +79,6 @@ m1 <- glmer(totseeds ~ field*cc_trt + (1|blockID) + (1|obs_id), data = datcg,
             family = poisson(link = "log"))  
 
 summary(m1)
-  
-# poisson -----------------------------------------------------------------
-
-library(lme4) #--can do generalized linear models also
-library(lmerTest)
-library(emmeans)
-library(broom)
-
-
 
 ############### keep soy/corn of central-grain separate #################
 
@@ -83,16 +86,8 @@ library(broom)
 
 #--use random factor for obs and block
 
-m1 <- glmer(totseeds_m2 ~ site_sys*cc_trt + (1|blockID) + (1|obs_id), data = dstat_outrm2, 
+m1 <- glmer(totseeds ~ site_sys*cc_trt + (1|blockID) + (1|obs_id), data = dstat_outrm2, 
             family = poisson(link = "log"))  
-
-#--do it on converted seeds, it barks at you but it's fine
-m1_m2 <- glmer(totseeds_m2 ~ site_sys*cc_trt + (1|blockID) + (1|obs_id), data = dstat_outrm2, 
-            family = poisson(link = "log"))  
-
-emmeans(m1_m2,pairwise ~cc_trt, type = "response")
-tidy(emmeans(m1_m2, ~cc_trt|site_sys, type = "response"))
-anova(emmeans(m1_m2, ~site_sys, type = "response"))
 
 
 # get estimates -----------------------------------------------------------
@@ -129,8 +124,6 @@ oa <-
   separate(contrast, into = c("level1", "level2"), sep = "/") %>% 
   mutate(p.value = round(p.value, 3)) 
 
-oa %>% 
-  filter(grepl("Funcke", level1))
 
 # write results -----------------------------------------------------------
 
@@ -151,70 +144,72 @@ m1_cont %>%
 
 
 
-############### outlier stays #################
 
-# poisson -----------------------------------------------------------------
+# do a leave-one-out sens analysis ----------------------------------------
 
-#--use random factor for obs and block
+#--full model
 
-mf1 <- glmer(totseeds ~ site_sys*cc_trt + (1|blockID) + (1|obs_id), data = dstat2, 
-            family = poisson(link = "log"))  
+m.full <- glmer(totseeds ~ site_sys*cc_trt + (1|blockID) + (1|obs_id), data = dstat2, 
+               family = poisson(link = "log"))  
+
+outs <- 
+  dstat2 %>% 
+  mutate(cooksd = cooks.distance(m.full)) %>% 
+  unite(site_sys, cc_trt, col = "id")
+
+ggplot(outs, aes(obs_id, cooksd)) + 
+  geom_point() + 
+  #geom_label(data = outs %>% filter(cooksd > 0.002), aes(label = id)) + 
+  geom_label_repel(data = outs %>% filter(grepl("West", id)), aes(label = id)) + 
+  coord_flip()
 
 
-# get estimates -----------------------------------------------------------
 
 
-mf1_emlog <- emmeans(mf1, pairwise ~ cc_trt|site_sys)
-mf1_em <- emmeans(mf1, pairwise ~ cc_trt|site_sys, type = "response")
+m.loo <- emmeans(m.full, pairwise ~ cc_trt|site_sys, type = "response")
 
-
-#--log scale
-mf1_estlog <- tidy(mf1_emlog$emmeans) %>% 
-  mutate(model = "pois_full")
-
-mf1_contlog <- tidy(mf1_emlog$contrasts) %>% 
-  mutate(model = "pois_full")
-
-#--original scale
-mf1_est <- tidy(mf1_em$emmeans) %>% 
-  mutate(model = "pois_full")
-
-mf1_cont <- 
-  tidy(mf1_em$contrasts) %>% 
-  mutate(model = "pois_full") %>% 
-  left_join(mf1_em$contrasts %>% 
+m.loo.cont <- 
+  tidy(m.loo$contrasts) %>% 
+  mutate(loo = 0) %>% 
+  left_join(m.loo$contrasts %>% 
               confint( level = 0.9) %>% 
               as_tibble() %>% 
-              mutate(model = "pois_full"))
-
-
-#--overall
-oaf <- 
-  emmeans(mf1, pairwise ~ cc_trt:site_sys, type = "response", )$contrasts %>% 
-  summary() %>% 
-  as_tibble() %>% 
-  separate(contrast, into = c("level1", "level2"), sep = "/") %>% 
-  mutate(p.value = round(p.value, 3)) 
-
-oaf %>% 
-  filter(grepl("Funcke", level1))
-
-# write results -----------------------------------------------------------
-
-#--log scale
-mf1_estlog %>%
-  write_csv("01_stats-uni/st_weedseed-est-log-full.csv")
-
-mf1_contlog %>% 
-  write_csv("01_stats-uni/st_weedseed-contr-log-full.csv")
-
-
-#--response scale
-mf1_est %>%
-  write_csv("01_stats-uni/st_weedseed-est-full.csv")
-
-mf1_cont %>% 
-  write_csv("01_stats-uni/st_weedseed-contr-full.csv")
+              mutate(loo = 0))
 
 
 
+for (i in 1:length(dstat$obs_id)){
+  
+  d.tmp <- dstat2[-i,]
+  
+  m.tmp <- glmer(totseeds ~ site_sys*cc_trt + (1|blockID) + (1|obs_id), data = d.tmp, 
+              family = poisson(link = "log"))  
+
+  
+  m.tmp.em <- emmeans(m.tmp, pairwise ~ cc_trt|site_sys, type = "response")
+  
+  m.tmp.cont <- 
+    tidy(m.tmp.em$contrasts) %>% 
+    mutate(loo = i) %>% 
+    left_join(m.tmp.em$contrasts %>% 
+                confint( level = 0.9) %>% 
+                as_tibble() %>% 
+                mutate(loo = i))
+  
+  m.loo.cont <- rbind(m.loo.cont, m.tmp.cont)
+  
+  
+}
+
+m.loo.cont %>% 
+  ggplot(aes(site_sys, p.value)) + 
+  geom_point() + 
+  geom_text_repel(aes(label = loo)) +
+  geom_hline(yintercept = 0.10, linetype = "dashed")
+
+m.loo.cont %>% 
+  ggplot(aes(site_sys, p.value)) + 
+  geom_jitter(width = 0.1, size = 2) + 
+  #geom_text_repel(aes(label = loo)) +
+  geom_hline(yintercept = 0.05, linetype = "dashed", color = "red") +
+  geom_hline(yintercept = 0.10, linetype = "dashed")

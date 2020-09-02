@@ -91,8 +91,9 @@ raws <-
       cc_trt = recode(cc_trt,
                     "no" = "No Cover",
                     "rye" = "Winter Rye")
-      ) %>% 
-  filter(totseeds_m2 < 15000)
+      ) #%>% 
+  #filter(totseeds_m2 < 15000)
+
 
 
 ##--stat data, don't worry about names of things yet
@@ -175,12 +176,6 @@ fig_dat <-
                          "ccrye" = "rye")) %>% 
   left_join(pfi_eus) %>% 
   mutate(
-    site = recode(
-      site,
-      "Boyd" = "Central",
-      "Funcke" = "West",
-      "Stout" = "East"
-    ),
     crop_sys = str_to_title(crop_sys),
     #--need to redefine facets to site-sys
     site_sys = paste(site, crop_sys, sep = " "),
@@ -210,7 +205,7 @@ fig_dat %>%
            aes(fill = cc_trt)) +
   # geom_point(data = raws, aes(crop_sys, totseeds_m2/1000, color = cc_trt), 
   #            pch = 21, position = position_dodge(0.9), size = 3, fill = "white", alpha = 0.7, stroke = 1.2) +
-  geom_point(data = raws, 
+  geom_point(data = raws %>% filter(totseeds_m2 < 15000), 
              aes(crop_2018, totseeds_m2/1000, 
                  color = cc_trt,
                  pch = cc_trt), 
@@ -219,16 +214,25 @@ fig_dat %>%
              size = 2,
              fill = "gray80",
              alpha = 0.7, stroke = 1.2) +
+  geom_point(data = raws %>% filter(totseeds_m2 > 15000), 
+             aes(crop_2018, totseeds_m2/1000, 
+                 color = cc_trt,
+                 pch = cc_trt), 
+             #pch = 21, 
+             position = position_jitterdodge(dodge.width = 0.9, jitter.width = 0.01), 
+             size = 2,
+             fill = "red",
+             alpha = 0.7, stroke = 1.2) +
   geom_linerange(position = position_dodge(width = 0.9),
                  aes(ymin = se_lo / 1000, ymax = se_hi / 1000, alpha = cc_trt),
                  size = 1.2, color = "black") +
   geom_text(data = table_changes, 
-            aes(x = crop_2018, y = se_mx + 1.5, 
+            aes(x = crop_2018, y = se_mx + 2.5, 
                 label = paste0(trt_eff, " seeds"), fontface = "italic")) +
   geom_text(data = table_changes, 
-            aes(x = crop_2018, y = se_mx + 2, label = CIs), fontface = "italic") +
+            aes(x = crop_2018, y = se_mx + 3.25, label = CIs), fontface = "italic") +
   geom_text(data = table_changes, 
-            aes(x = crop_2018, y = se_mx + 2.5, label = pct), fontface = "italic") +
+            aes(x = crop_2018, y = se_mx + 4, label = pct), fontface = "italic") +
   scale_alpha_manual(values = c(1, 1)) +
   labs(y = labseedsm2,
        x = "Previous Year's Crop",
@@ -262,3 +266,71 @@ fig_dat %>%
 fig_sb
 
 ggsave("02_make-figs/manu-new/fig1.jpg")
+
+
+
+# different facets --------------------------------------------------------
+
+fig_dat %>% 
+  distinct() %>% 
+  ggplot(aes(cc_trt, totseeds_m2 / 1000)) +
+  geom_col(color = "black",
+           size = 0.9,
+           alpha = 0.9,
+           aes(fill = cc_trt)) +
+  facet_grid(.~site_sys + crop_2018) +
+  geom_jitter(data = raws %>% filter(totseeds_m2 < 15000), 
+             aes(cc_trt, totseeds_m2/1000, 
+                 color = cc_trt,
+                 pch = cc_trt), 
+             size = 2,
+             fill = "gray80",
+             alpha = 0.7, stroke = 1.2) +
+  geom_point(data = raws %>% filter(totseeds_m2 > 15000), 
+             aes(cc_trt, totseeds_m2/1000), 
+             color = "red",
+             pch = 24,
+             size = 2,
+             fill = "red",
+             alpha = 0.7, stroke = 1.2) +
+  geom_linerange(aes(ymin = se_lo / 1000, ymax = se_hi / 1000, alpha = cc_trt),
+                 size = 1.2, color = "black") +
+  geom_text(data = table_changes, 
+            x = 1.5,
+            aes(y = se_mx + 2.75, 
+                label = paste0(trt_eff, " seeds"), fontface = "italic")) +
+  geom_text(data = table_changes, 
+            x = 1.5,
+            aes(y = se_mx + 3.5, label = CIs), fontface = "italic") +
+  geom_text(data = table_changes, 
+            x = 1.5,
+            aes(y = se_mx + 4.25, label = pct), fontface = "italic") +
+  scale_alpha_manual(values = c(1, 1)) +
+  labs(y = labseedsm2,
+       x = NULL,
+       fill = "Cover Crop Treatment",
+       color = "Cover Crop Treatment",
+       shape = "Cover Crop Treatment") +
+  guides(alpha = F
+         #color = F
+  ) +
+  scale_fill_manual(values = c("No Cover" = p_yellow,
+                               "Winter Rye" = p_blue)) +
+  scale_color_manual(values = c("gray50", "gray50")) +
+  scale_shape_manual(values = c("No Cover" = 21,
+                                "Winter Rye" = 24)) +
+  theme_bw() +
+  facet_grid(. ~ site_sys+crop_2018, scales = "free") +
+  theme(
+    legend.justification = c(1, 1),
+    legend.position = c(0.99, 0.99),
+    legend.background = element_rect(color = "black", fill = "white"),
+    legend.title = element_text(size = rel(1.2)),
+    axis.text.x = element_blank(),
+    strip.background = element_blank(),
+    strip.text = element_text(face = "bold", size = rel(1.2)),
+    legend.text = element_text(size = rel(1)))
+
+
+ggsave("02_make-figs/manu-new/fig1.jpg")
+

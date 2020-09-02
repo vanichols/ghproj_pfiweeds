@@ -22,8 +22,8 @@ pfi_ghobsraw
 
 dat <- pfifun_sum_byeu(pfi_ghobsraw) %>% 
   ungroup() %>% 
-  unite(site_name, sys_trt, col = "site_sys", remove = T) %>% 
-  select(-field, -rep)
+  unite(site_name, field, sys_trt, col = "site_sys", remove = T) %>% 
+  select(-rep)
 
 
 dstat <- 

@@ -23,6 +23,7 @@ df_dat <-
   summarize_at(vars(AMATU:UD), ~sum(., na.rm = TRUE)) %>% 
   unite("eu", site_name, sys_trt, cc_trt, blockID, remove = TRUE) 
 
+
 # what % was waterhemp at each site? --------------------------------------
 
 
@@ -37,6 +38,26 @@ pfi_ghobsraw %>%
          site_weed_pct = totseeds_m2/site_tot) %>% 
   filter(site_weed_pct >0.02) %>% 
   arrange(site_sys, -site_weed_pct)
+
+
+
+# what were water hemp numbers at West ------------------------------------
+
+pfi_ghobsraw %>% 
+  pfifun_sum_weedbyeu() %>% 
+  filter(site_name == "West",
+         weed == "AMATU")
+  unite(site_name, field, sys_trt, col = "site_sys") %>% 
+  select(site_sys, weed, seeds_m2) %>% 
+  group_by(site_sys, weed) %>% 
+  summarise(totseeds_m2 = sum(seeds_m2)) %>% 
+  group_by(site_sys) %>% 
+  mutate(site_tot = sum(totseeds_m2),
+         site_weed_pct = totseeds_m2/site_tot) %>% 
+  filter(site_weed_pct >0.02) %>% 
+  arrange(site_sys, -site_weed_pct)
+
+
 
 ################# remove outlier ################################
 

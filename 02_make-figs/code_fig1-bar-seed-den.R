@@ -6,6 +6,7 @@
 #                june 3 2020 - change groupings based on Matt's feedback
 #                june 22 2020 - use CIs, fix overall letters
 #               8/31/2020 - update keeping corn/soy separate
+#               9/2/2020 - make manu-new folder for revised figs
 #
 # Purpose: make manuscript figs
 #
@@ -161,7 +162,7 @@ table_changes <-
   
 
 
-# the figure --------------------------------------------------------------
+# create data for figure --------------------------------------------------------------
 
 fig_dat <- 
   sb_est %>%
@@ -198,7 +199,7 @@ fig_dat <-
   ) %>%
     select(site_sys, crop_2018, cc_trt, totseeds_m2, se_lo, se_hi)
 
-# alternative with CIs instead of SEs -------------------------------------
+# CIs fig -------------------------------------
 
 fig_dat %>% 
   ggplot(aes(reorder(crop_2018, totseeds_m2, mean), totseeds_m2 / 1000)) +
@@ -260,49 +261,4 @@ fig_dat %>%
 
 fig_sb
 
-#ggsave("02_make-figs/figs/fig_bar.png")
-ggsave("02_make-figs/manu/Fig2-new.jpg")
-
-# add values below --------------------------------------------------------
-#--don't do this any more
-
-cc <- c("No Cover", "Winter Rye")
-
-#---at 90% confidence level
-#--No Cover lables
-nolabs <- 
-  table_changes %>% 
-  arrange(site, crop_sys) %>% 
-  mutate(statlet = c("A", "D", "C", "D"),
-         statplace = case_when(
-           grepl("West", site) ~ 1,
-           grepl("East", site) ~ 1,
-           grepl("Silage", crop_sys) ~ 1,
-           TRUE ~ 2),
-         statplace = statplace - 0.25) 
-
-#--cc lables
-cclabs <- 
-  table_changes %>% 
-  select(site, crop_sys) %>% 
-  arrange(site, crop_sys) %>% 
-  mutate(statlet = c("B", "D", "D", "D"),
-         statplace = case_when(
-           grepl("West", site) ~ 1,
-           grepl("East", site) ~ 1,
-           grepl("Silage", crop_sys) ~ 1,
-           TRUE ~ 2),
-         statplace = statplace + 0.25) 
-
-fig_sb + 
-  geom_text(data = nolabs,
-            aes(x = statplace, y = -1, label = statlet),
-            fontface = "italic") + 
-  geom_text(data = cclabs,
-            aes(x = statplace, y = -1, label = statlet),
-            fontface = "italic")
-
-
-ggsave("02_make-figs/figs/fig_bar.png")
-ggsave("02_make-figs/manu/Fig2.jpg")
-
+ggsave("02_make-figs/manu-new/fig1.jpg")

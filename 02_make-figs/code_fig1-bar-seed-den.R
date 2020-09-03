@@ -7,6 +7,7 @@
 #                june 22 2020 - use CIs, fix overall letters
 #               8/31/2020 - update keeping corn/soy separate
 #               9/2/2020 - make manu-new folder for revised figs
+#               9/3/2020 - add avg ccbios to fig
 #
 # Purpose: make manuscript figs
 #
@@ -159,8 +160,23 @@ table_changes <-
   #--get the order I want
   mutate(
     site_sys = factor(site_sys, levels = c("West Grain", "Central Silage", "Central Grain", "East Grain"))
-  ) 
-  
+  ) %>% 
+  distinct() %>% 
+  left_join(pfi_mccbio) %>%
+  mutate(mccbio_Mgha = round(mccbio_Mgha, 2)) %>%
+  left_join(
+    pfi_ccbio %>%
+      filter(year == 2019) %>%
+      mutate(ccbio_Mgha = as.character(round(ccbio_Mgha, 2))) %>%
+      mutate(ccbio_Mgha = ifelse(ccbio_Mgha == "0", 
+                                 "0.10", ifelse(
+                                 ccbio_Mgha == "0.3",
+                                 "0.30", ccbio_Mgha))) %>%
+      rename("ccbio19_Mgha" = "ccbio_Mgha")
+  )
+
+
+table_changes
 
 
 # create data for figure --------------------------------------------------------------
@@ -192,9 +208,93 @@ fig_dat <-
                     "no" = "No Cover",
                     "rye" = "Winter Rye")
   ) %>%
-    select(site_sys, crop_2018, cc_trt, totseeds_m2, se_lo, se_hi)
+    select(site_sys, crop_2018, cc_trt, totseeds_m2, se_lo, se_hi) %>% 
+  distinct()
+ 
+ccbio_dat <- 
+  table_changes %>% 
+  filter(cc_trt == "rye") %>% 
+  select(site_sys, site, crop_2018, se_mx, mccbio_Mgha, ccbio19_Mgha) %>% 
+  distinct() %>% 
+  mutate(
+    
+    ccbio = (paste0(ccbio19_Mgha, "/", mccbio_Mgha, " Mg ha-1")))
 
-# CIs fig -------------------------------------
+
+# different facets --------------------------------------------------------
+
+
+fig_dat %>% 
+  distinct() %>% 
+  ggplot(aes(cc_trt, totseeds_m2 / 1000)) +
+  geom_col(color = "black",
+           size = 0.9,
+           alpha = 0.9,
+           aes(fill = cc_trt)) +
+  facet_grid(.~site_sys + crop_2018) +
+  geom_jitter(data = raws %>% filter(totseeds_m2 < 15000), 
+             aes(cc_trt, totseeds_m2/1000, 
+                 color = cc_trt,
+                 pch = cc_trt), 
+             size = 2,
+             fill = "gray80",
+             alpha = 0.7, stroke = 1.2) +
+  geom_point(data = raws %>% filter(totseeds_m2 > 15000), 
+             aes(cc_trt, totseeds_m2/1000), 
+             color = "red",
+             pch = 24,
+             size = 2,
+             fill = "red",
+             alpha = 0.7, stroke = 1.2) +
+  geom_linerange(aes(ymin = se_lo / 1000, ymax = se_hi / 1000, alpha = cc_trt),
+                 size = 1.2, color = "black") +
+  geom_text(data = table_changes, 
+            x = 1.5,
+            aes(y = se_mx + 2.75, 
+                label = paste0(trt_eff, " seeds"), fontface = "italic")) +
+  geom_text(data = table_changes, 
+            x = 1.5,
+            aes(y = se_mx + 3.5, label = CIs), fontface = "italic") +
+  geom_text(data = table_changes, 
+            x = 1.5,
+            aes(y = se_mx + 4.25, label = pct), fontface = "italic") +
+  geom_text(data = ccbio_dat, 
+            x = 1.5,
+            aes(y = se_mx + 5.25, label = ccbio), fontface = "bold") +
+  scale_alpha_manual(values = c(1, 1)) +
+  labs(y = labseedsm2,
+       x = NULL,
+       fill = "Cover Crop Treatment",
+       color = "Cover Crop Treatment",
+       shape = "Cover Crop Treatment") +
+  guides(alpha = F
+         #color = F
+  ) +
+  scale_fill_manual(values = c("No Cover" = p_yellow,
+                               "Winter Rye" = p_blue)) +
+  scale_color_manual(values = c("gray50", "gray50")) +
+  scale_shape_manual(values = c("No Cover" = 21,
+                                "Winter Rye" = 24)) +
+  theme_bw() +
+  facet_grid(. ~ site_sys+crop_2018, scales = "free") +
+  theme(
+    legend.justification = c(1, 1),
+    legend.position = c(0.99, 0.99),
+    legend.background = element_rect(color = "black", fill = "white"),
+    legend.title = element_text(size = rel(1.2)),
+    axis.text.x = element_blank(),
+    strip.background = element_blank(),
+    strip.text = element_text(face = "bold", size = rel(1.2)),
+    legend.text = element_text(size = rel(1)))
+
+
+ggsave("02_make-figs/manu-new/fig1.jpg")
+
+
+
+
+
+# odl facets -------------------------------------
 
 fig_dat %>% 
   ggplot(aes(reorder(crop_2018, totseeds_m2, mean), totseeds_m2 / 1000)) +
@@ -241,7 +341,7 @@ fig_dat %>%
        shape = "Cover Crop Treatment") +
   guides(alpha = F
          #color = F
-         ) +
+  ) +
   scale_fill_manual(values = c("No Cover" = p_yellow,
                                "Winter Rye" = p_blue)) +
   scale_color_manual(values = c("gray50", "gray50")) +
@@ -266,71 +366,3 @@ fig_dat %>%
 fig_sb
 
 ggsave("02_make-figs/manu-new/fig1.jpg")
-
-
-
-# different facets --------------------------------------------------------
-
-fig_dat %>% 
-  distinct() %>% 
-  ggplot(aes(cc_trt, totseeds_m2 / 1000)) +
-  geom_col(color = "black",
-           size = 0.9,
-           alpha = 0.9,
-           aes(fill = cc_trt)) +
-  facet_grid(.~site_sys + crop_2018) +
-  geom_jitter(data = raws %>% filter(totseeds_m2 < 15000), 
-             aes(cc_trt, totseeds_m2/1000, 
-                 color = cc_trt,
-                 pch = cc_trt), 
-             size = 2,
-             fill = "gray80",
-             alpha = 0.7, stroke = 1.2) +
-  geom_point(data = raws %>% filter(totseeds_m2 > 15000), 
-             aes(cc_trt, totseeds_m2/1000), 
-             color = "red",
-             pch = 24,
-             size = 2,
-             fill = "red",
-             alpha = 0.7, stroke = 1.2) +
-  geom_linerange(aes(ymin = se_lo / 1000, ymax = se_hi / 1000, alpha = cc_trt),
-                 size = 1.2, color = "black") +
-  geom_text(data = table_changes, 
-            x = 1.5,
-            aes(y = se_mx + 2.75, 
-                label = paste0(trt_eff, " seeds"), fontface = "italic")) +
-  geom_text(data = table_changes, 
-            x = 1.5,
-            aes(y = se_mx + 3.5, label = CIs), fontface = "italic") +
-  geom_text(data = table_changes, 
-            x = 1.5,
-            aes(y = se_mx + 4.25, label = pct), fontface = "italic") +
-  scale_alpha_manual(values = c(1, 1)) +
-  labs(y = labseedsm2,
-       x = NULL,
-       fill = "Cover Crop Treatment",
-       color = "Cover Crop Treatment",
-       shape = "Cover Crop Treatment") +
-  guides(alpha = F
-         #color = F
-  ) +
-  scale_fill_manual(values = c("No Cover" = p_yellow,
-                               "Winter Rye" = p_blue)) +
-  scale_color_manual(values = c("gray50", "gray50")) +
-  scale_shape_manual(values = c("No Cover" = 21,
-                                "Winter Rye" = 24)) +
-  theme_bw() +
-  facet_grid(. ~ site_sys+crop_2018, scales = "free") +
-  theme(
-    legend.justification = c(1, 1),
-    legend.position = c(0.99, 0.99),
-    legend.background = element_rect(color = "black", fill = "white"),
-    legend.title = element_text(size = rel(1.2)),
-    axis.text.x = element_blank(),
-    strip.background = element_blank(),
-    strip.text = element_text(face = "bold", size = rel(1.2)),
-    legend.text = element_text(size = rel(1)))
-
-
-ggsave("02_make-figs/manu-new/fig1.jpg")
-

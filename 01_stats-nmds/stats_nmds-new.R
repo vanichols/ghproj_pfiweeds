@@ -109,11 +109,16 @@ site_hull %>%
 
 #--on all sites, duh site is sig, cc is not at all
 adonis2(df_dat %>% select(-1) %>% as.matrix() ~ 
-          site + cc_trt, data = (df_dat %>% 
-                                   separate(eu, into = c("site", "crop_sys", "cc_trt", "field", "rep")) %>% 
+          site_sys + cc_trt, data = (df_dat %>% 
+                                   separate(eu, into = c("site", "crop_sys", "cc_trt", "field", "rep")) %>%
+                                   unite(site, crop_sys, field, col = "site_sys", remove = F) %>% 
                                    mutate_if(is.character, as.factor)),
         by = "margin"
 )
+
+#--what is the %?
+5.0809/12.0426 #--site_sys
+0.0818/12.0426 #--cc_trt
 
 
 # individual sites, where cc-ing was sig? ---------------------------------

@@ -14,6 +14,7 @@
 rm(list = ls())
 library(tidyverse)
 library(PFIweeds2020)
+library(ggrepel)
 
 library(lme4) #--can do generalized linear models also
 library(lmerTest)
@@ -29,64 +30,25 @@ library(broom)
 
 pfi_ghobsraw
 
-dat <- 
-  pfifun_sum_byeu(pfi_ghobsraw) %>% 
-  ungroup() %>% 
-  unite(site_name, sys_trt, col = "site_sys", remove = T) %>% 
-  select(-field, -rep)
-
-
-
-# data for stats w/obs_id -------------------------------------------------
-
-dstat <- 
-  dat %>% 
-  mutate(obs_id = 1:n(),
-         obs_id = paste("obs", obs_id, sep = "_")) %>% 
-  mutate(cc_trt = recode(cc_trt, 
-                         "rye" = "ccrye"))
-dstat_outrm <- 
-  dstat %>% 
-  filter(totseeds_m2 < 15000)  #--outlier
-
-#--keep field in site_id to see if soy/corn phase differed in central site
-dat2 <- 
+d <- 
   pfifun_sum_byeu(pfi_ghobsraw) %>% 
   ungroup() %>% 
   unite(site_name, field, sys_trt, col = "site_sys", remove = T) %>% 
-  select(-rep)
-
-dstat2 <- 
-  dat2 %>% 
+  select(-rep) %>% 
   mutate(obs_id = 1:n(),
          obs_id = paste("obs", obs_id, sep = "_")) %>% 
   mutate(cc_trt = recode(cc_trt, 
                          "rye" = "ccrye"))
-dstat_outrm2 <- 
-  dstat2 %>% 
+dout <- 
+  d %>% 
   filter(totseeds_m2 < 15000)  #--outlier
 
-#--can I pool w/in central-grain? test sig of field effect. no, can't pool
-datcg <- 
-  dat2 %>% 
-  separate(site_sys, into = c("site", "field", "sys"), remove = F) %>% 
-  filter(site == "Central",
-         sys == "grain") %>% 
-  mutate(obs_id = 1:n(),
-         obs_id = paste("obs", obs_id, sep = "_"))
-
-m1 <- glmer(totseeds ~ field*cc_trt + (1|blockID) + (1|obs_id), data = datcg, 
-            family = poisson(link = "log"))  
-
-summary(m1)
-
-############### keep soy/corn of central-grain separate #################
 
 # poisson -----------------------------------------------------------------
 
 #--use random factor for obs and block
 
-m1 <- glmer(totseeds ~ site_sys*cc_trt + (1|blockID) + (1|obs_id), data = dstat_outrm2, 
+m1 <- glmer(totseeds ~ site_sys*cc_trt + (1|blockID) + (1|obs_id), data = dout, 
             family = poisson(link = "log"))  
 
 
@@ -116,15 +78,6 @@ m1_cont <-
               as_tibble() %>% 
               mutate(model = "pois"))
 
-#--overall
-oa <- 
-  emmeans(m1, pairwise ~ cc_trt:site_sys, type = "response", )$contrasts %>% 
-  summary() %>% 
-  as_tibble() %>% 
-  separate(contrast, into = c("level1", "level2"), sep = "/") %>% 
-  mutate(p.value = round(p.value, 3)) 
-
-
 # write results -----------------------------------------------------------
 
 #--log scale
@@ -149,11 +102,11 @@ m1_cont %>%
 
 #--full model
 
-m.full <- glmer(totseeds ~ site_sys*cc_trt + (1|blockID) + (1|obs_id), data = dstat2, 
+m.full <- glmer(totseeds ~ site_sys*cc_trt + (1|blockID) + (1|obs_id), data = d, 
                family = poisson(link = "log"))  
 
 outs <- 
-  dstat2 %>% 
+  d %>% 
   mutate(cooksd = cooks.distance(m.full)) %>% 
   unite(site_sys, cc_trt, col = "id")
 
@@ -178,9 +131,9 @@ m.loo.cont <-
 
 
 
-for (i in 1:length(dstat$obs_id)){
+for (i in 1:length(d$obs_id)){
   
-  d.tmp <- dstat2[-i,]
+  d.tmp <- d[-i,]
   
   m.tmp <- glmer(totseeds ~ site_sys*cc_trt + (1|blockID) + (1|obs_id), data = d.tmp, 
               family = poisson(link = "log"))  
@@ -201,11 +154,13 @@ for (i in 1:length(dstat$obs_id)){
   
 }
 
-m.loo.cont %>% 
-  ggplot(aes(site_sys, p.value)) + 
-  geom_point() + 
-  geom_text_repel(aes(label = loo)) +
-  geom_hline(yintercept = 0.10, linetype = "dashed")
+write_csv(m.loo.cont, "01_stats-uni/st_loo.csv")
+
+# m.loo.cont %>% 
+#   ggplot(aes(site_sys, p.value)) + 
+#   geom_point() + 
+#   geom_text_repel(aes(label = loo)) +
+#   geom_hline(yintercept = 0.10, linetype = "dashed")
 
 m.loo.cont %>% 
   ggplot(aes(site_sys, p.value)) + 
@@ -213,3 +168,4 @@ m.loo.cont %>%
   #geom_text_repel(aes(label = loo)) +
   geom_hline(yintercept = 0.05, linetype = "dashed", color = "red") +
   geom_hline(yintercept = 0.10, linetype = "dashed")
+

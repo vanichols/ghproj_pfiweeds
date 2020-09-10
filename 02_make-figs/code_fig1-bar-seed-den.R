@@ -8,6 +8,7 @@
 #               8/31/2020 - update keeping corn/soy separate
 #               9/2/2020 - make manu-new folder for revised figs
 #               9/3/2020 - add avg ccbios to fig
+#               9/9/2020 - correct widths/heights, move ccbio to bottom
 #
 # Purpose: make manuscript figs
 #
@@ -87,13 +88,13 @@ raws <-
       crop_2019 == "corn" ~ "Soybean")
   ) %>% 
   #--get the order I want
-    mutate(
-      site_sys = factor(site_sys, levels = c("West Grain", "Central Silage", "Central Grain", "East Grain")),
-      cc_trt = recode(cc_trt,
+  mutate(
+    site_sys = factor(site_sys, levels = c("West Grain", "Central Silage", "Central Grain", "East Grain")),
+    cc_trt = recode(cc_trt,
                     "no" = "No Cover",
                     "rye" = "Winter Rye")
-      ) #%>% 
-  #filter(totseeds_m2 < 15000)
+  ) #%>% 
+#filter(totseeds_m2 < 15000)
 
 
 
@@ -106,7 +107,7 @@ sb_est <-
          totseeds_se = pfifun_seedstom2conv(std.error),
          se_lo = totseeds_m2 - totseeds_se,
          se_hi = totseeds_m2 + totseeds_se)
-  
+
 #---Change
 sb_chng <- 
   sb_est %>% 
@@ -128,7 +129,7 @@ sb_pval <-
          trt_eff_pct2 = paste0(rye_no, "%", "(±", stderr, "%)"),
          trt_eff_pct3 = paste0(rye_no, "%", ", CI(", CI_lo, ",", CI_hi,"%)"),
          p.value = paste0("p = ", round(p.value, 2)))
-  
+
 
 #--combine
 table_changes <- 
@@ -141,7 +142,7 @@ table_changes <-
   #--clean up names
   separate(site_sys,
            into = c("site", "field", "sys_trt"),
-                                  remove = F) %>%
+           remove = F) %>%
   left_join(pfi_eus) %>% 
   mutate(
     site = recode(
@@ -149,14 +150,14 @@ table_changes <-
       "Boyd" = "Central",
       "Funcke" = "West",
       "Stout" = "East"
-   ),
-   crop_sys = str_to_title(sys_trt),
-   site_sys = paste(site, crop_sys, sep = " "),
-   crop_2018 = case_when(
-     (crop_2019 == "soy" & crop_sys == "Grain") ~ "Maize",
-     (crop_2019 == "soy" & crop_sys == "Silage") ~ "Maize Silage",
-     crop_2019 == "corn" ~ "Soybean")
-   ) %>% 
+    ),
+    crop_sys = str_to_title(sys_trt),
+    site_sys = paste(site, crop_sys, sep = " "),
+    crop_2018 = case_when(
+      (crop_2019 == "soy" & crop_sys == "Grain") ~ "Maize",
+      (crop_2019 == "soy" & crop_sys == "Silage") ~ "Maize Silage",
+      crop_2019 == "corn" ~ "Soybean")
+  ) %>% 
   #--get the order I want
   mutate(
     site_sys = factor(site_sys, levels = c("West Grain", "Central Silage", "Central Grain", "East Grain"))
@@ -170,10 +171,13 @@ table_changes <-
       mutate(ccbio_Mgha = as.character(round(ccbio_Mgha, 2))) %>%
       mutate(ccbio_Mgha = ifelse(ccbio_Mgha == "0", 
                                  "0.10", ifelse(
-                                 ccbio_Mgha == "0.3",
-                                 "0.30", ccbio_Mgha))) %>%
+                                   ccbio_Mgha == "0.3",
+                                   "0.30", ccbio_Mgha))) %>%
       rename("ccbio19_Mgha" = "ccbio_Mgha")
-  )
+  ) %>% 
+  select(-blockID, -rep) %>% 
+  distinct() %>% 
+  filter(!is.na(ccbio19_Mgha))
 
 
 table_changes
@@ -208,9 +212,9 @@ fig_dat <-
                     "no" = "No Cover",
                     "rye" = "Winter Rye")
   ) %>%
-    select(site_sys, crop_2018, cc_trt, totseeds_m2, se_lo, se_hi) %>% 
+  select(site_sys, crop_2018, cc_trt, totseeds_m2, se_lo, se_hi) %>% 
   distinct()
- 
+
 ccbio_dat <- 
   table_changes %>% 
   filter(cc_trt == "rye") %>% 
@@ -218,7 +222,7 @@ ccbio_dat <-
   distinct() %>% 
   mutate(
     
-    ccbio = (paste0(ccbio19_Mgha, "/", mccbio_Mgha, " Mg ha-1")))
+    ccbio = (paste0(mccbio_Mgha, " Mg ha-1")))
 
 
 # different facets --------------------------------------------------------
@@ -233,12 +237,12 @@ fig_dat %>%
            aes(fill = cc_trt)) +
   facet_grid(.~site_sys + crop_2018) +
   geom_jitter(data = raws %>% filter(totseeds_m2 < 15000), 
-             aes(cc_trt, totseeds_m2/1000, 
-                 color = cc_trt,
-                 pch = cc_trt), 
-             size = 2,
-             fill = "gray80",
-             alpha = 0.7, stroke = 1.2) +
+              aes(cc_trt, totseeds_m2/1000, 
+                  color = cc_trt,
+                  pch = cc_trt), 
+              size = 2,
+              fill = "gray80",
+              alpha = 0.7, stroke = 1.2) +
   geom_point(data = raws %>% filter(totseeds_m2 > 15000), 
              aes(cc_trt, totseeds_m2/1000), 
              color = "red",
@@ -250,17 +254,17 @@ fig_dat %>%
                  size = 1.2, color = "black") +
   geom_text(data = table_changes, 
             x = 1.5,
-            aes(y = se_mx + 2.75, 
+            aes(y = se_mx + 2.5, 
                 label = paste0(trt_eff, " seeds"), fontface = "italic")) +
   geom_text(data = table_changes, 
             x = 1.5,
-            aes(y = se_mx + 3.5, label = CIs), fontface = "italic") +
+            aes(y = se_mx + 3.75, label = CIs), fontface = "italic") +
   geom_text(data = table_changes, 
             x = 1.5,
-            aes(y = se_mx + 4.25, label = pct), fontface = "italic") +
+            aes(y = se_mx + 5, label = pct), fontface = "italic") +
   geom_text(data = ccbio_dat, 
             x = 1.5,
-            aes(y = se_mx + 5.25, label = ccbio), fontface = "bold") +
+            aes(y = -1, label = ccbio), fontface = "bold") +
   scale_alpha_manual(values = c(1, 1)) +
   labs(y = labseedsm2,
        x = NULL,
@@ -288,7 +292,7 @@ fig_dat %>%
     legend.text = element_text(size = rel(1)))
 
 
-ggsave("02_make-figs/manu-new/fig1.jpg")
+ggsave("02_make-figs/manu-new/fig1.jpg", width = 7, height = 4.2)
 
 
 

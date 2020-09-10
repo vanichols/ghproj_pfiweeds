@@ -169,3 +169,4 @@ m.loo.cont %>%
   geom_hline(yintercept = 0.05, linetype = "dashed", color = "red") +
   geom_hline(yintercept = 0.10, linetype = "dashed")
 
+ggsave("01_stats-uni/fig_loo.png")

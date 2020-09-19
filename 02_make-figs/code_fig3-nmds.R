@@ -73,10 +73,10 @@ site_hull <-
     site_sys = paste(site, crop_sys, sep = " "),
     #--get crop_2019 to crop_2018
     residue = case_when(
-      (blockID == "B42" & site_sys == "Central Grain") ~ "Maize*",
-      (blockID == "B44" & site_sys == "Central Silage") ~ "Soybean*",
+      (blockID == "B42" & site_sys == "Central Grain") ~ "Maize",
+      (blockID == "B44" & site_sys == "Central Silage") ~ "Soybean",
       (blockID == "B44") ~ "Soybean",
-      (site == "West") ~ "Soybean*",
+      (site == "West") ~ "Soybean",
       (site == "East") ~ "Maize")
   ) %>% 
   #--get the order I want

@@ -60,7 +60,7 @@ dat_by_trt_raw <-
   #--get scientific names
   left_join(pfi_weedsplist %>% rename("weed" = "code") %>% select(weed, scientific_name)) %>% 
   #--define order of weeds
-  mutate(scientific_name = factor(scientific_name, levels = rev(dat_table$scientific_name))) %>% 
+  mutate(scientific_name = factor(scientific_name, levels = (dat_table$scientific_name))) %>% 
   #--make 0s NAs
   mutate(weed_trt_tot = ifelse(weed_trt_tot==0, NA, weed_trt_tot))
 

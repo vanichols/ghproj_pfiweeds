@@ -18,9 +18,9 @@ data("pfi_weedsplist")
 
 dat <- 
   pfi_ghobsraw %>%
-  group_by(site_name, sys_trt, cc_trt, blockID) %>%
-  summarize_at(vars(AMATU:UB), ~sum(., na.rm = TRUE)) %>% 
-  tidyr::unite("site_sys", site_name, sys_trt, remove = FALSE) %>% 
+  group_by(site_name, sys_trt, field, cc_trt, blockID) %>%
+  summarize_at(vars(AMATU:UD), ~sum(., na.rm = TRUE)) %>% 
+  tidyr::unite("site_sys", site_name, field, sys_trt, remove = FALSE) %>% 
   ungroup()
 
 
@@ -29,11 +29,11 @@ rich <- function(x){rowSums(ifelse(x > 0, 1, 0))}
 
 div_rich <- 
   dat %>%
-  mutate(shan_div = diversity(.[, 6:24]),
+  mutate(shan_div = diversity(.[, 7:25]),
          shan_hill = exp(shan_div),
-         richness  = rich(.[, 6:24]),
+         richness  = rich(.[, 7:25]),
          evenness = shan_div/log(richness)) %>%
-  select(-c(AMATU:UB))
+  select(-c(AMATU:UD))
 
 write_csv(div_rich, "01_stats-uni/st_diversity-values.csv")
 

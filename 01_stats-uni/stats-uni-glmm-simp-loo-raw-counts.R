@@ -162,10 +162,12 @@ write_csv(m.loo.cont, "01_stats-uni/st_loo.csv")
 #   geom_text_repel(aes(label = loo)) +
 #   geom_hline(yintercept = 0.10, linetype = "dashed")
 
-m.loo.cont %>% 
-  ggplot(aes(site_sys, p.value)) + 
+ggplot(data = m.loo.cont, aes(site_sys, p.value)) + 
   geom_jitter(width = 0.1, size = 2) + 
-  #geom_text_repel(aes(label = loo)) +
+  geom_text_repel(
+    data = 
+      m.loo.cont %>% filter(loo == 46),
+    aes(label = loo)) +
   geom_hline(yintercept = 0.05, linetype = "dashed", color = "red") +
   geom_hline(yintercept = 0.10, linetype = "dashed")
 

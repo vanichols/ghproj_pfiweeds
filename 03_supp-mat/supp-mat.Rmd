@@ -1,5 +1,5 @@
 ---
-title: "Supplementary Material for 'Long-term use of cover crops reduces weed seedbanks'"
+title: "Supplementary Material for 'Effects of long-term use of cover crops on weed seedbanks'"
 author: "Nichols et al. 2020"
 date: "7/15/2020"
 header-includes: #allows you to add in your own Latex packages
@@ -214,15 +214,34 @@ pfi_soilwgts %>%
  
 ## Linear models on seedbank density
 
+```{r loo}
+
+m.loo.cont <- read_csv("../01_stats-uni/st_loo.csv")
+
+ggplot(m.loo.cont, aes(site_sys, p.value)) + 
+  geom_jitter(width = 0.1, size = 2, aes(color = (loo == 46))) + 
+  geom_text_repel(data = m.loo.cont %>%  
+                    filter(site_sys == "West_F_grain",
+                           loo == 46),
+                  label = "outlier") +
+  geom_hline(yintercept = 0.05, linetype = "dashed", color = "red") +
+  geom_hline(yintercept = 0.10, linetype = "dashed") + 
+  guides(color = F) + 
+  labs(title = "Significance of rye vs no-cover comparison when removing single point",
+       subtitle = "Removal of outlier changed interpretation of West_F_grain significance")
+
+
+
+```
+
+
+
 Values are presented for the models run with the full dataset (XX_full) and with the outlier removed (XX_out-rm)
 
 ```{r contrasts}
 read_csv("../01_stats-uni/st_weedseed-contr-all-models.csv") %>% 
   select(model, site_sys, everything(), -df) %>% 
   mutate_if(is.numeric, round, 2) %>% 
-  mutate_all(funs(str_replace(., "Boyd", "Central"))) %>% 
-  mutate_all(funs(str_replace(., "Funcke", "West"))) %>%
-  mutate_all(funs(str_replace(., "Stout", "East"))) %>% 
   kable(caption = "Contrasts using full dataset (full) and dataset with outlier removed (out-rm)", booktabs = T, align = "c") %>% 
   kable_styling(latex_options = c("striped", "HOLD_position"), position = "center", full_width = F) %>% 
   collapse_rows(columns = c(1), latex_hline = "major", valign = "middle") 
@@ -232,9 +251,6 @@ read_csv("../01_stats-uni/st_weedseed-contr-all-models.csv") %>%
 read_csv("../01_stats-uni/st_weedseed-est-all-models.csv") %>%  
   mutate_if(is.numeric, round, 2) %>% 
   select(model, site_sys, everything(), -df) %>% 
-  mutate_all(funs(str_replace(., "Boyd", "Central"))) %>% 
-  mutate_all(funs(str_replace(., "Funcke", "West"))) %>%
-  mutate_all(funs(str_replace(., "Stout", "East"))) %>% 
   kable(caption = "Estimates using full dataset (full) and dataset with outlier removed (out-rm)", booktabs = T, align = "c") %>% 
   kable_styling(latex_options = c("striped", "HOLD_position"), position = "center", full_width = F) %>% 
   collapse_rows(columns = c(1, 2), latex_hline = "major", valign = "middle") 
@@ -249,9 +265,6 @@ read_csv("../01_stats-ccbio/sc_ccbio-metrics.csv") %>%
   mutate_if(is.numeric, round, 2) %>% 
   filter(yr_span == '10yr') %>% 
   select(-yr_span) %>% 
-  mutate_all(funs(str_replace(., "Boyd", "Central"))) %>% 
-  mutate_all(funs(str_replace(., "Funcke", "West"))) %>%
-  mutate_all(funs(str_replace(., "Stout", "East"))) %>% 
   kable(caption = "Cover crop biomass metrics, 10-year time frame", booktabs = T, align = "c") %>% 
   kable_styling(latex_options = c("striped", "HOLD_position"), position = "center", full_width = F) %>% 
   collapse_rows(columns = c(2), latex_hline = "major", valign = "middle")
@@ -262,9 +275,6 @@ read_csv("../01_stats-ccbio/sc_ccbio-metrics.csv") %>%
   mutate_if(is.numeric, round, 2) %>% 
   filter(yr_span == '5yr') %>% 
   select(-yr_span) %>% 
-  mutate_all(funs(str_replace(., "Boyd", "Central"))) %>% 
-  mutate_all(funs(str_replace(., "Funcke", "West"))) %>%
-  mutate_all(funs(str_replace(., "Stout", "East"))) %>% 
   kable(caption = "Cover crop biomass metrics, 5-year time frame", booktabs = T, align = "c") %>% 
   kable_styling(latex_options = c("striped", "HOLD_position"), position = "center", full_width = F) %>% 
   collapse_rows(columns = c(2), latex_hline = "major", valign = "middle")
@@ -326,528 +336,4 @@ sp_effs %>%
 ```
 
 
-\newpage
-## Manuscript figures with full datasets
-
-```{r bargraph, fig.cap = "Manuscript fig. 2 using full dataset"}
-
-# constant themes ---------------------------------------------------------
-
-mylegendtheme <- theme(legend.position = c(0.1, 0.9),
-                       legend.justification = c(0,1),
-                       legend.background = element_rect(color = "black"))
-
-myaxistexttheme <- theme(axis.text = element_text(size = rel(1.2)),
-                         legend.text = element_text(size = rel(1.3)),
-                         axis.title = element_text(size = rel(1.3)),
-                         strip.text = element_text(size = rel(1.3)))
-
-
-p_green <- "#619B44"
-p_blue <- "#46B2B5"
-p_pink <- "#DC1A64"
-p_orange <- "#FFA726"
-p_yellow <- "#FFC000"
-p_gray <- "#E7E6E6"
-
-
-# bar graph ---------------------------------------------------------------
-
-labseedsm2 <- bquote("Weed Seeds (1000s"~m^-2~")")
-
-
-#--raw values
-raws <-
-  pfi_ghobsraw %>% pfifun_sum_byeu() %>%
-  ungroup() %>%
-  rename(site = site_name,
-         crop_sys = sys_trt) %>%
-  mutate(
-    site = recode(
-      site,
-      "Boyd" = "Central",
-      "Funcke" = "West",
-      "Stout" = "East"
-    ),
-    site = factor(site, levels = c("West", "Central", "East")),
-    crop_sys = str_to_title(crop_sys),
-    cc_trt = recode(cc_trt,
-                    "no" = "No Cover",
-                    "rye" = "Winter Rye")
-  ) #%>% 
-  #filter(totseeds_m2 < 15000)
-
-
-#--raw means 
-sb_est <- 
-  #read_csv("01_stats-uni/st_weedseed-est.csv") %>%
-  read_csv("../01_stats-uni/st_weedseed-est-full.csv") %>% 
-  mutate(totseeds_m2 = pfifun_seedstom2conv(rate),
-         totseeds_se = pfifun_seedstom2conv(std.error),
-         se_lo = totseeds_m2 - totseeds_se,
-         se_hi = totseeds_m2 + totseeds_se)
-  
-
-#---Change
-sb_chng <- 
-  sb_est %>% 
-  select(cc_trt, site_sys, totseeds_m2) %>% 
-  pivot_wider(names_from = cc_trt, values_from = totseeds_m2) %>% 
-  mutate(trt_eff = paste(round(ccrye - no, 0)))
-
-#--sig of change plus ranges
-sb_pval <- 
-  #read_csv("01_stats-uni/st_weedseed-contr.csv") %>% 
-  read_csv("../01_stats-uni/st_weedseed-contr-full.csv") %>% 
-  mutate(rye_no = (round((ratio-1)*100, 0)),
-         stderr = round(std.error * 100, 0),
-         CI_lo = round((asymp.LCL - 1)*100, 0),
-         CI_lo = ifelse(CI_lo <0, CI_lo, paste0("+", CI_lo)),
-         CI_hi = round((asymp.UCL - 1)*100, 0),
-         CI_hi = ifelse(CI_hi <0, CI_hi, paste0("+", CI_hi)),
-         trt_eff_pct2 = paste0(rye_no, "%", "(±", stderr, "%)"),
-         trt_eff_pct3 = paste0(rye_no, "%", ", CI(", CI_lo, ",", CI_hi,"%)"),
-         p.value = paste0("p = ", round(p.value, 2))) %>% 
-    select(site_sys, p.value, trt_eff_pct2, CI_lo, CI_hi, trt_eff_pct3)
-  
-
-#--combine
-table_changes <- 
-  sb_chng %>% 
-  left_join(sb_pval) %>% 
-  left_join(sb_est %>% 
-              group_by(site_sys) %>% 
-              summarise(se_mx = max(se_hi)/1000)
-  ) %>% 
-  separate(site_sys,
-           into = c("site", "crop_sys"),
-                                  remove = F) %>%
-  mutate(
-    site = recode(
-      site,
-      "Boyd" = "Central",
-      "Funcke" = "West",
-      "Stout" = "East"
-    ),
-    site = factor(site, levels = c("West", "Central", "East")),
-    crop_sys = str_to_title(crop_sys)
-  ) %>% 
-  select(site, crop_sys, se_mx, p.value, trt_eff, trt_eff_pct2, trt_eff_pct3)
-  
-
-
-# make figure data------------------------------------------------
-
-fig_dat <- 
-  sb_est %>%
-  #--make things nice
-  separate(site_sys,
-           into = c("site", "crop_sys"),
-           remove = F) %>%
-  mutate(
-    site = recode(
-      site,
-      "Boyd" = "Central",
-      "Funcke" = "West",
-      "Stout" = "East"
-    ),
-    site = factor(site, levels = c("West", "Central", "East")),
-    crop_sys = str_to_title(crop_sys),
-    cc_trt = recode(cc_trt,
-                    "no" = "No Cover",
-                    "ccrye" = "Winter Rye")) %>%
-    select(site, cc_trt, crop_sys, totseeds_m2, se_lo, se_hi)
-
-# alternative with CIs instead of SEs -------------------------------------
-
-fig_dat %>% 
-  ggplot(aes(reorder(crop_sys, totseeds_m2, mean), totseeds_m2 / 1000)) +
-  geom_col(position = position_dodge(width = 0.9),
-           color = "black",
-           size = 0.9,
-           aes(fill = cc_trt)) +
-  # geom_point(data = raws, aes(crop_sys, totseeds_m2/1000, color = cc_trt), 
-  #            pch = 21, position = position_dodge(0.9), size = 3, fill = "white", alpha = 0.7, stroke = 1.2) +
-  geom_point(data = raws, aes(crop_sys, totseeds_m2/1000, fill = cc_trt), 
-             pch = 21, 
-             position = position_jitterdodge(dodge.width = 0.9, jitter.width = 0.1), 
-             size = 2, 
-             color = "black") +
-  geom_linerange(position = position_dodge(width = 0.9),
-                 aes(ymin = se_lo / 1000, ymax = se_hi / 1000, alpha = cc_trt),
-                 size = 1.2, color = "black") +
-  geom_text(data = table_changes, 
-            aes(x = crop_sys, y = se_mx + 1.5, label = paste0(trt_eff, " seeds"), fontface = "italic")) +
-  geom_text(data = table_changes, 
-            aes(x = crop_sys, y = se_mx + 3, label = trt_eff_pct3), fontface = "italic") +
-  scale_alpha_manual(values = c(1, 1)) +
-  labs(y = labseedsm2,
-       x = NULL,
-       fill = "Cover Crop Treatment") +
-  guides(alpha = F,
-         color = F) +
-  scale_fill_manual(values = c("No Cover" = p_yellow,
-                               "Winter Rye" = p_blue)) +
-  scale_color_manual(values = c("black", "black")) +
-  theme_bw() +
-  facet_grid(. ~ site, scales = "free") +
-  myaxistexttheme +
-  theme(#legend.direction = "horizontal",
-    #legend.position = "top",
-    legend.justification = c(1, 1),
-    legend.position = c(0.99, 0.99),
-    legend.background = element_rect(color = "black", fill = "white"),
-    legend.title = element_text(size = rel(1.4)),
-    #legend.key.width = unit(1.4, "cm"),
-    #legend.key.height = unit(0.5, "cm"),
-    # legend.key.size = unit(1, "cm"),
-    # axis.text.x = element_text(angle = 45,
-    #                            vjust = 1))
-  ) 
-```
-
-```{r dotplot, fig.cap="Manuscript fig. 3 using full dataset"}
-
-wdat <- pfifun_sum_weedbyeu(pfi_ghobsraw) %>% 
-  ungroup() %>% 
-  unite(site_name, sys_trt, col = "site_sys", remove = T) #%>% 
-  #filter(seeds < 750) #--funcke point
-
-adat <- pfifun_sum_byeu(pfi_ghobsraw) %>% 
-  ungroup() %>% 
-  unite(site_name, sys_trt, col = "site_sys", remove = T) #%>% 
-  #filter(totseeds < 750) #--funcke point
-
-
-# abs diffs
-
-adiff <- 
-  adat %>% 
-  group_by(site_sys, cc_trt) %>% 
-  summarise(mtot_m2 = mean(totseeds_m2)) %>% 
-  pivot_wider(names_from = cc_trt, values_from = mtot_m2) %>% 
-  mutate(diff_ryetono = rye - no) %>% 
-  mutate(weed = "Overall")
-
-
-wdiff <- 
-  wdat %>% 
-  group_by(site_sys, cc_trt, weed) %>% 
-  summarise(mtot_m2 = mean(seeds_m2)) %>% 
-  pivot_wider(names_from = cc_trt, values_from = mtot_m2) %>% 
-  mutate(diff_ryetono = rye - no)
-
-
-diff <- 
-  adiff %>% 
-  bind_rows(wdiff) %>% 
-  mutate(clr_id = ifelse(diff_ryetono < 0, "neg", 
-                         ifelse(diff_ryetono > 0, "pos", "zero"))) %>% 
-  mutate(site_id = recode(site_sys,
-                          "Boyd_grain" = "Central",
-                          "Boyd_silage" = "Central (Silage)",
-                          "Funcke_grain" = "West",
-                          "Stout_grain" = "East"),
-         site_id = factor(site_id, levels = rev(c("West", "Central (Silage)", "Central", "East"))),
-         site_id2 = factor(site_id, levels = (c("West", "Central (Silage)", "Central", "East"))))
-
-
-#--get a factor order
-# myorder <- 
-#   wdiff %>% 
-#   group_by(weed) %>% 
-#   summarise(mdiff = abs(mean(diff_ryetono, na.rm = T))) %>%
-#   arrange(-mdiff) %>% 
-#   pull(weed)
-
-myorder <- 
-  read_csv("../02_make-figs/mf_weed-list-arranged.csv") %>% 
-  pull(code)
-
-
-diff %>% 
-  mutate(weed = factor(weed, levels = c("Overall", myorder)),
-         thick_id = ifelse(weed == "Overall", "thick", "thin"),
-         difflog = log(abs(diff_ryetono)),
-         diff_lab = round(diff_ryetono, 0),
-         diff_lab2 = ifelse(diff_lab == 0, paste(""), diff_lab)) %>% 
-  ggplot(aes(weed, site_id)) + 
-  geom_tile(color = "black", aes(fill = thick_id)) +
-  geom_point(aes(color = clr_id, 
-                 #size = abs(diff_ryetono),
-                 size = difflog
-                 )) + 
-  geom_text(aes(label = diff_lab2),
-            vjust = 2.5,
-            color = "gray50",
-            fontface = "italic",
-            size = rel(3)) +
-  scale_x_discrete(position = "top") +
-  scale_fill_manual(values = c("thick" = "gray80", "thin" = "white")) +
-  scale_color_manual(values = c("neg" = p_orange, "pos" = p_gray, "zero" = "gray90")) + 
-  #scale_size_continuous(range = c(1, 7)) +
-  #scale_size_area(max_size = 7) + #--this makes a value of 0 a 0 point, can't see anything
-  guides(color = F, size = F, fill = F) +
-  theme_minimal() + 
-  theme(axis.text.x = element_text(angle = 45, vjust = 0, hjust = 0),
-        axis.text.y = element_text(face = c("plain", "plain", "bold", "bold"))) + 
-  labs(x = NULL, y = NULL) 
-
-
-```
-
-
-
-\newpage
-
-```{r nmds, fig.cap = "Manuscript fig. 4 using full dataset"}
-
-
-# fig settings 
-mylegendtheme <- theme(legend.position = c(0.1, 0.9),
-                       legend.justification = c(0,1),
-                       legend.background = element_rect(color = "black"))
-
-myaxistexttheme <- theme(axis.text = element_text(size = rel(1.2)),
-                         legend.text = element_text(size = rel(1.3)),
-                         axis.title = element_text(size = rel(1.3)),
-                         strip.text = element_text(size = rel(1.3)))
-
-
-theme_set(theme_bw())
-
-
-# data 
-site_scores <- 
-  read_csv("../01_stats-nmds/st_nmds-site-full.csv") %>% 
-  mutate(
-    site = recode(
-      site,
-      "Boyd" = "Central",
-      "Funcke" = "West",
-      "Stout" = "East"
-    ),
-    site = factor(site, levels = c("West", "Central", "East")),
-    crop_sys = stringr::str_to_title(sys_trt),
-    cc_trt = recode(cc_trt, 
-                    "no" = "No Cover",
-                    "rye" = "Winter Rye"),
-    site_sys = paste(site, crop_sys, sep = " "))
-
-spp_scores  <- read_csv("../01_stats-nmds/st_nmds-spp-full.csv") %>% 
-  left_join(pfi_weedsplist, by = c('speciesID' = 'code'))
-
-site_hull <- 
-  read_csv("../01_stats-nmds/st_nmds-site-hulls-full.csv") %>%
-  mutate(
-    site = recode(
-      site,
-      "Boyd" = "Central",
-      "Funcke" = "West",
-      "Stout" = "East"
-    ),
-    site = factor(site, levels = c("West", "Central", "East")),
-    crop_sys = stringr::str_to_title(sys_trt),
-    cc_trt = recode(cc_trt, 
-                         "no" = "No Cover",
-                         "rye" = "Winter Rye"))
-
-site_hull2 <- 
-  site_hull %>% 
-  group_by(cc_trt, crop_sys, site) %>% 
-  slice(c(1, n()))
-
-# figure ------------------------------------------------------------------
-
-set.seed(59)
-
-nmds2 <- 
-  ggplot() +
-  geom_point(data = site_scores, 
-             aes(x = NMDS1, 
-                 y = NMDS2, 
-                 color = site_sys, shape = cc_trt), 
-             size = 3, 
-             alpha = 0.5) +
-  #--grasses
-  geom_text_repel(data = spp_scores %>% filter(functional_grp == "grass"), 
-                  aes(x = NMDS1, 
-                      y = NMDS2, 
-                      label = speciesID),
-                  fontface = "italic",
-                  alpha = 0.5) + # Species as text - better!
-  #--forbs
-  geom_text_repel(data = spp_scores %>% filter(functional_grp == "forb"), 
-                  aes(x = NMDS1, 
-                      y = NMDS2, 
-                      label = speciesID),
-                  fontface = "bold",
-                  alpha = 0.6) + # Species as text - better!
-  geom_polygon(data = site_hull, 
-               aes(x = NMDS1, 
-                   y = NMDS2, 
-                   fill = site_sys_trt),
-               alpha = 0.3) + 
-  #geom_hline(yintercept = 0, lty = 2) +
-  #geom_vline(xintercept = 0, lty = 2) +
-  # -- the following stuff is for aesthetic purposes --
-  scale_color_manual(values = c(p_pink, p_green, p_blue, p_orange)) +
-  scale_fill_manual(values = c(p_pink, p_pink,
-                               p_green, p_green,
-                               p_orange, p_orange,
-                               p_blue, p_blue)) +
-  labs(color = "Site",
-       shape = "Cover Crop Treatment")+
-  guides(fill = FALSE)+
-  theme_bw() +
-  theme(legend.direction  = "vertical",
-        legend.background = element_rect(color = "black"),
-        legend.text       = element_text(size = 12),
-        legend.title      = element_text(size = 14),
-        axis.title        = element_text(size = 14),
-        axis.text         = element_text(size = 12))
-
-set.seed(59)
-nmds3 <- 
-  ggplot() +
-   #--grasses
-  geom_text_repel(data = spp_scores %>% filter(functional_grp == "grass"), 
-                  aes(x = NMDS1, 
-                      y = NMDS2, 
-                      label = speciesID),
-                  fontface = "italic",
-                  alpha = 0.5) + # Species as text - better!
-  #--forbs
-  geom_text_repel(data = spp_scores %>% filter(functional_grp == "forb"), 
-                  aes(x = NMDS1, 
-                      y = NMDS2, 
-                      label = speciesID),
-                  fontface = "bold",
-                  alpha = 0.6) + # Species as text - better!
-  geom_polygon(data = site_hull, 
-               aes(x = NMDS1, 
-                   y = NMDS2, 
-                   fill = site_sys_trt),
-               alpha = 0.3) + 
-  geom_path(data = site_hull,
-            aes(x = NMDS1, 
-                y = NMDS2,
-                group = interaction(cc_trt, crop_sys, site),
-                linetype = cc_trt
-            ),
-            na.rm = TRUE,
-            color = "gray40",
-            size = 1) +
-  geom_path(data = site_hull2, 
-            aes(x = NMDS1, 
-                y = NMDS2,
-                group = interaction(cc_trt, crop_sys, site),
-                linetype = cc_trt
-            ),
-            na.rm = TRUE,
-            color = "gray40",
-            size = 0.9) +
-  #geom_hline(yintercept = 0, lty = 2) +
-  #geom_vline(xintercept = 0, lty = 2) +
-  # -- the following stuff is for aesthetic purposes --
-  scale_color_manual(values = c(p_pink, p_green, p_blue, p_orange)) +
-  scale_fill_manual(values = c(p_pink, p_pink,
-                               p_green, p_green,
-                               p_orange, p_orange,
-                               p_blue, p_blue)) +
-  labs(color = "Site",
-       linetype = "Cover Crop Treatment")+
-  guides(fill = FALSE,
-         shape = F)+
-  theme_bw() +
-  theme(legend.direction  = "vertical",
-        legend.background = element_rect(color = "black"),
-        legend.justification = c(0, 1),
-        legend.position = c(0.01, 0.99),
-        legend.text       = element_text(size = 12),
-        legend.title      = element_text(size = 14),
-        axis.title        = element_text(size = 14),
-        axis.text         = element_text(size = 12)) 
-
-# get legend from different plot ------------------------------------------
-
-library(cowplot)
-
-#--remove point legend
-dum_p1 <- 
-  nmds2 + 
-  guides(shape = F)
-  
-# extract legend w/just site
-leg_nmds2 <- get_legend(dum_p1)
-
-nmds3 + leg_nmds2 + 
-  plot_layout(widths = c(2, 0.5))
-
-```
-
-\newpage
-
-```{r stochdom, fig.cap = "Manuscript fig. 5 using full dataset"}
-
-stodom <- read_csv("../01_stats-stoch-dom/st_stoch-dom-res-full.csv")
-
-
-# figure ------------------------------------------------------------------
-
-mylegendtheme <-   theme(#legend.direction = "horizontal",
-  #legend.position = "bottom",
-  legend.justification = c(1, 1),
-  legend.position = c(0.9, 0.9),
-  legend.background = element_blank(),
-  legend.key.width = unit(1.4, "cm"),
-  legend.key.height = unit(0.5, "cm"),
-  legend.key.size = unit(1, "cm"),
-  #axis.title.y = element_text(angle = 0, 
-  #                            vjust = 0.5, 
-  #                            hjust = -1)
-)
-
-
-
-myaxistexttheme <- theme(axis.text = element_text(size = rel(1.2)),
-                         legend.text = element_text(size = rel(1.3)),
-                         axis.title = element_text(size = rel(1.3)))
-
-
-labseedsm2 <- bquote("Weed Seeds (1000s"~m^-2~")")
-
-
-# fig ---------------------------------------------------------------------
-
-
-#--inv cum diff
-stodom %>% 
-  pivot_longer(sc_nocum:sc_ryecum) %>% 
-  mutate(name = recode(name, 
-                       "sc_nocum" = "None",
-                       "sc_ryecum" = "Rye Cover Crop")) %>%  
-  select(seeds, name, value) %>% 
-  mutate(inv_value = 1 - value) %>% 
-  ggplot(aes(seeds/1000, inv_value, color = name, fill = name, group = name, shape = name)) + 
-  ggridges::geom_density_line(stat = "identity", size = 0.5, alpha = 0.7) +
-  geom_line(size = 1) +
-  geom_point(size = 2, color = "black") +
-  scale_fill_manual(values = c("None" = p_yellow,
-                               "Rye Cover Crop" = p_blue)) +
-  scale_color_manual(values = c("None" = p_yellow,
-                                "Rye Cover Crop" = p_blue)) +
-  geom_vline(xintercept = 350/1000, linetype = "dashed") +
-  theme_bw() + 
-  scale_y_continuous(labels = label_percent()) +
-  myaxistexttheme + 
-  mylegendtheme +
-  labs(x = labseedsm2,
-       y = "Cumulative Probability",
-       color = NULL,
-       fill = NULL,
-       shape = NULL)
-
-
-```
 

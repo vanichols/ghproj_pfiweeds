@@ -1,39 +1,48 @@
-\documentclass[]{article}
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
 \usepackage{lmodern}
 \usepackage{amssymb,amsmath}
 \usepackage{ifxetex,ifluatex}
-\usepackage{fixltx2e} % provides \textsubscript
 \ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
   \usepackage[T1]{fontenc}
   \usepackage[utf8]{inputenc}
-\else % if luatex or xelatex
-  \ifxetex
-    \usepackage{mathspec}
-  \else
-    \usepackage{fontspec}
-  \fi
-  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
 \fi
-% use upquote if available, for straight quotes in verbatim environments
+% Use upquote if available, for straight quotes in verbatim environments
 \IfFileExists{upquote.sty}{\usepackage{upquote}}{}
-% use microtype if available
-\IfFileExists{microtype.sty}{%
-\usepackage{microtype}
-\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
 }{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\hypersetup{
+  pdftitle={Supplementary Material for `Effects of long-term use of cover crops on weed seedbanks'},
+  pdfauthor={Nichols et al.~2020},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+\urlstyle{same} % disable monospaced font for URLs
 \usepackage[margin=1in]{geometry}
-\usepackage{hyperref}
-\hypersetup{unicode=true,
-            pdftitle={Supplementary Material for `Long-term use of cover crops reduces weed seedbanks'},
-            pdfauthor={Nichols et al.~2020},
-            pdfborder={0 0 0},
-            breaklinks=true}
-\urlstyle{same}  % don't use monospace font for urls
-\usepackage{graphicx}
-% grffile has become a legacy package: https://ctan.org/pkg/grffile
-\IfFileExists{grffile.sty}{%
-\usepackage{grffile}
-}{}
+\usepackage{graphicx,grffile}
 \makeatletter
 \def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
 \def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
@@ -42,53 +51,16 @@
 % margins by default, and it is still possible to overwrite the defaults
 % using explicit options in \includegraphics[width, height, ...]{}
 \setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
-\IfFileExists{parskip.sty}{%
-\usepackage{parskip}
-}{% else
-\setlength{\parindent}{0pt}
-\setlength{\parskip}{6pt plus 2pt minus 1pt}
-}
-\setlength{\emergencystretch}{3em}  % prevent overfull lines
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
 \providecommand{\tightlist}{%
   \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
-\setcounter{secnumdepth}{0}
-% Redefines (sub)paragraphs to behave more like sections
-\ifx\paragraph\undefined\else
-\let\oldparagraph\paragraph
-\renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
-\fi
-\ifx\subparagraph\undefined\else
-\let\oldsubparagraph\subparagraph
-\renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
-\fi
-
-%%% Use protect on footnotes to avoid problems with footnotes in titles
-\let\rmarkdownfootnote\footnote%
-\def\footnote{\protect\rmarkdownfootnote}
-
-%%% Change title format to be more compact
-\usepackage{titling}
-
-% Create subtitle command for use in maketitle
-\providecommand{\subtitle}[1]{
-  \posttitle{
-    \begin{center}\large#1\end{center}
-    }
-}
-
-\setlength{\droptitle}{-2em}
-
-  \title{Supplementary Material for `Long-term use of cover crops reduces weed
-seedbanks'}
-    \pretitle{\vspace{\droptitle}\centering\huge}
-  \posttitle{\par}
-    \author{Nichols et al.~2020}
-    \preauthor{\centering\large\emph}
-  \postauthor{\par}
-      \predate{\centering\large\emph}
-  \postdate{\par}
-    \date{7/15/2020}
-
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{float}
+\floatplacement{figure}{H}
 \usepackage{booktabs}
 \usepackage{longtable}
 \usepackage{array}
@@ -104,8 +76,10 @@ seedbanks'}
 \usepackage{makecell}
 \usepackage{xcolor}
 
-\usepackage{float}
-\floatplacement{figure}{H}
+\title{Supplementary Material for `Effects of long-term use of cover crops on
+weed seedbanks'}
+\author{Nichols et al.~2020}
+\date{7/15/2020}
 
 \begin{document}
 \maketitle
@@ -317,6 +291,8 @@ site & cc\_trt & rep & soilwt\_g & notes\\
 \subsection{Linear models on seedbank
 density}\label{linear-models-on-seedbank-density}}
 
+\includegraphics{supp-mat_files/figure-latex/loo-1.pdf}
+
 Values are presented for the models run with the full dataset (XX\_full)
 and with the outlier removed (XX\_out-rm)
 
@@ -328,37 +304,45 @@ and with the outlier removed (XX\_out-rm)
 \toprule
 model & site\_sys & level1 & level2 & estimate & std.error & z.ratio & p.value\\
 \midrule
-\rowcolor{gray!6}   & Central\_grain & no & rye & -0.32 & 0.26 & -1.22 & 0.22\\
+\rowcolor{gray!6}   & Central\_B42\_grain & no & rye & -0.85 & 0.34 & -2.50 & 0.01\\
 
- & Central\_silage & no & rye & 0.95 & 0.35 & 2.66 & 0.01\\
+ & Central\_B44\_grain & no & rye & 0.18 & 0.33 & 0.56 & 0.58\\
 
-\rowcolor{gray!6}   & West\_grain & no & rye & 0.71 & 0.42 & 1.68 & 0.09\\
+\rowcolor{gray!6}   & Central\_B44\_silage & no & rye & 0.95 & 0.32 & 2.96 & 0.00\\
 
-\multirow{-4}{*}{\centering\arraybackslash pois\_out-rm} & East\_grain & no & rye & 0.42 & 0.41 & 1.03 & 0.31\\
+ & East\_S\_grain & no & rye & 0.42 & 0.38 & 1.13 & 0.26\\
+
+\rowcolor{gray!6}  \multirow{-5}{*}{\centering\arraybackslash pois\_out-rm} & West\_F\_grain & no & rye & 0.71 & 0.38 & 1.86 & 0.06\\
 \cmidrule{1-8}
-\rowcolor{gray!6}   & Central\_grain & no & rye & -0.32 & 0.27 & -1.19 & 0.24\\
+ & Central\_B42\_grain & no & rye & -0.85 & 0.35 & -2.39 & 0.02\\
 
- & Central\_silage & no & rye & 0.95 & 0.37 & 2.58 & 0.01\\
+\rowcolor{gray!6}   & Central\_B44\_grain & no & rye & 0.18 & 0.34 & 0.52 & 0.60\\
 
-\rowcolor{gray!6}   & West\_grain & no & rye & 0.36 & 0.4 & 0.91 & 0.37\\
+ & Central\_B44\_silage & no & rye & 0.95 & 0.33 & 2.83 & 0.00\\
 
-\multirow{-4}{*}{\centering\arraybackslash pois\_full} & East\_grain & no & rye & 0.43 & 0.43 & 1 & 0.32\\
+\rowcolor{gray!6}   & East\_S\_grain & no & rye & 0.43 & 0.39 & 1.09 & 0.28\\
+
+\multirow{-5}{*}{\centering\arraybackslash pois\_full} & West\_F\_grain & no & rye & 0.36 & 0.36 & 1.00 & 0.32\\
 \cmidrule{1-8}
-\rowcolor{gray!6}   & Central\_grain & no & rye & -0.33 & 0.26 & -1.27 & 0.2\\
+\rowcolor{gray!6}   & Central\_B42\_grain & no & rye & -0.97 & 0.34 & -2.88 & 0.00\\
 
- & Central\_silage & no & rye & 1.02 & 0.34 & 2.99 & 0\\
+ & Central\_B44\_grain & no & rye & 0.24 & 0.32 & 0.75 & 0.45\\
 
-\rowcolor{gray!6}   & West\_grain & no & rye & 0.71 & 0.41 & 1.72 & 0.09\\
+\rowcolor{gray!6}   & Central\_B44\_silage & no & rye & 1.01 & 0.31 & 3.24 & 0.00\\
 
-\multirow{-4}{*}{\centering\arraybackslash binom\_out-rm} & East\_grain & no & rye & 0.45 & 0.4 & 1.12 & 0.26\\
+ & East\_S\_grain & no & rye & 0.44 & 0.36 & 1.22 & 0.22\\
+
+\rowcolor{gray!6}  \multirow{-5}{*}{\centering\arraybackslash binom\_out-rm} & West\_F\_grain & no & rye & 0.71 & 0.37 & 1.89 & 0.06\\
 \cmidrule{1-8}
-\rowcolor{gray!6}   & Central\_grain & no & rye & -0.33 & 0.26 & -1.23 & 0.22\\
+ & Central\_B42\_grain & no & rye & -0.98 & 0.36 & -2.69 & 0.01\\
 
- & Central\_silage & no & rye & 1.03 & 0.35 & 2.92 & 0\\
+\rowcolor{gray!6}   & Central\_B44\_grain & no & rye & 0.24 & 0.35 & 0.70 & 0.49\\
 
-\rowcolor{gray!6}   & West\_grain & no & rye & 0.28 & 0.39 & 0.71 & 0.48\\
+ & Central\_B44\_silage & no & rye & 1.01 & 0.34 & 3.00 & 0.00\\
 
-\multirow{-4}{*}{\centering\arraybackslash binom\_full} & East\_grain & no & rye & 0.45 & 0.41 & 1.09 & 0.27\\
+\rowcolor{gray!6}   & East\_S\_grain & no & rye & 0.44 & 0.39 & 1.14 & 0.26\\
+
+\multirow{-5}{*}{\centering\arraybackslash binom\_full} & West\_F\_grain & no & rye & 0.28 & 0.37 & 0.74 & 0.46\\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -371,69 +355,85 @@ model & site\_sys & level1 & level2 & estimate & std.error & z.ratio & p.value\\
 \toprule
 model & site\_sys & cc\_trt & estimate & std.error & asymp.LCL & asymp.UCL\\
 \midrule
-\rowcolor{gray!6}   &  & no & 2.97 & 0.23 & 2.52 & 3.42\\
+\rowcolor{gray!6}   &  & no & 2.59 & 0.32 & 1.97 & 3.21\\
 
- & \multirow{-2}{*}{\centering\arraybackslash Central\_grain} & rye & 3.29 & 0.23 & 2.85 & 3.73\\
+ & \multirow{-2}{*}{\centering\arraybackslash Central\_B42\_grain} & rye & 3.44 & 0.31 & 2.84 & 4.05\\
 
-\rowcolor{gray!6}   &  & no & 4.3 & 0.3 & 3.72 & 4.88\\
+\rowcolor{gray!6}   &  & no & 3.33 & 0.31 & 2.73 & 3.93\\
 
- & \multirow{-2}{*}{\centering\arraybackslash Central\_silage} & rye & 3.35 & 0.3 & 2.76 & 3.95\\
+ & \multirow{-2}{*}{\centering\arraybackslash Central\_B44\_grain} & rye & 3.15 & 0.31 & 2.55 & 3.75\\
+
+\rowcolor{gray!6}   &  & no & 4.35 & 0.30 & 3.77 & 4.94\\
+
+ & \multirow{-2}{*}{\centering\arraybackslash Central\_B44\_silage} & rye & 3.41 & 0.30 & 2.81 & 4.01\\
+
+\rowcolor{gray!6}   &  & no & 3.33 & 0.34 & 2.65 & 4.00\\
+
+ & \multirow{-2}{*}{\centering\arraybackslash East\_S\_grain} & rye & 2.90 & 0.35 & 2.21 & 3.59\\
+
+\rowcolor{gray!6}   &  & no & 6.02 & 0.33 & 5.38 & 6.66\\
+
+\multirow{-10}{*}{\centering\arraybackslash pois\_out-rm} & \multirow{-2}{*}{\centering\arraybackslash West\_F\_grain} & rye & 5.31 & 0.37 & 4.59 & 6.04\\
+\cmidrule{1-7}
+\rowcolor{gray!6}   &  & no & 2.59 & 0.33 & 1.94 & 3.24\\
+
+ & \multirow{-2}{*}{\centering\arraybackslash Central\_B42\_grain} & rye & 3.44 & 0.32 & 2.81 & 4.06\\
+
+\rowcolor{gray!6}   &  & no & 3.33 & 0.32 & 2.70 & 3.95\\
+
+ & \multirow{-2}{*}{\centering\arraybackslash Central\_B44\_grain} & rye & 3.15 & 0.32 & 2.52 & 3.77\\
+
+\rowcolor{gray!6}   &  & no & 4.35 & 0.31 & 3.74 & 4.96\\
+
+ & \multirow{-2}{*}{\centering\arraybackslash Central\_B44\_silage} & rye & 3.41 & 0.32 & 2.79 & 4.03\\
+
+\rowcolor{gray!6}   &  & no & 3.32 & 0.36 & 2.62 & 4.02\\
+
+ & \multirow{-2}{*}{\centering\arraybackslash East\_S\_grain} & rye & 2.90 & 0.36 & 2.18 & 3.61\\
 
 \rowcolor{gray!6}   &  & no & 6.02 & 0.34 & 5.35 & 6.69\\
 
- & \multirow{-2}{*}{\centering\arraybackslash West\_grain} & rye & 5.31 & 0.39 & 4.55 & 6.07\\
-
-\rowcolor{gray!6}   &  & no & 3.32 & 0.36 & 2.62 & 4.03\\
-
-\multirow{-8}{*}{\centering\arraybackslash pois\_out-rm} & \multirow{-2}{*}{\centering\arraybackslash East\_grain} & rye & 2.9 & 0.36 & 2.19 & 3.61\\
+\multirow{-10}{*}{\centering\arraybackslash pois\_full} & \multirow{-2}{*}{\centering\arraybackslash West\_F\_grain} & rye & 5.66 & 0.34 & 4.99 & 6.33\\
 \cmidrule{1-7}
-\rowcolor{gray!6}   &  & no & 2.97 & 0.24 & 2.5 & 3.43\\
+\rowcolor{gray!6}   &  & no & 2.65 & 0.31 & 2.04 & 3.25\\
 
- & \multirow{-2}{*}{\centering\arraybackslash Central\_grain} & rye & 3.29 & 0.23 & 2.83 & 3.74\\
+ & \multirow{-2}{*}{\centering\arraybackslash Central\_B42\_grain} & rye & 3.62 & 0.30 & 3.02 & 4.21\\
 
-\rowcolor{gray!6}   &  & no & 4.29 & 0.31 & 3.69 & 4.9\\
+\rowcolor{gray!6}   &  & no & 3.45 & 0.29 & 2.88 & 4.03\\
 
- & \multirow{-2}{*}{\centering\arraybackslash Central\_silage} & rye & 3.35 & 0.31 & 2.74 & 3.96\\
+ & \multirow{-2}{*}{\centering\arraybackslash Central\_B44\_grain} & rye & 3.21 & 0.30 & 2.63 & 3.79\\
 
-\rowcolor{gray!6}   &  & no & 6.02 & 0.35 & 5.33 & 6.71\\
+\rowcolor{gray!6}   &  & no & 4.49 & 0.29 & 3.92 & 5.05\\
 
- & \multirow{-2}{*}{\centering\arraybackslash West\_grain} & rye & 5.66 & 0.36 & 4.97 & 6.36\\
+ & \multirow{-2}{*}{\centering\arraybackslash Central\_B44\_silage} & rye & 3.47 & 0.29 & 2.90 & 4.05\\
 
-\rowcolor{gray!6}   &  & no & 3.32 & 0.37 & 2.6 & 4.05\\
+\rowcolor{gray!6}   &  & no & 3.42 & 0.34 & 2.76 & 4.08\\
 
-\multirow{-8}{*}{\centering\arraybackslash pois\_full} & \multirow{-2}{*}{\centering\arraybackslash East\_grain} & rye & 2.9 & 0.38 & 2.16 & 3.63\\
+ & \multirow{-2}{*}{\centering\arraybackslash East\_S\_grain} & rye & 2.98 & 0.34 & 2.31 & 3.64\\
+
+\rowcolor{gray!6}   &  & no & 6.03 & 0.32 & 5.41 & 6.64\\
+
+\multirow{-10}{*}{\centering\arraybackslash binom\_out-rm} & \multirow{-2}{*}{\centering\arraybackslash West\_F\_grain} & rye & 5.32 & 0.36 & 4.62 & 6.02\\
 \cmidrule{1-7}
-\rowcolor{gray!6}   &  & no & 3.11 & 0.23 & 2.67 & 3.55\\
+\rowcolor{gray!6}   &  & no & 2.65 & 0.32 & 2.01 & 3.28\\
 
- & \multirow{-2}{*}{\centering\arraybackslash Central\_grain} & rye & 3.44 & 0.23 & 3 & 3.88\\
+ & \multirow{-2}{*}{\centering\arraybackslash Central\_B42\_grain} & rye & 3.62 & 0.32 & 2.99 & 4.25\\
 
-\rowcolor{gray!6}   &  & no & 4.45 & 0.29 & 3.87 & 5.02\\
+\rowcolor{gray!6}   &  & no & 3.45 & 0.31 & 2.84 & 4.06\\
 
- & \multirow{-2}{*}{\centering\arraybackslash Central\_silage} & rye & 3.42 & 0.3 & 2.84 & 4.01\\
+ & \multirow{-2}{*}{\centering\arraybackslash Central\_B44\_grain} & rye & 3.21 & 0.31 & 2.60 & 3.82\\
 
-\rowcolor{gray!6}   &  & no & 6.03 & 0.33 & 5.37 & 6.68\\
+\rowcolor{gray!6}   &  & no & 4.49 & 0.31 & 3.89 & 5.09\\
 
- & \multirow{-2}{*}{\centering\arraybackslash West\_grain} & rye & 5.32 & 0.38 & 4.58 & 6.06\\
+ & \multirow{-2}{*}{\centering\arraybackslash Central\_B44\_silage} & rye & 3.47 & 0.31 & 2.87 & 4.08\\
 
-\rowcolor{gray!6}   &  & no & 3.43 & 0.36 & 2.73 & 4.13\\
+\rowcolor{gray!6}   &  & no & 3.42 & 0.36 & 2.73 & 4.12\\
 
-\multirow{-8}{*}{\centering\arraybackslash binom\_out-rm} & \multirow{-2}{*}{\centering\arraybackslash East\_grain} & rye & 2.98 & 0.36 & 2.28 & 3.69\\
-\cmidrule{1-7}
-\rowcolor{gray!6}   &  & no & 3.11 & 0.23 & 2.65 & 3.57\\
+ & \multirow{-2}{*}{\centering\arraybackslash East\_S\_grain} & rye & 2.98 & 0.36 & 2.28 & 3.68\\
 
- & \multirow{-2}{*}{\centering\arraybackslash Central\_grain} & rye & 3.43 & 0.24 & 2.97 & 3.9\\
+\rowcolor{gray!6}   &  & no & 6.04 & 0.33 & 5.38 & 6.69\\
 
-\rowcolor{gray!6}   &  & no & 4.44 & 0.3 & 3.85 & 5.04\\
-
- & \multirow{-2}{*}{\centering\arraybackslash Central\_silage} & rye & 3.42 & 0.31 & 2.81 & 4.02\\
-
-\rowcolor{gray!6}   &  & no & 6.04 & 0.35 & 5.35 & 6.72\\
-
- & \multirow{-2}{*}{\centering\arraybackslash West\_grain} & rye & 5.76 & 0.36 & 5.06 & 6.46\\
-
-\rowcolor{gray!6}   &  & no & 3.42 & 0.37 & 2.69 & 4.15\\
-
-\multirow{-8}{*}{\centering\arraybackslash binom\_full} & \multirow{-2}{*}{\centering\arraybackslash East\_grain} & rye & 2.98 & 0.37 & 2.24 & 3.71\\
+\multirow{-10}{*}{\centering\arraybackslash binom\_full} & \multirow{-2}{*}{\centering\arraybackslash West\_F\_grain} & rye & 5.76 & 0.34 & 5.09 & 6.43\\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -449,13 +449,13 @@ model & site\_sys & cc\_trt & estimate & std.error & asymp.LCL & asymp.UCL\\
 \toprule
 site\_sys & nabove1 & nabove2 & ccbio\_mean & ccbio\_med & ccbio\_var & ccbio\_max & ccbio\_stab & ccbio\_2019\\
 \midrule
-\rowcolor{gray!6}  Central\_grain & 4 & 2 & 1.03 & 0.74 & 0.77 & 2.76 & 0.85 & 1.29\\
+\rowcolor{gray!6}  Boyd\_grain & 4 & 2 & 1.03 & 0.74 & 0.77 & 2.76 & 0.85 & 1.29\\
 \cmidrule{1-9}
-Central\_silage & 9 & 4 & 2.04 & 1.74 & 1.02 & 4.23 & 0.5 & 2.05\\
+Boyd\_silage & 9 & 4 & 2.04 & 1.74 & 1.02 & 4.23 & 0.50 & 2.05\\
 \cmidrule{1-9}
-\rowcolor{gray!6}  West\_grain & 2 & 1 & 0.45 & 0.14 & 0.46 & 2.11 & 1.5 & 0\\
+\rowcolor{gray!6}  Funcke\_grain & 2 & 1 & 0.45 & 0.14 & 0.46 & 2.11 & 1.50 & 0.00\\
 \cmidrule{1-9}
-East\_grain & 3 & 2 & 1.32 & 0.43 & 4.89 & 7.3 & 1.68 & 0.3\\
+Stout\_grain & 3 & 2 & 1.32 & 0.43 & 4.89 & 7.30 & 1.68 & 0.30\\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -468,13 +468,13 @@ East\_grain & 3 & 2 & 1.32 & 0.43 & 4.89 & 7.3 & 1.68 & 0.3\\
 \toprule
 site\_sys & nabove1 & nabove2 & ccbio\_mean & ccbio\_med & ccbio\_var & ccbio\_max & ccbio\_stab & ccbio\_2019\\
 \midrule
-\rowcolor{gray!6}  Central\_grain & 3 & 2 & 1.72 & 1.76 & 0.91 & 2.76 & 0.55 & 1.29\\
+\rowcolor{gray!6}  Boyd\_grain & 3 & 2 & 1.72 & 1.76 & 0.91 & 2.76 & 0.55 & 1.29\\
 \cmidrule{1-9}
-Central\_silage & 4 & 3 & 2.56 & 2.13 & 1.27 & 4.23 & 0.44 & 2.05\\
+Boyd\_silage & 4 & 3 & 2.56 & 2.13 & 1.27 & 4.23 & 0.44 & 2.05\\
 \cmidrule{1-9}
-\rowcolor{gray!6}  West\_grain & 0 & 0 & 0.24 & 0.09 & 0.08 & 0.63 & 1.16 & 0\\
+\rowcolor{gray!6}  Funcke\_grain & 0 & 0 & 0.24 & 0.09 & 0.08 & 0.63 & 1.16 & 0.00\\
 \cmidrule{1-9}
-East\_grain & 1 & 1 & 1.73 & 0.36 & 9.71 & 7.3 & 1.8 & 0.3\\
+Stout\_grain & 1 & 1 & 1.73 & 0.36 & 9.71 & 7.30 & 1.80 & 0.30\\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -492,40 +492,5 @@ metrics}
 \caption{Relative change in seedbank density vs.~cover crop biomass
 metrics}
 \end{figure}
-
-\newpage
-
-\hypertarget{manuscript-figures-with-full-datasets}{%
-\subsection{Manuscript figures with full
-datasets}\label{manuscript-figures-with-full-datasets}}
-
-\begin{figure}
-\centering
-\includegraphics{supp-mat_files/figure-latex/bargraph-1.pdf}
-\caption{Manuscript fig.~2 using full dataset}
-\end{figure}
-
-\begin{figure}
-\centering
-\includegraphics{supp-mat_files/figure-latex/dotplot-1.pdf}
-\caption{Manuscript fig.~3 using full dataset}
-\end{figure}
-
-\newpage
-
-\begin{figure}
-\centering
-\includegraphics{supp-mat_files/figure-latex/nmds-1.pdf}
-\caption{Manuscript fig.~4 using full dataset}
-\end{figure}
-
-\newpage
-
-\begin{figure}
-\centering
-\includegraphics{supp-mat_files/figure-latex/stochdom-1.pdf}
-\caption{Manuscript fig.~5 using full dataset}
-\end{figure}
-
 
 \end{document}

@@ -34,6 +34,8 @@ dat_table_trial <- read_csv("02_make-figs/mf_weed-list-arranged-by-trial.csv")
 dat_by_trt_raw <- 
   pfi_ghobsraw %>% 
       pfifun_sum_weedbyeu() %>% 
+  #--remove outlier
+  filter(blockID != "F-4") %>% 
       unite(site_name, field, sys_trt, col = "site_sys") %>% 
       select(site_sys, cc_trt, weed, seeds) %>%
       group_by(site_sys, cc_trt, weed) %>% 

@@ -8,6 +8,7 @@
 #
 # Last modified: 5/21/2020 (moved to new folder, cleaned up)
 #                6/1/2020 (I want estimates of contrasts also!
+#               9/19/2020 (updating for resubmittal)
 ####################################
 
 rm(list = ls())
@@ -70,6 +71,7 @@ performance::check_overdispersion(pois_bl)   # there is overdispersion... don't 
 
 pois_obs <- glmer(totseeds ~ site_sys*cc_trt + (1|obs_id), data = dstat_outrm, 
              family = poisson(link = "log"))  
+
 performance::check_overdispersion(pois_obs)
 
 #--use random factor for obs and block?
@@ -96,22 +98,22 @@ pois_est <- tidy(pois_blobs_em$emmeans) %>%
   mutate(model = "pois_out-rm")
 
 #--how do I compare within just boyd?
-
-boyd_ems <- 
-  emmeans(pois_blobs, pairwise ~ cc_trt * site_sys)$contrasts %>%
-  tidy() %>%
-  filter(grepl("Boyd_grain", level1),
-         grepl("Boyd_silage", level2)) %>%
-  bind_rows(
-    emmeans(pois_blobs, pairwise ~ cc_trt * site_sys)$contrasts %>%
-      tidy() %>%
-      filter(grepl("Boyd", level1),
-             grepl("Stout", level2))
-  )
-
-
-
-write_csv(boyd_ems, "01_stats-uni/st_boyd-contrasts.csv")
+# 
+# boyd_ems <- 
+#   emmeans(pois_blobs, pairwise ~ cc_trt * site_sys)$contrasts %>%
+#   tidy() %>%
+#   filter(grepl("Boyd_grain", level1),
+#          grepl("Boyd_silage", level2)) %>%
+#   bind_rows(
+#     emmeans(pois_blobs, pairwise ~ cc_trt * site_sys)$contrasts %>%
+#       tidy() %>%
+#       filter(grepl("Boyd", level1),
+#              grepl("Stout", level2))
+#   )
+# 
+# 
+# 
+# write_csv(boyd_ems, "01_stats-uni/st_boyd-contrasts.csv")
 
 
 # poisson with outlier ----------------------------------------------------
@@ -130,7 +132,7 @@ dstat %>%
   geom_point(aes(color = cc_trt)) + 
   facet_grid(.~site_sys)
 
-boxplot(dstat %>% filter(site_sys == "Funcke_grain") %>% select(totseeds) %>% pull())$out
+#boxplot(dstat %>% filter(site_sys == "Funcke_grain") %>% select(totseeds) %>% pull())$out
 
 pois_blobs_em_full <- emmeans(pois_blobs_full, pairwise ~ cc_trt|site_sys)
 pois_cont_full <- tidy(pois_blobs_em_full$contrasts) %>% 

@@ -1,11 +1,13 @@
 # Gina
 # 5/29/2020, based on Lydia's code
 # updated 9/2/2020 (group  by field as well for Boyd)
-
+# updated 10/14/2020 (group all setaria sp together)
 
 # ---- Getting data and loading packages ---- 
 library(tidyverse)
 library(vegan) #--does nmds
+library(devtools)
+#remotes::install_github("vanichols/PFIweeds2020")
 library(PFIweeds2020)
 
 
@@ -21,42 +23,45 @@ df_dat <-
   filter(!(site_name == "Funcke" & rep == 4)) %>% #--remove outlier
   group_by(site_name, sys_trt, cc_trt, blockID) %>%
   summarize_at(vars(AMATU:UD), ~sum(., na.rm = TRUE)) %>% 
-  unite("eu", site_name, sys_trt, cc_trt, blockID, remove = TRUE) 
+  unite("eu", site_name, sys_trt, cc_trt, blockID, remove = TRUE) %>% 
+  #--combine setaria species
+  mutate(SETARIA = SETFA + SETVI + UM) %>% 
+  select(-SETFA, -SETVI, -UM)
 
 
 # what % was waterhemp at each site? --------------------------------------
 
 
-pfi_ghobsraw %>% 
-  pfifun_sum_weedbyeu() %>% 
-  unite(site_name, field, sys_trt, col = "site_sys") %>% 
-  select(site_sys, weed, seeds_m2) %>% 
-  group_by(site_sys, weed) %>% 
-  summarise(totseeds_m2 = sum(seeds_m2)) %>% 
-  group_by(site_sys) %>% 
-  mutate(site_tot = sum(totseeds_m2),
-         site_weed_pct = totseeds_m2/site_tot) %>% 
-  filter(site_weed_pct >0.02) %>% 
-  arrange(site_sys, -site_weed_pct)
+# pfi_ghobsraw %>% 
+#   pfifun_sum_weedbyeu() %>% 
+#   unite(site_name, field, sys_trt, col = "site_sys") %>% 
+#   select(site_sys, weed, seeds_m2) %>% 
+#   group_by(site_sys, weed) %>% 
+#   summarise(totseeds_m2 = sum(seeds_m2)) %>% 
+#   group_by(site_sys) %>% 
+#   mutate(site_tot = sum(totseeds_m2),
+#          site_weed_pct = totseeds_m2/site_tot) %>% 
+#   filter(site_weed_pct >0.02) %>% 
+#   arrange(site_sys, -site_weed_pct)
 
 
 
 # what were water hemp numbers at West ------------------------------------
 
-pfi_ghobsraw %>% 
-  pfifun_sum_weedbyeu() %>% 
-  filter(site_name == "West",
-         weed == "AMATU")
-  unite(site_name, field, sys_trt, col = "site_sys") %>% 
-  select(site_sys, weed, seeds_m2) %>% 
-  group_by(site_sys, weed) %>% 
-  summarise(totseeds_m2 = sum(seeds_m2)) %>% 
-  group_by(site_sys) %>% 
-  mutate(site_tot = sum(totseeds_m2),
-         site_weed_pct = totseeds_m2/site_tot) %>% 
-  filter(site_weed_pct >0.02) %>% 
-  arrange(site_sys, -site_weed_pct)
-
+# pfi_ghobsraw %>% 
+#   pfifun_sum_weedbyeu() %>% 
+#   filter(site_name == "West",
+#          weed == "AMATU") 
+#   unite(site_name, field, sys_trt, col = "site_sys") %>% 
+#   select(site_sys, weed, seeds_m2) %>% 
+#   group_by(site_sys, weed) %>% 
+#   summarise(totseeds_m2 = sum(seeds_m2)) %>% 
+#   group_by(site_sys) %>% 
+#   mutate(site_tot = sum(totseeds_m2),
+#          site_weed_pct = totseeds_m2/site_tot) %>% 
+#   filter(site_weed_pct >0.02) %>% 
+#   arrange(site_sys, -site_weed_pct)
+# 
 
 
 ################# remove outlier ################################
@@ -175,7 +180,10 @@ df_dat_full <-
   #filter(!(site_name == "Funcke" & rep == 4)) %>% #--remove outlier
   group_by(site_name, sys_trt, cc_trt, blockID) %>%
   summarize_at(vars(AMATU:UD), ~sum(., na.rm = TRUE)) %>% 
-  unite("eu", site_name, sys_trt, cc_trt, blockID, remove = TRUE) 
+  unite("eu", site_name, sys_trt, cc_trt, blockID, remove = TRUE) %>% 
+  #--combine setaria species
+  mutate(SETARIA = SETFA + SETVI + UM) %>% 
+  select(-SETFA, -SETVI, -UM)
 
 mat_dat_full <- 
   df_dat_full %>% 

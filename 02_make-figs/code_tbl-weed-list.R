@@ -60,6 +60,7 @@ dat_table <-
   select(code, scientific_name, common_name, desc, pct2) %>% 
   mutate(scientific_name = str_to_sentence(scientific_name),
          common_name = str_to_sentence(common_name),
+         #scientific_name = ifelse(scientific_name == "Setaria", "Setaria genus", scientific_name),
          common_name = ifelse(common_name == "Water hemp", "Waterhemp", common_name),
          common_name = ifelse(common_name == "Marestail", "Horseweed", common_name),
          common_name = ifelse(common_name == "Nightshade", "Eastern black nightshade", common_name),

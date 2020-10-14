@@ -1,7 +1,7 @@
 # Gina
 # 5/29/2020, based on Lydia's code
 # updated 9/2/2020 (group  by field as well for Boyd)
-# updated 10/14/2020 (group all setaria sp together)
+# updated 10/14/2020 (group all setaria sp together in package data, rerun here)
 
 # ---- Getting data and loading packages ---- 
 library(tidyverse)
@@ -22,11 +22,8 @@ df_dat <-
   pfi_ghobsraw %>%
   filter(!(site_name == "Funcke" & rep == 4)) %>% #--remove outlier
   group_by(site_name, sys_trt, cc_trt, blockID) %>%
-  summarize_at(vars(AMATU:UD), ~sum(., na.rm = TRUE)) %>% 
-  unite("eu", site_name, sys_trt, cc_trt, blockID, remove = TRUE) %>% 
-  #--combine setaria species
-  mutate(SETARIA = SETFA + SETVI + UM) %>% 
-  select(-SETFA, -SETVI, -UM)
+  summarize_at(vars(AMATU:SETARIA), ~sum(., na.rm = TRUE)) %>% 
+  unite("eu", site_name, sys_trt, cc_trt, blockID, remove = TRUE) 
 
 
 # what % was waterhemp at each site? --------------------------------------
@@ -179,11 +176,8 @@ df_dat_full <-
   pfi_ghobsraw %>%
   #filter(!(site_name == "Funcke" & rep == 4)) %>% #--remove outlier
   group_by(site_name, sys_trt, cc_trt, blockID) %>%
-  summarize_at(vars(AMATU:UD), ~sum(., na.rm = TRUE)) %>% 
-  unite("eu", site_name, sys_trt, cc_trt, blockID, remove = TRUE) %>% 
-  #--combine setaria species
-  mutate(SETARIA = SETFA + SETVI + UM) %>% 
-  select(-SETFA, -SETVI, -UM)
+  summarize_at(vars(AMATU:SETARIA), ~sum(., na.rm = TRUE)) %>% 
+  unite("eu", site_name, sys_trt, cc_trt, blockID, remove = TRUE) 
 
 mat_dat_full <- 
   df_dat_full %>% 

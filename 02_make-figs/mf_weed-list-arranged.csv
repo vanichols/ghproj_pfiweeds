@@ -1,16 +1,14 @@
 code,scientific_name,common_name,desc,pct2
-AMATU,Amaranthus tuberculatus,Waterhemp,C4 forb,88.58%
-CHEAL,Chenopodium album,Lamb's quarters,C3 forb,6.67%
-POROL,Portulaca oleracea,Purslane,C4 forb,1.28%
-DIGSA,Digitaria sanguinalis,Large crabgrass,C4 grass,1%
+AMATU,Amaranthus tuberculatus,Waterhemp,C4 forb,88.85%
+CHEAL,Chenopodium album,Lamb's quarters,C3 forb,6.69%
+POROL,Portulaca oleracea,Purslane,C4 forb,1.29%
+DIGSA,Digitaria sanguinalis,Large crabgrass,C4 grass,1.01%
 EUPMA,Euphorbia maculata,Spotted spurge,C4 forb,0.41%
 PLAMA,Plantago major,Plantain,C3 forb,0.41%
 SOPT7,Solanum ptycanthum,Eastern black nightshade,C3 forb,0.34%
 ERICA,Erigeron canadensis,Horseweed,C3 forb,0.32%
-SETFA,Setaria faberi,Giant foxtail,C4 grass,0.24%
+SETARIA,Setaria,Foxtails,C4 grass,0.24%
 UD,Unknown dicotyledon,Unknown dicotyledon,NA forb,0.17%
-SETVI,Setaria viridis,Green foxtail,C4 grass,0.15%
-UM,Unknown monocotyledon,Unknown monocotyledon,NA grass,0.15%
 POLAV,Polygonum aviculare,Prostrate knotweed,C3 forb,0.11%
 SECCE,Secale cereale,Cereal rye,C3 grass,<0.10%
 ABUTH,Abutilon theophrasti,Velvet leaf,C3 forb,<0.10%

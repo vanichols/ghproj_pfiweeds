@@ -176,6 +176,5 @@ plot_grid(p1, p2, p3, p4, p5,
           nrow = 1)
 
 
-ggsave("02_make-figs/manu-new/fig2.jpg", width = 7, height = 4.2)
-ggsave("../../../Box/1_Gina_Projects/proj_PFIweeds/manuscript/20201012_revision2/fig2.jpg", width = 7, height = 4.2)
+ggsave("02_make-figs/manu-new/fig2.jpg")
 

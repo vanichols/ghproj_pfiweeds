@@ -292,7 +292,7 @@ fig_dat %>%
     legend.text = element_text(size = rel(1)))
 
 
-ggsave("02_make-figs/manu-new/fig1.jpg", width = 7, height = 4.2)
+ggsave("02_make-figs/manu-new/fig1.jpg")
 
 
 

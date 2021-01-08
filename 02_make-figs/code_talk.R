@@ -164,6 +164,9 @@ wes3a <- wes_palette("Moonrise3")
 wes3 <- wes_palette("Moonrise2")
 
 cctrtpal <- c(wes3[4], wes3a[3])
+view(cctrtpal)
+library(scales)
+show_col(cctrtpal)
 
 mypal <- c("royalblue", (wes_palette("Zissou1", n = 5)[c(2,3,5)]))
 

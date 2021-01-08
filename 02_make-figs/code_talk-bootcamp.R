@@ -78,6 +78,9 @@ wdcnts_loc <-
 
 # fig things --------------------------------------------------------------
 cctrtpal <- c("#69431D", "#45AD45")
+library(scales)
+
+show_col(cctrtpal)
 
 mytheme <- theme(legend.position = c(0.1, 0.9),
                  legend.justification = c(0,1),
